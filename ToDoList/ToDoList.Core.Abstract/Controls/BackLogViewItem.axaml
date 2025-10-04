@@ -1,0 +1,21 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:ToDoList.Core.Abstract.Controls">
+    <Design.PreviewWith>
+        <controls:BackLogViewItem />
+    </Design.PreviewWith>
+    
+    <Styles.Resources>
+        <ControlTemplate x:Key="BackLogViewItemControlTemplate" TargetType="controls:BackLogViewItem">
+            <Border>
+                <Grid RowDefinitions="40,20,20" ColumnDefinitions="Auto,Auto,*">
+                    
+                </Grid>
+            </Border>
+        </ControlTemplate>
+    </Styles.Resources>
+    
+    <Style Selector="controls|BackLogViewItem">
+        <Setter Property="Template" Value="{DynamicResource BackLogViewItemControlTemplate}"/>
+    </Style>
+</Styles>

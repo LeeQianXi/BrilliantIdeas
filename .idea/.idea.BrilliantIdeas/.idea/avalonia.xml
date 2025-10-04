@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AvaloniaProject">
+    <option name="projectPerEditor">
+      <map>
+        <entry key="AvaloniaUtility/Controls/CustomControls.axaml" value="ToDoList/ToDoList/ToDoList.csproj" />
+        <entry key="AvaloniaUtility/Controls/RoundProgressBar.axaml" value="ToDoList/ToDoList/ToDoList.csproj" />
+        <entry key="ToDoList/AvaloniaCore/DependencyApp.axaml" value="ToDoList/ToDoList/ToDoList.csproj" />
+        <entry key="ToDoList/ToDoList.Core.Abstract/BackLogViewList.axaml" value="ToDoList/ToDoList/ToDoList.csproj" />
+        <entry key="ToDoList/ToDoList.Core.Abstract/Controls/BackLogViewItem.axaml" value="ToDoList/ToDoList/ToDoList.csproj" />
+        <entry key="ToDoList/ToDoList.Core.Abstract/Controls/CustomControls.axaml" value="ToDoList/ToDoList/ToDoList.csproj" />
+        <entry key="ToDoList/ToDoList.Core/ToDoListApp.axaml" value="ToDoList/ToDoList/ToDoList.csproj" />
+        <entry key="ToDoList/ToDoList.Core/Views/MainMenuView.axaml" value="ToDoList/ToDoList/ToDoList.csproj" />
+        <entry key="ToDoList/ToDoList.Core/Views/SplashView.axaml" value="ToDoList/ToDoList/ToDoList.csproj" />
+        <entry key="ToDoList/ToDoList.Core/Views/SplashWindow.axaml" value="ToDoList/ToDoList/ToDoList.csproj" />
+        <entry key="ToDoList/ToDoList.Core/Views/ToDoListWindow.axaml" value="ToDoList/ToDoList/ToDoList.csproj" />
+        <entry key="Utility/AvaloniaUtility/Controls/CustomControls.axaml" value="ToDoList/ToDoList/ToDoList.csproj" />
+        <entry key="Utility/AvaloniaUtility/Controls/RoundProgressBar.axaml" value="ToDoList/ToDoList/ToDoList.csproj" />
+      </map>
+    </option>
+  </component>
+</project>

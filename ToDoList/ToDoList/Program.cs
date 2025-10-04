@@ -1,0 +1,21 @@
+﻿namespace ToDoList;
+
+public class Program
+{
+    [STAThread]
+    public static void Main(string[] args)
+    {
+        Console.OutputEncoding = Encoding.UTF8;
+        BuildAvaloniaApp()
+            .StartWithClassicDesktopLifetime(args);
+    }
+
+    public static AppBuilder BuildAvaloniaApp()
+    {
+        ServiceLocator.ServiceProvider = StartUp.ServiceProvider;
+        return AppBuilder.Configure<ToDoListApp>()
+            .UsePlatformDetect()
+            .WithInterFont()
+            .LogToTrace();
+    }
+}

@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+        <LangVersion>preview</LangVersion>
+        <RootNamespace>ToDoList</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Desktop" Version="11.3.7"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.8"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.8"/>
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.8"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.8"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ToDoList.Core\ToDoList.Core.csproj"/>
+        <ProjectReference Include="..\ToDoListDb.Core\ToDoListDb.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="appsettings.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+</Project>
