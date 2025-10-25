@@ -1,12 +1,10 @@
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
-using Avalonia.Data;
 using Avalonia.Interactivity;
-using Avalonia.Rendering.Composition;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using AvaloniaUtility;
-using PropertyGenerator.Avalonia;
+using ToDoList.Core.Abstract.Bases;
 using ToDoList.Core.Abstract.ViewModels;
 
 namespace ToDoList.Core.Views;

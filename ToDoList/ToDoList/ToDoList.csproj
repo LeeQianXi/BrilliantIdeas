@@ -18,7 +18,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\ToDoList.Core\ToDoList.Core.csproj"/>
-        <ProjectReference Include="..\ToDoListDb.Core\ToDoListDb.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>

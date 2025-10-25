@@ -1,12 +1,20 @@
+using NetUtility.Singleton;
 using ToDoList.Core.Abstract.ViewModels;
 using ToDoList.Core.Abstract.Views;
 
-namespace ToDoListCore;
+namespace ToDoList.Core;
 
-public class ServiceLocator
+public class ServiceLocator : StaticSingleton<ServiceLocator>
 {
-    public static IServiceProvider ServiceProvider { get; set; }
-    public static ISplashViewModel SplashViewModel => ServiceProvider.GetRequiredService<ISplashViewModel>();
-    public static IMainMenuView MainMenuView => ServiceProvider.GetRequiredService<IMainMenuView>();
-    public static IMainMenuViewModel MainMenuViewModel => ServiceProvider.GetRequiredService<IMainMenuViewModel>();
+    private static IServiceProvider _serviceProvider = null!;
+
+    public IServiceProvider ServiceProvider
+    {
+        get => _serviceProvider;
+        set => _serviceProvider = value;
+    }
+
+    public ISplashViewModel SplashViewModel => ServiceProvider.GetRequiredService<ISplashViewModel>();
+    public IMainMenuView MainMenuView => ServiceProvider.GetRequiredService<IMainMenuView>();
+    public IMainMenuViewModel MainMenuViewModel => ServiceProvider.GetRequiredService<IMainMenuViewModel>();
 }

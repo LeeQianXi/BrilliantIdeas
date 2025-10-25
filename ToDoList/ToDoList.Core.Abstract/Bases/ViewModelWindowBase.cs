@@ -1,4 +1,6 @@
-namespace ToDoListCore.Abstract.Bases;
+using AvaloniaUtility.Services;
+
+namespace ToDoList.Core.Abstract.Bases;
 
 public abstract class ViewModelWindowBase<T> : Window, IWindow where T : class, IDependencyInjection
 {

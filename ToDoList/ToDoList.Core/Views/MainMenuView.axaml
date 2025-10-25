@@ -28,7 +28,13 @@
         </Grid>
         <Border Grid.Row="1" Margin="4" CornerRadius="10" Padding="5,5" Background="AliceBlue">
             <ScrollViewer Name="SvContainer" Theme="{DynamicResource StaticScrollViewer}">
-                <ItemsControl Name="ListDisplay"/>
+                <ItemsControl Name="ListDisplay">
+                    <controls:BackLogViewItem Status="Default" Description="ABCDEFGHIJJKS DAd asd ad"/>
+                    <controls:BackLogViewItem Status="InProgress" Description="ABCDEFGHIJJKS DAd asd adABCDEFGHIJJKS DAd asd adABCDE"/>
+                    <controls:BackLogViewItem Status="Completed"/>
+                    <controls:BackLogViewItem Status="Failed"/>
+                    <controls:BackLogViewItem Status="InProgress"/>
+                </ItemsControl>
             </ScrollViewer>
         </Border>
         <StackPanel Grid.Row="2"/>

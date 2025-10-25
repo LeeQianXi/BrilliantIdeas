@@ -1,4 +1,6 @@
-﻿namespace ToDoList;
+﻿using ToDoList.Core;
+
+namespace ToDoList;
 
 public class Program
 {
@@ -12,7 +14,7 @@ public class Program
 
     public static AppBuilder BuildAvaloniaApp()
     {
-        ServiceLocator.ServiceProvider = StartUp.ServiceProvider;
+        ServiceLocator.Instance.ServiceProvider = StartUp.ServiceProvider;
         return AppBuilder.Configure<ToDoListApp>()
             .UsePlatformDetect()
             .WithInterFont()

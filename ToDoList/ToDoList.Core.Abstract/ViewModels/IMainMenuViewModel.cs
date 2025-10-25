@@ -1,9 +1,3 @@
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using AvaloniaUtility.Models;
-using CommunityToolkit.Mvvm.Input;
-using ToDoListDb.Abstract.Model;
-
 namespace ToDoList.Core.Abstract.ViewModels;
 
 public interface IMainMenuViewModel : IDependencyInjection, INotifyPropertyChanged

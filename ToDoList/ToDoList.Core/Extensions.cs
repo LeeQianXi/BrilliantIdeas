@@ -1,14 +1,11 @@
-using System.Collections;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-using Avalonia.Threading;
+using AvaloniaUtility.Services;
 using ToDoList.Core.Abstract.ViewModels;
 using ToDoList.Core.Abstract.Views;
+using ToDoList.Core.ViewModels;
 using ToDoList.Core.Views;
-using ToDoListCore.Abstract.Services;
-using ToDoListCore.ViewModels;
 
-namespace ToDoListCore;
+namespace ToDoList.Core;
 
 [SuppressMessage("Performance", "CA1822:将成员标记为 static")]
 public static class Extensions

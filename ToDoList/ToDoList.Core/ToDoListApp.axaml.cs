@@ -1,11 +1,11 @@
-using ToDoListCore.Abstract.Services;
+using AvaloniaUtility.Services;
 
-namespace ToDoListCore;
+namespace ToDoList.Core;
 
 public partial class ToDoListApp : Application
 {
     private ILogger<ToDoListApp> Logger { get; } =
-        ServiceLocator.ServiceProvider.GetRequiredService<ILogger<ToDoListApp>>();
+        ServiceLocator.Instance.ServiceProvider.GetRequiredService<ILogger<ToDoListApp>>();
 
     public override void Initialize()
     {
@@ -22,7 +22,7 @@ public partial class ToDoListApp : Application
         DisableAvaloniaDataAnnotationValidation();
 
         base.OnFrameworkInitializationCompleted();
-        var startup = ServiceLocator.ServiceProvider.GetRequiredService<IStartupWindow>();
+        var startup = ServiceLocator.Instance.ServiceProvider.GetRequiredService<IStartupWindow>();
         startup.Show();
     }
 

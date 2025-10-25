@@ -1,4 +1,4 @@
-namespace ToDoListCore.Abstract.Bases;
+namespace ToDoList.Core.Abstract.Bases;
 
 public class ViewModelUserControlBase<T> : UserControl where T : class, IDependencyInjection
 {

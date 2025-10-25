@@ -1,12 +1,12 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:locator="clr-namespace:ToDoListCore"
              xmlns:semi="https://irihi.tech/semi"
-             x:Class="ToDoListCore.ToDoListApp"
+             xmlns:core="clr-namespace:ToDoList.Core"
+             x:Class="ToDoList.Core.ToDoListApp"
              RequestedThemeVariant="Default">
     <Application.Resources>
         <ResourceDictionary>
-            <locator:ServiceLocator x:Key="ServiceLocator"/>
+            <core:ServiceLocator x:Key="ServiceLocator"/>
         </ResourceDictionary>
     </Application.Resources>
     <Application.Styles>

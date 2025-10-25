@@ -1,0 +1,19 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:locator="clr-namespace:TagImage.Core"
+             xmlns:semi="https://irihi.tech/semi"
+             x:Class="TagImage.Core.TagImageApp"
+             RequestedThemeVariant="Default">
+    <Application.Resources>
+        <ResourceDictionary>
+            <locator:ServiceLocator x:Key="ServiceLocator"/>
+        </ResourceDictionary>
+    </Application.Resources>
+    <Application.Styles>
+        <!--<FluentTheme />-->
+        <semi:SemiTheme Locale="zh-CN"/>
+        <semi:SemiPopupAnimations />
+        <StyleInclude Source="avares://AvaloniaUtility/Controls/CustomControls.axaml"/>
+        <StyleInclude Source="avares://TagImage.Core.Abstract/Controls/CustomControls.axaml"/>
+    </Application.Styles>
+</Application>

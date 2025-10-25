@@ -1,9 +1,5 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
-using ToDoList.Core.Abstract.ViewModels;
-using ToDoListCore.Abstract.Services;
-using ToDoListCore.ViewModels;
+using AvaloniaUtility.Services;
 
 namespace ToDoList.Core.Views;
 

@@ -1,0 +1,11 @@
+global using Microsoft.Extensions.DependencyInjection;
+global using System.Drawing;
+global using DataBaseAbstract.Storage;
+global using Microsoft.Extensions.Logging;
+global using NetUtility;
+global using SQLite;
+global using System.Drawing;
+global using DIAbstract.Services;
+global using ToDoList.DataBase.Models;
+global using ToDoList.DataBase.Services;
+global using ToDoList.DataBase.Instances;

@@ -1,13 +1,8 @@
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using AvaloniaUtility.Models;
-using CommunityToolkit.Mvvm.Input;
+using ToDoList.Core.Abstract.Bases;
 using ToDoList.Core.Abstract.ViewModels;
-using ToDoList.Core.Abstract.Views;
-using ToDoListCore.Abstract.Services;
-using ToDoListDb.Abstract.Model;
+using ToDoList.DataBase.Models;
 
-namespace ToDoListCore.ViewModels;
+namespace ToDoList.Core.ViewModels;
 
 internal class MainMenuViewModel(IServiceProvider serviceProvider, ILogger<MainMenuViewModel> logger)
     : ViewModelBase, IMainMenuViewModel

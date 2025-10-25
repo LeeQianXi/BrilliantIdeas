@@ -12,6 +12,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\NetUtility\NetUtility.csproj" />
+      <Folder Include="Converters\" />
     </ItemGroup>
 </Project>

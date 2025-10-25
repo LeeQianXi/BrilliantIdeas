@@ -1,4 +1,4 @@
-namespace ToDoListCore.Abstract.Bases;
+namespace ToDoList.Core.Abstract.Bases;
 
 public abstract partial class ViewModelBase : ObservableObject, IDependencyInjection
 {

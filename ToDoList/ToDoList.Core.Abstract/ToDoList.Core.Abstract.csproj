@@ -26,12 +26,9 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\DIAbstract\DIAbstract.csproj" />
+        <ProjectReference Include="..\..\Utility\DIAbstract\DIAbstract.csproj" />
         <ProjectReference Include="..\..\Utility\AvaloniaUtility\AvaloniaUtility.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\ToDoListDb.Abstract\ToDoListDb.Abstract.csproj" />
+        <ProjectReference Include="..\ToDoList.DataBase\ToDoList.DataBase.csproj" />
     </ItemGroup>
 
 </Project>

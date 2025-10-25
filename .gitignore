@@ -3,6 +3,7 @@ bin/
 riderModule.iml
 /_ReSharper.Caches/### VisualStudioCode template
 .vscode/*
+/.idea/
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json

@@ -1,0 +1,11 @@
+global using Avalonia;
+global using Avalonia.Markup.Xaml;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Logging;
+global using TagImage.Core.Abstract.Bases;
+global using Avalonia.Data.Core.Plugins;
+global using Avalonia;
+global using Avalonia.Controls;
+global using Avalonia.Markup.Xaml;
+global using TagImage.Core.Abstract.ViewModels;
+global using TagImage.Core.Abstract.Views;

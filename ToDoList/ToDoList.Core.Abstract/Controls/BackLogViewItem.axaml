@@ -2,20 +2,107 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="using:ToDoList.Core.Abstract.Controls">
     <Design.PreviewWith>
-        <controls:BackLogViewItem />
+        <controls:BackLogViewItem Width="300"/>
     </Design.PreviewWith>
-    
     <Styles.Resources>
-        <ControlTemplate x:Key="BackLogViewItemControlTemplate" TargetType="controls:BackLogViewItem">
-            <Border>
-                <Grid RowDefinitions="40,20,20" ColumnDefinitions="Auto,Auto,*">
-                    
-                </Grid>
-            </Border>
-        </ControlTemplate>
+        <SolidColorBrush x:Key="StatusDefault" Color="Orange"/>
+        <SolidColorBrush x:Key="StatusInProgress" Color="LightBlue"/>
+        <SolidColorBrush x:Key="StatusCompleted" Color="Green"/>
+        <SolidColorBrush x:Key="StatusFailed" Color="Red"/>
+        <SolidColorBrush x:Key="StatusIgnore" Color="Gray"/>
     </Styles.Resources>
     
     <Style Selector="controls|BackLogViewItem">
-        <Setter Property="Template" Value="{DynamicResource BackLogViewItemControlTemplate}"/>
+        <Setter Property="Template">
+            <ControlTemplate TargetType="controls:BackLogViewItem">
+                <Border Name="PART_Container" Classes="Shadow">
+                    <Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="Auto,Auto,*" Background="Transparent">
+                        <Label Name="PART_Tag" Theme="{DynamicResource TagLabel}"
+                               Margin="3"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" Name="PART_Title" Classes="TitleBox"
+                                 Margin="10,3,5,3" MaxWidth="200"
+                                 Text="{TemplateBinding Title}" IsReadOnly="True"/>
+                        <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                                   VerticalAlignment="Stretch" TextAlignment="Right"
+                                   TextWrapping="NoWrap" TextTrimming="WordEllipsis" Foreground="DimGray"
+                                   Text="{TemplateBinding Description}"/>
+                        
+                        <ListBox Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Name="PART_Select"
+                                     Theme="{DynamicResource ButtonRadioGroupListBox}" Classes="Small"
+                                     HorizontalAlignment="Right">
+                            <ListBoxItem Classes="Default"/>
+                            <ListBoxItem Classes="InProgress"/>
+                            <ListBoxItem Classes="Completed"/>
+                            <ListBoxItem Classes="Failed"/>
+                            <ListBoxItem Classes="Ignore"/>
+                        </ListBox>
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="controls|BackLogViewItem /template/ TextBox#PART_Title">
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+        <Setter Property="TextAlignment" Value="Left"/>
+        <Setter Property="TextWrapping" Value="NoWrap"/>
+        <Setter Property="ContextMenu">
+            <ContextMenu>
+                <MenuItem Header="编辑标题" Name="PART_TitleEditTitle"/>
+            </ContextMenu>
+        </Setter>
+    </Style>
+    <Style Selector="controls|BackLogViewItem /template/ Border#PART_Container">
+        <Setter Property="Padding" Value="7,4"/>
+        <Setter Property="CornerRadius" Value="4"/>
+        <Setter Property="Margin" Value="0,4"/>
+    </Style>
+    <Style Selector="controls|BackLogViewItem:pointerover /template/ Border#PART_Container">
+        <Setter Property="Background" Value="#1f1f1f1f"/>
+    </Style>
+    <Style Selector="ListBoxItem.Default">
+        <Setter Property="Padding" Value="5,3"/>
+        <Setter Property="Content" Value="待定"/>
+        <Setter Property="Foreground" Value="{DynamicResource StatusDefault}"/>
+    </Style>
+    <Style Selector="ListBoxItem.InProgress">
+        <Setter Property="Padding" Value="5,3"/>
+        <Setter Property="Content" Value="进行中"/>
+        <Setter Property="Foreground" Value="{DynamicResource StatusInProgress}"/>
+    </Style>
+    <Style Selector="ListBoxItem.Completed">
+        <Setter Property="Padding" Value="5,3"/>
+        <Setter Property="Content" Value="已完成"/>
+        <Setter Property="Foreground" Value="{DynamicResource StatusCompleted}"/>
+    </Style>
+    <Style Selector="ListBoxItem.Failed">
+        <Setter Property="Padding" Value="5,3"/>
+        <Setter Property="Content" Value="失败"/>
+        <Setter Property="Foreground" Value="{DynamicResource StatusFailed}"/>
+    </Style>
+    <Style Selector="ListBoxItem.Ignore">
+        <Setter Property="Padding" Value="5,3"/>
+        <Setter Property="Content" Value="跳过"/>
+        <Setter Property="Foreground" Value="{DynamicResource StatusIgnore}"/>
+    </Style>
+    <Style Selector="ListBoxItem.Default[IsSelected=True]">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Background" Value="{DynamicResource StatusDefault}"/>
+    </Style>
+    <Style Selector="ListBoxItem.InProgress[IsSelected=True]">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Background" Value="{DynamicResource StatusInProgress}"/>
+    </Style>
+    <Style Selector="ListBoxItem.Completed[IsSelected=True]">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Background" Value="{DynamicResource StatusCompleted}"/>
+    </Style>
+    <Style Selector="ListBoxItem.Failed[IsSelected=True]">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Background" Value="{DynamicResource StatusFailed}"/>
+    </Style>
+    <Style Selector="ListBoxItem.Ignore[IsSelected=True]">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Background" Value="{DynamicResource StatusIgnore}"/>
     </Style>
 </Styles>
