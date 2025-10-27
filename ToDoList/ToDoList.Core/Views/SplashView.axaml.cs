@@ -4,7 +4,7 @@ using Avalonia.Interactivity;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using AvaloniaUtility;
-using ToDoList.Core.Abstract.Bases;
+using AvaloniaUtility.Views;
 using ToDoList.Core.Abstract.ViewModels;
 
 namespace ToDoList.Core.Views;

@@ -1,5 +1,3 @@
-using AvaloniaUtility.Services;
-
 namespace TagImage.Core;
 
 public partial class TagImageApp : Application

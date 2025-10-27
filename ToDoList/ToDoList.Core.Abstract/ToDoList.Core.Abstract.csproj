@@ -21,11 +21,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Converter\" />
-        <Folder Include="Models\" />
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\..\Utility\DIAbstract\DIAbstract.csproj" />
         <ProjectReference Include="..\..\Utility\AvaloniaUtility\AvaloniaUtility.csproj" />
         <ProjectReference Include="..\ToDoList.DataBase\ToDoList.DataBase.csproj" />

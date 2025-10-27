@@ -1,6 +1,4 @@
-﻿using TagImage.Core;
-
-namespace TagImage;
+﻿namespace TagImage;
 
 public class Program
 {

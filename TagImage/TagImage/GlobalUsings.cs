@@ -1,0 +1,12 @@
+global using System;
+global using System;
+global using System.Diagnostics.CodeAnalysis;
+global using System.IO;
+global using System.Text;
+global using Avalonia;
+global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Logging;
+global using TagImage.Core;
+global using TagImage.Core.Views;
+global using TagImage.Database;

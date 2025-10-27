@@ -1,7 +1,3 @@
-using TagImage.Core;
-using TagImage.Core.Views;
-using TagImage.Database;
-
 namespace TagImage;
 
 public static class StartUp

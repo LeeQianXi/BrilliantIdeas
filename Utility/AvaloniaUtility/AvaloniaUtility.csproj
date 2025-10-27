@@ -14,4 +14,8 @@
     <ItemGroup>
       <Folder Include="Converters\" />
     </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\DIAbstract\DIAbstract.csproj" />
+    </ItemGroup>
 </Project>

@@ -1,9 +1,0 @@
-global using System;
-global using System.Diagnostics.CodeAnalysis;
-global using System.IO;
-global using Microsoft.Extensions.Configuration;
-global using Microsoft.Extensions.DependencyInjection;
-global using Microsoft.Extensions.Logging;
-global using Avalonia;
-global using System;
-global using System.Text;

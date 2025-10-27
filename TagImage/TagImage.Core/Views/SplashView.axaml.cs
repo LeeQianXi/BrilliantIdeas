@@ -1,10 +1,3 @@
-using Avalonia.Animation;
-using Avalonia.Animation.Easings;
-using Avalonia.Interactivity;
-using Avalonia.Styling;
-using Avalonia.Threading;
-using AvaloniaUtility;
-
 namespace TagImage.Core.Views;
 
 public partial class SplashView : ViewModelUserControlBase<ISplashViewModel>, ISplashView, ICoroutinator
