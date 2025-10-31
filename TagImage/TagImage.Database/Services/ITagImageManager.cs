@@ -1,5 +1,3 @@
-using TagImage.Database.Models;
-
 namespace TagImage.Database.Services;
 
 public interface ITagImageManager

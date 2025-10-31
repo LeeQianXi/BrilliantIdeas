@@ -1,5 +1,3 @@
-using NetUtility.Cache;
-
 namespace ToDoList.DataBase.Instances;
 
 public class BackGroupStorage : BaseStorage<BackGroup>, IBackGroupStorage
@@ -204,7 +202,7 @@ public class BackGroupStorage : BaseStorage<BackGroup>, IBackGroupStorage
 
     public Task<bool> ChangeGroupColorAsync(int groupId, string newColor)
     {
-        return ChangeGroupColorAsync(groupId, newColor.StringColorToArgbInt());
+        return ChangeGroupColorAsync(groupId, newColor.StringToColor());
     }
 
     private void Initializing()

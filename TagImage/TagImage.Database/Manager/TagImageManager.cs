@@ -1,7 +1,3 @@
-using TagImage.Database.Instances;
-using TagImage.Database.Models;
-using TagImage.Database.Services;
-
 namespace TagImage.Database.Manager;
 
 public sealed class TagImageManager : ITagImageManager

@@ -1,5 +1,3 @@
-using DataBaseAbstract.Services;
-
 namespace ToDoList.DataBase.Models;
 
 [Table(nameof(BackGroup))]
@@ -24,7 +22,7 @@ public class BackGroup : IModelBasic
         return new BackGroup
         {
             GroupName = groupName,
-            ColorArgb = groupColor.StringColorToArgbInt()
+            ColorArgb = groupColor.StringToColor().ToArgb()
         };
     }
 

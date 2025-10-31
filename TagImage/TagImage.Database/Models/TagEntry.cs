@@ -1,6 +1,3 @@
-using DataBaseAbstract.Services;
-using SQLite;
-
 namespace TagImage.Database.Models;
 
 [Table(nameof(TagEntry))]

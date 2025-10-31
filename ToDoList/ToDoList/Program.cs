@@ -1,6 +1,4 @@
-﻿using ToDoList.Core;
-
-namespace ToDoList;
+﻿namespace ToDoList;
 
 public class Program
 {

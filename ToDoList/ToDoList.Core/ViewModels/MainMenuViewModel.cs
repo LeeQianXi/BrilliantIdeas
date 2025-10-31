@@ -1,7 +1,3 @@
-using ToDoList.Core.Abstract.Bases;
-using ToDoList.Core.Abstract.ViewModels;
-using ToDoList.DataBase.Models;
-
 namespace ToDoList.Core.ViewModels;
 
 internal class MainMenuViewModel(IServiceProvider serviceProvider, ILogger<MainMenuViewModel> logger)

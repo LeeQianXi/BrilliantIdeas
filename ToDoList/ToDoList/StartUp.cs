@@ -1,7 +1,3 @@
-using ToDoList.Core;
-using ToDoList.Core.Views;
-using ToDoList.DataBase;
-
 namespace ToDoList;
 
 public static class StartUp

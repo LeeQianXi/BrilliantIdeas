@@ -1,5 +1,3 @@
-using AvaloniaUtility.Services;
-
 namespace ToDoList.Core;
 
 public class ToDoListApp : Application

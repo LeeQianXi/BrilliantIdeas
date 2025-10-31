@@ -1,9 +1,3 @@
-using AvaloniaUtility;
-using ToDoList.Core.Abstract.Bases;
-using ToDoList.Core.Abstract.ViewModels;
-using ToDoList.Core.Abstract.Views;
-using ToDoList.DataBase.Services;
-
 namespace ToDoList.Core.ViewModels;
 
 internal class SplashViewModel(IServiceProvider serviceProvider) : ViewModelBase, ISplashViewModel

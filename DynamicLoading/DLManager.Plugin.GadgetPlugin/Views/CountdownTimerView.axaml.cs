@@ -1,8 +1,3 @@
-using Avalonia.Controls.Primitives;
-using Avalonia.Interactivity;
-using AvaloniaUtility;
-using PropertyGenerator.Avalonia;
-
 namespace DLManager.Plugin.GadgetPlugin.Views;
 
 [DeclareView(nameof(CountdownTimerView))]
