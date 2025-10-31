@@ -36,13 +36,30 @@ internal static class Program
             .AddOptionalArguments("bias", "5") //颜色偏差值
             .AddSwitchArgument("nf")
             .AddParamArguments() //启用不定参数个数
+            .AddSwitchArgument("h")
             .Build();
     }
 
     [STAThread]
     private static void Main(string[] args)
     {
-        var result = Parser.Parse(args);
+        CommandParseResult result = null!;
+        try
+        {
+            result = Parser.Parse(args);
+        }
+        catch
+        {
+            Parser.ShowHelp();
+            Environment.Exit(1);
+        }
+
+        if (result.HasSwitchArg("h"))
+        {
+            Parser.ShowHelp();
+            Environment.Exit(1);
+        }
+
         _enableRecursive = result.HasSwitchArg("r");
         _recursiveDepth = int.Parse(result.GetOptionalArg("deep"));
         _enableAsyncDealing = result.HasSwitchArg("a");

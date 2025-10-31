@@ -18,20 +18,38 @@ internal static class Program
             .AddSwitchArgument("a") //启用异步解析
             .AddSwitchArgument("i") //忽略单个任务解析失败
             .AddParamArguments() //启用不定参数个数
+            .AddSwitchArgument("h")
             .Build();
     }
 
     public static void Main(string[] args)
     {
         if (args.Length is 0) args = [Environment.CurrentDirectory];
-        var param = Parser.Parse(args);
-        _enableRecursive = param.HasSwitchArg("r");
-        _enableAsyncDealing = param.HasSwitchArg("a");
-        _recursiveDepth = int.TryParse(param.GetOptionalArg("deep"), out var rd) ? rd : 4;
-        _ignoreSingleton = param.HasSwitchArg("i");
+
+        CommandParseResult result = null!;
+        try
+        {
+            result = Parser.Parse(args);
+        }
+        catch
+        {
+            Parser.ShowHelp();
+            Environment.Exit(1);
+        }
+
+        if (result.HasSwitchArg("h"))
+        {
+            Parser.ShowHelp();
+            Environment.Exit(1);
+        }
+
+        _enableRecursive = result.HasSwitchArg("r");
+        _enableAsyncDealing = result.HasSwitchArg("a");
+        _recursiveDepth = int.TryParse(result.GetOptionalArg("deep"), out var rd) ? rd : 4;
+        _ignoreSingleton = result.HasSwitchArg("i");
         Console.WriteLine("M3U8 视频合并工具");
         Console.WriteLine("==================");
-        foreach (var paramArg in param.GetParamArgs())
+        foreach (var paramArg in result.GetParamArgs())
             DealPath(paramArg);
         Task.WaitAll(AsyncDealingTasks);
     }
