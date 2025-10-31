@@ -7,6 +7,13 @@ public abstract class BaseStorage<TData>
     where TData : IModelBasic, new()
 {
     public readonly string DbName;
+
+    protected BaseStorage(string dbName)
+    {
+        DbName = dbName;
+        Connection.CreateTableAsync<TData>().Wait();
+    }
+
     public string UserInfoPath => PathHelper.GetLocalFilePath($"{DbName}.sqlite");
 
     protected SQLiteAsyncConnection Connection
@@ -19,12 +26,6 @@ public abstract class BaseStorage<TData>
             StorageInternal.StorageConnectionMap[DbName] = connection;
             return connection;
         }
-    }
-
-    protected BaseStorage(string dbName)
-    {
-        DbName = dbName;
-        Connection.CreateTableAsync<TData>().Wait();
     }
 }
 

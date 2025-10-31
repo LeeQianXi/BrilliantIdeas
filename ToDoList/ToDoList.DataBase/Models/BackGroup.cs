@@ -5,8 +5,7 @@ namespace ToDoList.DataBase.Models;
 [Table(nameof(BackGroup))]
 public class BackGroup : IModelBasic
 {
-    [Column("GroupId")]
-    public int PrimaryKey { get; set; }
+    public static readonly BackGroup Default = new();
 
     [Column(nameof(GroupName))] public string GroupName { get; set; } = "Default";
     [Column(nameof(ColorArgb))] public int ColorArgb { get; set; } = Color.White.ToArgb();
@@ -17,6 +16,8 @@ public class BackGroup : IModelBasic
         get => Color.FromArgb(ColorArgb);
         set => ColorArgb = value.ToArgb();
     }
+
+    [Column("GroupId")] public int PrimaryKey { get; set; }
 
     internal static BackGroup CreateNew(string groupName, string groupColor = "#FFFFFFFF")
     {
@@ -35,6 +36,4 @@ public class BackGroup : IModelBasic
             ColorArgb = groupColor
         };
     }
-
-    public static readonly BackGroup Default = new();
 }

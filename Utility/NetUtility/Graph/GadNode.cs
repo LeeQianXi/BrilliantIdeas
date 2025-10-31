@@ -3,9 +3,6 @@ namespace NetUtility.Graph;
 public class GadNode<TKey, TData> : IGadNode<TKey, TData>
     where TKey : IEquatable<TKey>
 {
-    public TKey Key { get; }
-    public TData Data { get; }
-    public ISet<TKey> Children => _children;
     private readonly HashSet<TKey> _children;
 
     public GadNode(TKey key, TData data, params IEnumerable<TKey> children)
@@ -14,6 +11,10 @@ public class GadNode<TKey, TData> : IGadNode<TKey, TData>
         Data = data;
         _children = new HashSet<TKey>(children);
     }
+
+    public TKey Key { get; }
+    public TData Data { get; }
+    public ISet<TKey> Children => _children;
 
     public void AddChild(TKey childKey)
     {

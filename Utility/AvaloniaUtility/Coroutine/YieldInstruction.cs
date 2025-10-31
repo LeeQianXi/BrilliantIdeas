@@ -2,13 +2,16 @@ namespace AvaloniaUtility;
 
 public abstract record YieldInstruction
 {
-    internal virtual Task Execute(CancellationToken token) => Task.CompletedTask;
+    internal virtual Task Execute(CancellationToken token)
+    {
+        return Task.CompletedTask;
+    }
 }
 
 public sealed record WaitForSeconds : YieldInstruction
 {
-    private readonly TimeSpan _timeSpan;
     private readonly TimeProvider _timeProvider;
+    private readonly TimeSpan _timeSpan;
 
     public WaitForSeconds(int milliseconds) : this(TimeSpan.FromMilliseconds(milliseconds))
     {

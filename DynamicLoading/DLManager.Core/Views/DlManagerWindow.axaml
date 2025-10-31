@@ -13,26 +13,26 @@
     <Window.Resources>
         <DataTemplate x:Key="PluginViewInfoDataTemplate" DataType="vm:PluginViewInfo">
             <Panel>
-                <TextBlock Text="{Binding DisplayName}"/>
+                <TextBlock Text="{Binding DisplayName}" />
             </Panel>
         </DataTemplate>
     </Window.Resources>
     <Border>
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="200" MinWidth="150" MaxWidth="300"/>
+                <ColumnDefinition Width="200" MinWidth="150" MaxWidth="300" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <Border>
-                <ListBox ItemsSource="{Binding PluginViews}" 
+                <ListBox ItemsSource="{Binding PluginViews}"
                          ItemTemplate="{StaticResource PluginViewInfoDataTemplate}"
-                         SelectionChanged="PluginTitle_OnSelectionChanged"/>
+                         SelectionChanged="PluginTitle_OnSelectionChanged" />
             </Border>
-            <GridSplitter Grid.Column="1"/>
+            <GridSplitter Grid.Column="1" />
             <Border Grid.Column="2">
                 <ScrollViewer Background="AliceBlue">
-                    <ContentControl Name="Container"/>
+                    <ContentControl Name="Container" />
                 </ScrollViewer>
             </Border>
         </Grid>

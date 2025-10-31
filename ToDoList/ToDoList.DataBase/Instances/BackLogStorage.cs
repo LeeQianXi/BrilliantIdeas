@@ -5,11 +5,10 @@ namespace ToDoList.DataBase.Instances;
 public class BackLogStorage(IServiceProvider serviceProvider)
     : BaseStorage<BackLog>(nameof(ToDoList)), IBackLogStorage
 {
-    public IServiceProvider ServiceProvider { get; } = serviceProvider;
-    public ILogger Logger { get; } = serviceProvider.GetRequiredService<ILogger<BackLogStorage>>();
-
     private readonly ReaderWriterLockSlim _lock = new();
     private readonly IReferenceCache<int, BackLog> _referenceCache = new LruCache<int, BackLog>();
+    public IServiceProvider ServiceProvider { get; } = serviceProvider;
+    public ILogger Logger { get; } = serviceProvider.GetRequiredService<ILogger<BackLogStorage>>();
 
     public async Task<BackLog> CreateNewBackLogAsync(string title, string? description, BackGroup? group)
     {
@@ -65,17 +64,11 @@ public class BackLogStorage(IServiceProvider serviceProvider)
             _lock.EnterWriteLock();
             try
             {
-                foreach (var rBl in rBls)
-                {
-                    await Connection.DeleteAsync<BackLog>(rBl.PrimaryKey);
-                }
+                foreach (var rBl in rBls) await Connection.DeleteAsync<BackLog>(rBl.PrimaryKey);
             }
             finally
             {
-                foreach (var rBl in rBls)
-                {
-                    _referenceCache.Remove(rBl.PrimaryKey);
-                }
+                foreach (var rBl in rBls) _referenceCache.Remove(rBl.PrimaryKey);
 
                 _lock.ExitWriteLock();
             }
@@ -107,10 +100,7 @@ public class BackLogStorage(IServiceProvider serviceProvider)
         _lock.EnterReadLock();
         try
         {
-            if (_referenceCache.TryGetValue(taskId, out var backLog))
-            {
-                return backLog;
-            }
+            if (_referenceCache.TryGetValue(taskId, out var backLog)) return backLog;
 
             var bl = await Connection.FindAsync<BackLog>(taskId);
             if (bl is null) return BackLog.Empty;

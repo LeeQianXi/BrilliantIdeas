@@ -2,7 +2,7 @@ using AvaloniaUtility.Services;
 
 namespace ToDoList.Core;
 
-public partial class ToDoListApp : Application
+public class ToDoListApp : Application
 {
     private ILogger<ToDoListApp> Logger { get; } =
         ServiceLocator.Instance.ServiceProvider.GetRequiredService<ILogger<ToDoListApp>>();
@@ -33,9 +33,6 @@ public partial class ToDoListApp : Application
             BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
 
         // remove each entry found
-        foreach (var plugin in dataValidationPluginsToRemove)
-        {
-            BindingPlugins.DataValidators.Remove(plugin);
-        }
+        foreach (var plugin in dataValidationPluginsToRemove) BindingPlugins.DataValidators.Remove(plugin);
     }
 }

@@ -4,5 +4,5 @@ public enum PluginLifeCycle
 {
     Singleton,
     Scoped,
-    Transient,
+    Transient
 }

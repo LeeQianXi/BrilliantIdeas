@@ -1,17 +1,19 @@
+using AvaloniaUtility.utils;
+
 namespace AvaloniaUtility;
 
 public sealed class Coroutine : IDisposable
 {
-    private readonly IEnumerator<YieldInstruction?> _iter;
-    private readonly CancellationToken _token;
-    private readonly DispatcherTimer _timer;
-    private readonly Stopwatch _sw;
     private readonly CancellationTokenRegistration _ctr;
+    private readonly IEnumerator<YieldInstruction?> _iter;
+    private readonly Stopwatch _sw;
+    private readonly DispatcherTimer _timer;
+    private readonly CancellationToken _token;
     private double _accumulator;
-    private bool _waiting; // 是否正等待异步指令
     private bool _disposed;
-    public event Action? Completed;
-    public event Action<Exception?>? Faulted;
+
+    private BooleanBox _isStop = false;
+    private bool _waiting; // 是否正等待异步指令
 
     internal Coroutine(IEnumerator<YieldInstruction?> iter, CancellationToken token)
     {
@@ -28,6 +30,19 @@ public sealed class Coroutine : IDisposable
         _ctr = _token.Register(Dispose);
     }
 
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+        _timer.Stop();
+        _timer.Tick -= OnTick;
+        _iter.Dispose();
+        _ctr.Dispose();
+    }
+
+    public event Action? Completed;
+    public event Action<Exception?>? Faulted;
+
     private void OnTick(object? sender, EventArgs e)
     {
         if (_disposed || _token.IsCancellationRequested)
@@ -41,12 +56,8 @@ public sealed class Coroutine : IDisposable
         _accumulator = double.Min(_accumulator + delta, 0.25);
 
         while (!_waiting && _accumulator >= 0 && !_disposed)
-        {
             if (!ExecuteCoroutineStep())
-            {
                 return;
-            }
-        }
     }
 
     private bool ExecuteCoroutineStep()
@@ -65,11 +76,9 @@ public sealed class Coroutine : IDisposable
                 ExecuteYieldInstruction(cur);
                 return false; // 暂停执行，等待异步操作完成
             }
-            else
-            {
-                const double frameTime = 1d / 60d;
-                _accumulator -= frameTime;
-            }
+
+            const double frameTime = 1d / 60d;
+            _accumulator -= frameTime;
 
             return true;
         }
@@ -129,16 +138,28 @@ public sealed class Coroutine : IDisposable
 
     public void Stop()
     {
-        Dispose();
+        if (_isStop) return;
+        lock (_isStop)
+        {
+            if (_isStop) return;
+            _isStop = true;
+            _timer.Tick -= OnTick;
+        }
     }
 
-    public void Dispose()
+    public void Continue()
     {
-        if (_disposed) return;
-        _disposed = true;
-        _timer.Stop();
-        _timer.Tick -= OnTick;
-        _iter.Dispose();
-        _ctr.Dispose();
+        if (!_isStop) return;
+        lock (_isStop)
+        {
+            if (!_isStop) return;
+            _isStop = true;
+            _timer.Tick += OnTick;
+        }
+    }
+
+    public void Close()
+    {
+        Dispose();
     }
 }

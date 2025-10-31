@@ -1,5 +1,4 @@
 using Microsoft.Extensions.DependencyInjection;
-using TagImage.Database.Instances;
 using TagImage.Database.Manager;
 using TagImage.Database.Services;
 

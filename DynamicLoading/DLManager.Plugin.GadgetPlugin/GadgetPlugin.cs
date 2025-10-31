@@ -5,12 +5,14 @@ public class GadgetPlugin : BasePlugin
 {
     public override List<PluginViewEntry> Views { get; } =
     [
-        CreateEntry(sp => new CountdownTimerView())
+        CreateEntry(sp => new CountdownTimerView(), "倒计时器")
     ];
 
     private static PluginViewEntry CreateEntry<T>(PluginViewFactory<T> factory, string? displayName = null)
         where T : PluginView
-        => CreateEntry<T, T>(factory, displayName);
+    {
+        return CreateEntry<T, T>(factory, displayName);
+    }
 
     private static PluginViewEntry CreateEntry<TR, T>(PluginViewFactory<T> factory, string? displayName = null)
         where TR : PluginView

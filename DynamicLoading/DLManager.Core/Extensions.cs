@@ -30,7 +30,6 @@ public static class Extensions
 
             var plugins = Directory.GetFiles(pluginPath, "*.dll");
             foreach (var plugin in plugins)
-            {
                 try
                 {
                     var ass = Assembly.LoadFile(plugin);
@@ -67,7 +66,6 @@ public static class Extensions
                 catch
                 {
                 }
-            }
 
             return collection;
         }

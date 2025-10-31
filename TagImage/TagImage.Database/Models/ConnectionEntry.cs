@@ -6,10 +6,10 @@ namespace TagImage.Database.Models;
 [Table(nameof(ConnectionEntry))]
 public class ConnectionEntry : IModelBasic
 {
-    public int PrimaryKey { get; set; }
     public int ImgId { get; set; }
     public int TagId { get; set; }
     public bool IsActive { get; set; }
+    public int PrimaryKey { get; set; }
 
     public static ConnectionEntry Create(ImageEntry img, TagEntry tag)
     {

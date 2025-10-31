@@ -1,11 +1,11 @@
 namespace NetUtility.Cache;
 
-public class LruCache<TKey, TValue> : IReferenceCache<TKey, TValue>where TKey : notnull where TValue : class 
+public class LruCache<TKey, TValue> : IReferenceCache<TKey, TValue> where TKey : notnull where TValue : class
 {
     private readonly int _capacity;
-    private readonly Dictionary<TKey, LinkedListNode<LruItem>> _map;
     private readonly LinkedList<LruItem> _list;
     private readonly ReaderWriterLockSlim _lock = new();
+    private readonly Dictionary<TKey, LinkedListNode<LruItem>> _map;
 
     public LruCache(int maxCapacity = 50)
     {
@@ -14,7 +14,7 @@ public class LruCache<TKey, TValue> : IReferenceCache<TKey, TValue>where TKey : 
         _map = new Dictionary<TKey, LinkedListNode<LruItem>>(maxCapacity);
         _list = [];
     }
-    
+
     public int Count
     {
         get
@@ -131,7 +131,10 @@ public class LruCache<TKey, TValue> : IReferenceCache<TKey, TValue>where TKey : 
                 _map[key] = node;
             }
         }
-        finally { _lock.ExitWriteLock(); }
+        finally
+        {
+            _lock.ExitWriteLock();
+        }
     }
 
     public void UpdateAll(IEnumerable<(TKey, TValue)> pairs)
@@ -140,7 +143,6 @@ public class LruCache<TKey, TValue> : IReferenceCache<TKey, TValue>where TKey : 
         try
         {
             foreach (var (k, v) in pairs)
-            {
                 if (_map.TryGetValue(k, out var node))
                 {
                     node.Value = new LruItem(k, v);
@@ -152,7 +154,6 @@ public class LruCache<TKey, TValue> : IReferenceCache<TKey, TValue>where TKey : 
                     node = _list.AddLast(new LruItem(k, v));
                     _map[k] = node;
                 }
-            }
         }
         finally
         {

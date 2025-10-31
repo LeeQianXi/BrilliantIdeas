@@ -2,8 +2,18 @@ namespace DLManager.Core;
 
 public class ServiceLocator : StaticSingleton<ServiceLocator>
 {
+    private static IServiceProvider _serviceProvider = null!;
     public static string ProgramPath { get; } = Environment.CurrentDirectory;
     public static Dictionary<string, Dictionary<string, (string, Type)>> Plugins { get; } = new();
+
+    public IServiceProvider ServiceProvider
+    {
+        get => _serviceProvider;
+        set => _serviceProvider = value;
+    }
+
+    public IDlManagerView DlManagerView => ServiceProvider.GetRequiredService<IDlManagerView>();
+    public IDlManagerViewModel DlManagerViewModel => ServiceProvider.GetRequiredService<IDlManagerViewModel>();
 
     public static IEnumerable<string> GetPluginViews(string pluginId)
     {
@@ -24,16 +34,4 @@ public class ServiceLocator : StaticSingleton<ServiceLocator>
         displayName = pair.Item1;
         return pair.Item2;
     }
-
-
-    private static IServiceProvider _serviceProvider = null!;
-
-    public IServiceProvider ServiceProvider
-    {
-        get => _serviceProvider;
-        set => _serviceProvider = value;
-    }
-
-    public IDlManagerView DlManagerView => ServiceProvider.GetRequiredService<IDlManagerView>();
-    public IDlManagerViewModel DlManagerViewModel => ServiceProvider.GetRequiredService<IDlManagerViewModel>();
 }

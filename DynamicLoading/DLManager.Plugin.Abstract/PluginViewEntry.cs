@@ -1,7 +1,7 @@
 namespace DLManager.Plugin.Abstract;
 
 /// <summary>
-/// 插件View信息集合
+///     插件View信息集合
 /// </summary>
 /// <param name="ViewId">插件ViewID</param>
 /// <param name="LifeCycle">插件View生命周期</param>
@@ -21,4 +21,4 @@ public record PluginViewEntry(
     }
 }
 
-public delegate T PluginViewFactory<out T>(IServiceProvider provider)where T : PluginView;
+public delegate T PluginViewFactory<out T>(IServiceProvider provider) where T : PluginView;

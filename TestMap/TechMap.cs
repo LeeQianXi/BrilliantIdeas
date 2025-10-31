@@ -1,17 +1,13 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics.Contracts;
 using NetUtility.Graph;
-using TechNode=NetUtility.Graph.IGadNode<System.Guid, TestMap.TechMap.TechNodeData>;
+using TechNode = NetUtility.Graph.IGadNode<System.Guid, TestMap.TechMap.TechNodeData>;
 
 namespace TestMap;
 
 public partial class TechMap : IGadMap<Guid, TechMap.TechNodeData>
 {
-    public TechNode RootNode { get; }
     private readonly ConcurrentDictionary<Guid, TechNode> _map;
-    public IEnumerable<TechNode> Nodes => _map.Values;
-
-    public TechNode this[Guid key] => _map.GetValueOrDefault(key, RootNode);
 
     public TechMap()
     {
@@ -36,7 +32,7 @@ public partial class TechMap : IGadMap<Guid, TechMap.TechNodeData>
         switch (roots.Count)
         {
             case 0:
-                throw new ArgumentException($"This is a cyclic graph");
+                throw new ArgumentException("This is a cyclic graph");
             case 1:
                 RootNode = _map[roots.First()];
                 break;
@@ -46,6 +42,11 @@ public partial class TechMap : IGadMap<Guid, TechMap.TechNodeData>
                 break;
         }
     }
+
+    public IEnumerable<TechNode> Nodes => _map.Values;
+
+    public TechNode this[Guid key] => _map.GetValueOrDefault(key, RootNode);
+    public TechNode RootNode { get; }
 
     [Pure]
     private static ISet<Guid> FindRootNode(IDictionary<Guid, TechNode> map)
@@ -78,10 +79,7 @@ public partial class TechMap : IGadMap<Guid, TechMap.TechNodeData>
         if (!_map.TryGetValue(key, out var parent))
             throw new KeyNotFoundException($"Parent key {key} does not exist");
         var parents = _map.Values.AsParallel().Where(v => v.Children.Contains(key)).ToArray();
-        foreach (var gadNode in parents)
-        {
-            gadNode.Children.Remove(key);
-        }
+        foreach (var gadNode in parents) gadNode.Children.Remove(key);
     }
 
     public void RemoveNode(params IEnumerable<Guid> keys)
@@ -93,15 +91,9 @@ public partial class TechMap : IGadMap<Guid, TechMap.TechNodeData>
             .SelectMany(k => _map.Values.Where(v => v.Children.Contains(k)))
             .DistinctBy(k => k.Key)
             .ToArray();
-        foreach (var key in ksa.Where(k => _map.ContainsKey(k)))
-        {
-            _map.Remove(key, out _);
-        }
+        foreach (var key in ksa.Where(k => _map.ContainsKey(k))) _map.Remove(key, out _);
 
-        foreach (var gadNode in parents)
-        {
-            gadNode.Children.ExceptWith(ksa);
-        }
+        foreach (var gadNode in parents) gadNode.Children.ExceptWith(ksa);
     }
 
     public void AddChild(Guid parentKey, Guid childKey)

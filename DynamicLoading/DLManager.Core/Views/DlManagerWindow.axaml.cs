@@ -2,6 +2,11 @@ namespace DLManager.Core.Views;
 
 public partial class DlManagerView : ViewModelWindowBase<IDlManagerViewModel>, IStartupWindow, IDlManagerView
 {
+    public DlManagerView()
+    {
+        InitializeComponent();
+    }
+
     private LruCache<PluginViewInfo, PluginView> PluginViewCache { get; } = new(10);
 
     private void PluginTitle_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)

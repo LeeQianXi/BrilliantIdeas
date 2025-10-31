@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Utility\NetUtility\NetUtility.csproj" />
+        <ProjectReference Include="..\Utility\NetUtility\NetUtility.csproj"/>
     </ItemGroup>
 
 </Project>
