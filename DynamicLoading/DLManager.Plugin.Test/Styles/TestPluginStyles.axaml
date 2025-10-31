@@ -1,0 +1,7 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        <Style Selector="Button#Btn1">
+                <Setter Property="Background" Value="AntiqueWhite"/>
+                <Setter Property="Foreground" Value="Chocolate"/>
+        </Style>
+</Styles>

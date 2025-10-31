@@ -1,3 +1,6 @@
+using System.Reflection;
+using DLManager.Plugin.Abstract;
+
 namespace DLManager;
 
 public static class StartUp
@@ -8,7 +11,7 @@ public static class StartUp
     {
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .UseTechTreeOptions()
+            .UseDlManagerOptions()
             .Build();
 
         var services = new ServiceCollection();
@@ -22,14 +25,15 @@ public static class StartUp
             .BuildServiceProvider();
     }
 
-    private static IServiceCollection StartUpWith(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection StartUpWith(this IServiceCollection collection, IConfiguration configuration)
     {
-        return services
+        return collection
             .UseAvaloniaCore<DlManagerView>()
-            .UseDlManagerCore();
+            .UseDlManagerCore()
+            .RegisterDynamic();
     }
 
-    private static IConfigurationBuilder UseTechTreeOptions(this IConfigurationBuilder builder)
+    private static IConfigurationBuilder UseDlManagerOptions(this IConfigurationBuilder builder)
     {
         return builder
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);

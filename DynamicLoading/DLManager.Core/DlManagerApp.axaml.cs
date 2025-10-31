@@ -1,3 +1,5 @@
+using Avalonia.Markup.Xaml.Styling;
+
 namespace DLManager.Core;
 
 public partial class DlManagerApp : Application

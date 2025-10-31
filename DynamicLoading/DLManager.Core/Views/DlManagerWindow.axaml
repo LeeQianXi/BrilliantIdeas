@@ -5,11 +5,26 @@
         mc:Ignorable="d" WindowStartupLocation="CenterScreen"
         d:DesignWidth="800" d:DesignHeight="450"
         Width="800" Height="450"
+        MinWidth="400" MinHeight="200"
         x:Class="DLManager.Core.Views.DlManagerView"
         DataContext="{Binding DlManagerViewModel,Source={StaticResource ServiceLocator}}"
         Title="DlManagerWindow">
     <Border>
-        <Panel>
-        </Panel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200" MinWidth="150" MaxWidth="300"/>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Border>
+                <ListBox ItemsSource="{Binding Plugs}" SelectionChanged="PluginTitle_OnSelectionChanged"/>
+            </Border>
+            <GridSplitter Grid.Column="1"/>
+            <Border Grid.Column="2">
+                <ScrollViewer Background="AliceBlue">
+                    <StackPanel Name="Container" HorizontalAlignment="Stretch"/>
+                </ScrollViewer>
+            </Border>
+        </Grid>
     </Border>
 </Window>
