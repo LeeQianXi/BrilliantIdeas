@@ -118,24 +118,28 @@ public partial class CommandLineParser
             return new CommandLineParser(this);
         }
 
-        public CommandLineParserBuilder AddSwitchArgument(string argName)
+        public CommandLineParserBuilder AddSwitchArgument(string argName, string? description = null)
         {
+            description ??= string.Empty;
             if (!ArgNameRegex.IsMatch(argName))
                 throw new ArgumentException($"Invalid argument name: {argName}");
             SwitchArgs.Add($"-{argName}");
             return this;
         }
 
-        public CommandLineParserBuilder AddOptionalArguments(string argName, string defaultValue)
+        public CommandLineParserBuilder AddOptionalArguments(string argName, string defaultValue,
+            string? description = null)
         {
+            description ??= string.Empty;
             if (!ArgNameRegex.IsMatch(argName))
                 throw new ArgumentException($"Invalid argument name: {argName}");
             OptionalArgs[$"--{argName}"] = defaultValue;
             return this;
         }
 
-        public CommandLineParserBuilder AddRequiredArguments(string argName)
+        public CommandLineParserBuilder AddRequiredArguments(string argName, string? description = null)
         {
+            description ??= string.Empty;
             if (!ArgNameRegex.IsMatch(argName))
                 throw new ArgumentException($"Invalid argument name: {argName}");
             RequiredParam.Add($"--{argName}");
