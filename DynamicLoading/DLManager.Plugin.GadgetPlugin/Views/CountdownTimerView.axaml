@@ -3,10 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="DLManager.Plugin.Test.Views.TestView">
-    <UserControl.Styles>
-        <StyleInclude Source="avares://DLManager.Plugin.Test/Styles/TestPluginStyles.axaml"/>
-    </UserControl.Styles>
+             x:Class="DLManager.Plugin.GadgetPlugin.Views.CountdownTimerView">
     <Grid RowDefinitions="100,200" ColumnDefinitions="*,Auto,*" RowSpacing="10" ColumnSpacing="10">
         <Button Name="Btn1" Grid.Row="0" Grid.Column="1" Content="01"/>
         <Button Grid.Row="1" Grid.Column="1" Content="01"/>

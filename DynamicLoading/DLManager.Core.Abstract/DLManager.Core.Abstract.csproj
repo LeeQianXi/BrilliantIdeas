@@ -28,7 +28,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="..\DLManager.Plugin.Test\bin\Debug\net9.0\DLManager.Plugin.Test.dll">
+      <Content Include="..\DLManager.Plugin.GadgetPlugin\bin\Debug\net9.0\DLManager.Plugin.GadgetPlugin.dll">
         <Link>Plugins\DLManager.Plugin.Test.dll</Link>
       </Content>
     </ItemGroup>

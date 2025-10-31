@@ -45,7 +45,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DLManager.Core.Abstract", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DLManager.Plugin.Abstract", "DynamicLoading\DLManager.Plugin.Abstract\DLManager.Plugin.Abstract.csproj", "{DFFF420C-9E7B-40B6-849A-1561621779D0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DLManager.Plugin.Test", "DynamicLoading\DLManager.Plugin.Test\DLManager.Plugin.Test.csproj", "{3399E0C3-5659-45D9-95B4-F6007F548898}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DLManager.Plugin.GadgetPlugin", "DynamicLoading\DLManager.Plugin.GadgetPlugin\DLManager.Plugin.GadgetPlugin.csproj", "{3399E0C3-5659-45D9-95B4-F6007F548898}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

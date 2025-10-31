@@ -1,6 +1,3 @@
-using System.Reflection;
-using DLManager.Plugin.Abstract;
-
 namespace DLManager.Core;
 
 public static class Extensions
@@ -42,8 +39,29 @@ public static class Extensions
                                  .Where(t => t.IsAssignableTo(typeof(BasePlugin)))
                                  .Where(t => !t.IsAbstract))
                     {
-                        ServiceLocator.Plugins.Add(type.GetCustomAttribute<DynamicLoadingAttribute>()!.PluginId, type);
-                        collection.AddSingleton(type);
+                        var pluginId = type.GetCustomAttribute<DynamicLoadingAttribute>()!.PluginId;
+                        var pluginInstance = (BasePlugin)Activator.CreateInstance(type)!;
+                        foreach (var entry in pluginInstance.Views)
+                        {
+                            switch (entry.LifeCycle)
+                            {
+                                case PluginLifeCycle.Singleton:
+                                    collection.AddSingleton(entry.ViewType, sp => entry.Factory.Invoke(sp));
+                                    break;
+                                case PluginLifeCycle.Scoped:
+                                    collection.AddScoped(entry.ViewType, sp => entry.Factory.Invoke(sp));
+                                    break;
+                                case PluginLifeCycle.Transient:
+                                    collection.AddTransient(entry.ViewType, sp => entry.Factory.Invoke(sp));
+                                    break;
+                                default:
+                                    throw new ArgumentOutOfRangeException();
+                            }
+
+                            if (!ServiceLocator.Plugins.TryGetValue(pluginId, out var viewDic))
+                                ServiceLocator.Plugins[pluginId] = viewDic = new Dictionary<string, (string, Type)>();
+                            viewDic[entry.ViewId] = (entry.DisplayName, entry.ViewType);
+                        }
                     }
                 }
                 catch
