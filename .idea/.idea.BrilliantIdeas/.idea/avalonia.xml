@@ -3,6 +3,9 @@
   <component name="AvaloniaProject">
     <option name="projectPerEditor">
       <map>
+        <entry key="DynamicLoading/DLManager.Core/DlManagerApp.axaml" value="DynamicLoading/DLManager/DLManager.csproj" />
+        <entry key="DynamicLoading/DLManager.Core/TagImageApp.axaml" value="DynamicLoading/DLManager/DLManager.csproj" />
+        <entry key="DynamicLoading/DLManager.Core/Views/DlManagerWindow.axaml" value="DynamicLoading/DLManager/DLManager.csproj" />
         <entry key="TagImage/TagImage.Core.Abstract/Controls/CustomControls.axaml" value="TagImage/TagImage/TagImage.csproj" />
         <entry key="TagImage/TagImage.Core/ToDoListApp.axaml" value="TagImage/TagImage/TagImage.csproj" />
         <entry key="TagImage/TagImage.Core/Views/SplashView.axaml" value="TagImage/TagImage/TagImage.csproj" />

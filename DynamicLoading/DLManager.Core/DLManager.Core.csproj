@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\TagImage.Core.Abstract\TagImage.Core.Abstract.csproj" />
+      <ProjectReference Include="..\DLManager.Core.Abstract\DLManager.Core.Abstract.csproj" />
     </ItemGroup>
-    
+
 </Project>

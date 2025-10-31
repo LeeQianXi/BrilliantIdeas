@@ -5,14 +5,11 @@
         <LangVersion>preview</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <OutputType>Exe</OutputType>
     </PropertyGroup>
 
     <ItemGroup>
-        <AvaloniaResource Include="Assets\**" />
+      <ProjectReference Include="..\Utility\NetUtility\NetUtility.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\TagImage.Core.Abstract\TagImage.Core.Abstract.csproj" />
-    </ItemGroup>
-    
 </Project>

@@ -1,0 +1,15 @@
+global using System;
+global using System.Linq;
+global using Avalonia;
+global using Avalonia.Controls;
+global using Avalonia.Data.Core.Plugins;
+global using Avalonia.Markup.Xaml;
+global using AvaloniaUtility.Services;
+global using DLManager.Core.Abstract.Bases;
+global using DLManager.Core.Abstract.ViewModels;
+global using DLManager.Core.Abstract.Views;
+global using DLManager.Core.ViewModels;
+global using DLManager.Core.Views;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Logging;
+global using NetUtility.Singleton;

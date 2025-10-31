@@ -1,0 +1,12 @@
+global using System;
+global using System;
+global using System.Diagnostics.CodeAnalysis;
+global using System.IO;
+global using System.Text;
+global using Avalonia;
+global using Avalonia.ReactiveUI;
+global using DLManager.Core;
+global using DLManager.Core.Views;
+global using Microsoft.Extensions.Configuration;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.Logging;
