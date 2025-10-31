@@ -1,7 +1,6 @@
 global using System;
 global using System.Linq;
 global using Avalonia;
-global using Avalonia.Controls;
 global using Avalonia.Data.Core.Plugins;
 global using Avalonia.Markup.Xaml;
 global using AvaloniaUtility.Services;

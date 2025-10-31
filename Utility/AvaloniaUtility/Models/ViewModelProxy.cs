@@ -1,7 +1,3 @@
-using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
-
 namespace AvaloniaUtility.Models;
 
 public class ViewModelProxy : INotifyPropertyChanged, IDisposable
