@@ -1,12 +1,7 @@
-using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
-
 namespace AvaloniaUtility.Models;
 
 public class ViewModelProxy : INotifyPropertyChanged, IDisposable
 {
-    public object Source { get; }
     private readonly Dictionary<string, PropertyInfo> _props;
 
     public ViewModelProxy(object source)
@@ -16,16 +11,15 @@ public class ViewModelProxy : INotifyPropertyChanged, IDisposable
             .Where(p => p is { CanRead: true, CanWrite: true }).ToDictionary(p => p.Name, p => p);
     }
 
+    public object Source { get; }
+
     #region 万能属性
 
     public object? this[string propName]
     {
         get
         {
-            if (_props.TryGetValue(propName, out var pi))
-            {
-                return pi.GetValue(Source);
-            }
+            if (_props.TryGetValue(propName, out var pi)) return pi.GetValue(Source);
 
             return Source.GetType().GetProperty(propName) is { CanRead: true } rp
                 ? rp.GetValue(Source)
@@ -52,6 +46,19 @@ public class ViewModelProxy : INotifyPropertyChanged, IDisposable
 
     #endregion
 
+    public void Dispose()
+    {
+        // TODO 在此释放托管资源
+        PropertyChanged = null;
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
     #region 强类型快捷方式
 
     public TValue? GetValue<TValue>([CallerMemberName] string? propName = null)
@@ -67,17 +74,4 @@ public class ViewModelProxy : INotifyPropertyChanged, IDisposable
     }
 
     #endregion
-
-    public void Dispose()
-    {
-        // TODO 在此释放托管资源
-        PropertyChanged = null;
-    }
-
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
 }

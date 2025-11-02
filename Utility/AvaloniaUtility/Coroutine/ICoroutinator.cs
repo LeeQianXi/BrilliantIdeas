@@ -1,4 +1,5 @@
 namespace AvaloniaUtility;
+
 public interface ICoroutinator
 {
     CancellationTokenSource CancellationTokenSource { get; }

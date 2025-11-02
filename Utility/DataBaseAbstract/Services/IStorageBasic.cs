@@ -2,6 +2,12 @@ namespace DataBaseAbstract.Services;
 
 public interface IStorageBasic<TData> where TData : IModelBasic, new()
 {
+    #region Transaction
+
+    public Task BeginTransactionAsync(Action<SQLiteConnection> action);
+
+    #endregion
+
     #region Create
 
     //插入一条新数据
@@ -57,12 +63,6 @@ public interface IStorageBasic<TData> where TData : IModelBasic, new()
     Task DeleteDataAsync(params IEnumerable<int> keys);
     Task DeleteDataAsync(Predicate<TData> predicate);
     Task ClearTableAsync();
-
-    #endregion
-
-    #region Transaction
-
-    public Task BeginTransactionAsync(Action<SQLiteConnection> action);
 
     #endregion
 }

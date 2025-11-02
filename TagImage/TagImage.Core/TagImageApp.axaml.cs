@@ -1,6 +1,6 @@
 namespace TagImage.Core;
 
-public partial class TagImageApp : Application
+public class TagImageApp : Application
 {
     private ILogger<TagImageApp> Logger { get; } =
         ServiceLocator.Instance.ServiceProvider.GetRequiredService<ILogger<TagImageApp>>();
@@ -31,9 +31,6 @@ public partial class TagImageApp : Application
             BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
 
         // remove each entry found
-        foreach (var plugin in dataValidationPluginsToRemove)
-        {
-            BindingPlugins.DataValidators.Remove(plugin);
-        }
+        foreach (var plugin in dataValidationPluginsToRemove) BindingPlugins.DataValidators.Remove(plugin);
     }
 }

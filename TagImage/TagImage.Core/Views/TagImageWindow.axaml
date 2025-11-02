@@ -9,6 +9,6 @@
         x:Class="TagImage.Core.Views.TagImageWindow"
         Title="TagImageWindow">
     <Panel>
-        <ContentControl Content="{Binding SplashView, Source={StaticResource ServiceLocator}}"/>
+        <ContentControl Content="{Binding SplashView, Source={StaticResource ServiceLocator}}" />
     </Panel>
 </Window>

@@ -1,12 +1,10 @@
-using ToDoList.Core;
-using ToDoList.Core.Views;
-using ToDoList.DataBase;
-
 namespace ToDoList;
 
 public static class StartUp
 {
-    [field: MaybeNull, AllowNull] public static IServiceProvider ServiceProvider => field ??= CreateServiceProvider();
+    [field: MaybeNull]
+    [field: AllowNull]
+    public static IServiceProvider ServiceProvider => field ??= CreateServiceProvider();
 
     private static ServiceProvider CreateServiceProvider()
     {
@@ -34,6 +32,6 @@ public static class StartUp
     private static IConfigurationBuilder UseTechTreeOptions(this IConfigurationBuilder builder)
     {
         return builder
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+            .AddJsonFile("appsettings.json", false, true);
     }
 }

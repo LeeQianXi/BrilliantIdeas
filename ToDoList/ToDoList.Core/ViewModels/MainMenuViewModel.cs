@@ -1,17 +1,12 @@
-using ToDoList.Core.Abstract.Bases;
-using ToDoList.Core.Abstract.ViewModels;
-using ToDoList.DataBase.Models;
-
 namespace ToDoList.Core.ViewModels;
 
 internal class MainMenuViewModel(IServiceProvider serviceProvider, ILogger<MainMenuViewModel> logger)
     : ViewModelBase, IMainMenuViewModel
 {
-    public override IServiceProvider ServiceProvider { get; } = serviceProvider;
-    public override ILogger Logger { get; } = logger;
-
     private readonly List<BackGroup> _backGroups = [];
     private readonly List<BackLog> _backLogs = [];
+    public override IServiceProvider ServiceProvider { get; } = serviceProvider;
+    public override ILogger Logger { get; } = logger;
     public IEnumerable<BackGroup> InitWithGroups => _backGroups;
     public IEnumerable<BackLog> InitWithTasks => _backLogs;
 
@@ -27,6 +22,5 @@ internal class MainMenuViewModel(IServiceProvider serviceProvider, ILogger<MainM
 
     public async Task ApplyInitWith()
     {
-        
     }
 }

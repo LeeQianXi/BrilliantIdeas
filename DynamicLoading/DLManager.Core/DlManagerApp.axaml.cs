@@ -1,6 +1,6 @@
 namespace DLManager.Core;
 
-public partial class DlManagerApp : Application
+public class DlManagerApp : Application
 {
     private ILogger<DlManagerApp> Logger { get; } =
         ServiceLocator.Instance.ServiceProvider.GetRequiredService<ILogger<DlManagerApp>>();
@@ -31,9 +31,6 @@ public partial class DlManagerApp : Application
             BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
 
         // remove each entry found
-        foreach (var plugin in dataValidationPluginsToRemove)
-        {
-            BindingPlugins.DataValidators.Remove(plugin);
-        }
+        foreach (var plugin in dataValidationPluginsToRemove) BindingPlugins.DataValidators.Remove(plugin);
     }
 }

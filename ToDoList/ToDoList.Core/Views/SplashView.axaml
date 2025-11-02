@@ -8,8 +8,8 @@
              Loaded="Splash_Loaded">
     <Grid RowDefinitions="*,Auto,*" ColumnDefinitions="*,Auto,*">
         <Grid Grid.Row="1" Grid.Column="1" RowDefinitions="Auto,Auto">
-            <ProgressBar Name="PbPro" Theme="{DynamicResource ProgressRing}" Width="100" Height="100"/>
-            <TextBlock Grid.Row="1" Name="TbInfo" Text="StartLoad" HorizontalAlignment="Center"/>
+            <ProgressBar Name="PbPro" Theme="{DynamicResource ProgressRing}" Width="100" Height="100" />
+            <TextBlock Grid.Row="1" Name="TbInfo" Text="StartLoad" HorizontalAlignment="Center" />
         </Grid>
     </Grid>
 </UserControl>

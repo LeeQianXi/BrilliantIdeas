@@ -9,34 +9,34 @@
              DataContext="{Binding MainMenuViewModel,Source={StaticResource ServiceLocator}}">
     <UserControl.Styles>
         <Style Selector="ComboBox#CbFilter">
-            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center" />
         </Style>
         <Style Selector="ScrollViewer#SvContainer">
-            <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
-            <Setter Property="HorizontalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
+            <Setter Property="HorizontalScrollBarVisibility" Value="Disabled" />
         </Style>
         <Style Selector="ItemsControl#ListDisplay">
             <Setter Property="ItemsPanel">
                 <ItemsPanelTemplate>
-                    <VirtualizingStackPanel Orientation="Vertical"/>
+                    <VirtualizingStackPanel Orientation="Vertical" />
                 </ItemsPanelTemplate>
             </Setter>
         </Style>
     </UserControl.Styles>
     <Grid RowDefinitions="50,*,25" Background="LightSkyBlue">
-        <Grid ColumnDefinitions="Auto,*,Auto">
-        </Grid>
+        <Grid ColumnDefinitions="Auto,*,Auto" />
         <Border Grid.Row="1" Margin="4" CornerRadius="10" Padding="5,5" Background="AliceBlue">
             <ScrollViewer Name="SvContainer" Theme="{DynamicResource StaticScrollViewer}">
                 <ItemsControl Name="ListDisplay">
-                    <controls:BackLogViewItem Status="Default" Description="ABCDEFGHIJJKS DAd asd ad"/>
-                    <controls:BackLogViewItem Status="InProgress" Description="ABCDEFGHIJJKS DAd asd adABCDEFGHIJJKS DAd asd adABCDE"/>
-                    <controls:BackLogViewItem Status="Completed"/>
-                    <controls:BackLogViewItem Status="Failed"/>
-                    <controls:BackLogViewItem Status="InProgress"/>
+                    <controls:BackLogViewItem Status="Default" Description="ABCDEFGHIJJKS DAd asd ad" />
+                    <controls:BackLogViewItem Status="InProgress"
+                                              Description="ABCDEFGHIJJKS DAd asd adABCDEFGHIJJKS DAd asd adABCDE" />
+                    <controls:BackLogViewItem Status="Completed" />
+                    <controls:BackLogViewItem Status="Failed" />
+                    <controls:BackLogViewItem Status="InProgress" />
                 </ItemsControl>
             </ScrollViewer>
         </Border>
-        <StackPanel Grid.Row="2"/>
+        <StackPanel Grid.Row="2" />
     </Grid>
 </UserControl>

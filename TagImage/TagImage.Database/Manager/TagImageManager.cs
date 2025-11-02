@@ -1,23 +1,15 @@
-using System.Diagnostics.Contracts;
-using TagImage.Database.Instances;
-using TagImage.Database.Models;
-using TagImage.Database.Services;
-
 namespace TagImage.Database.Manager;
 
 public sealed class TagImageManager : ITagImageManager
 {
+    private readonly ConnectionStorage _connectionStorage = new();
     private readonly ImageStorage _imageStorage = new();
     private readonly TagStorage _tagStorage = new();
-    private readonly ConnectionStorage _connectionStorage = new();
 
     public async Task<IEnumerable<TagEntry>> GetAllTagsAsync()
     {
         IEnumerable<TagEntry> tags = [];
-        await foreach (var item in _tagStorage.SelectDatasAsync(static _ => true))
-        {
-            tags = tags.Concat(item);
-        }
+        await foreach (var item in _tagStorage.SelectDatasAsync(static _ => true)) tags = tags.Concat(item);
 
         return tags;
     }
@@ -25,10 +17,7 @@ public sealed class TagImageManager : ITagImageManager
     public async Task<IEnumerable<ImageEntry>> GetAllImagesAsync()
     {
         IEnumerable<ImageEntry> tags = [];
-        await foreach (var item in _imageStorage.SelectDatasAsync(static _ => true))
-        {
-            tags = tags.Concat(item);
-        }
+        await foreach (var item in _imageStorage.SelectDatasAsync(static _ => true)) tags = tags.Concat(item);
 
         return tags;
     }
@@ -38,10 +27,7 @@ public sealed class TagImageManager : ITagImageManager
         Validate(imageEntry);
         IEnumerable<ConnectionEntry> tags = [];
         var pk = imageEntry.PrimaryKey;
-        await foreach (var item in _connectionStorage.SelectDatasAsync(ce => ce.ImgId == pk))
-        {
-            tags = tags.Concat(item);
-        }
+        await foreach (var item in _connectionStorage.SelectDatasAsync(ce => ce.ImgId == pk)) tags = tags.Concat(item);
 
         IEnumerable<TagEntry> tes = [];
         await _tagStorage.BeginTransactionAsync(con =>
@@ -60,10 +46,7 @@ public sealed class TagImageManager : ITagImageManager
         Validate(tagEntry);
         IEnumerable<ConnectionEntry> tags = [];
         var pk = tagEntry.PrimaryKey;
-        await foreach (var item in _connectionStorage.SelectDatasAsync(ce => ce.TagId == pk))
-        {
-            tags = tags.Concat(item);
-        }
+        await foreach (var item in _connectionStorage.SelectDatasAsync(ce => ce.TagId == pk)) tags = tags.Concat(item);
 
         IEnumerable<ImageEntry> ies = [];
         await _tagStorage.BeginTransactionAsync(con =>
@@ -86,12 +69,13 @@ public sealed class TagImageManager : ITagImageManager
     {
         Validate(imageEntry);
     }
-    
+
     private static void Validate(ImageEntry imageEntry)
     {
         if (!imageEntry.IsEnabled)
             throw new ArgumentException("this ImageEntry is not enabled");
     }
+
     private static void Validate(TagEntry tagEntry)
     {
         if (!tagEntry.IsEnabled)

@@ -2,12 +2,14 @@ namespace TagImage.Core.Views;
 
 public partial class SplashView : ViewModelUserControlBase<ISplashViewModel>, ISplashView, ICoroutinator
 {
+    private Coroutine? _coroutine;
+
     public SplashView()
     {
         InitializeComponent();
     }
 
-    private Coroutine? _coroutine;
+    public CancellationTokenSource CancellationTokenSource { get; } = new();
 
     private void Splash_Loaded(object? sender, RoutedEventArgs e)
     {
@@ -15,6 +17,7 @@ public partial class SplashView : ViewModelUserControlBase<ISplashViewModel>, IS
         _coroutine.Completed += SplashCompleted;
         _coroutine.Completed += ViewModel!.SplashCompleted;
     }
+
     private void SplashCompleted()
     {
         var animation = new Animation
@@ -40,12 +43,11 @@ public partial class SplashView : ViewModelUserControlBase<ISplashViewModel>, IS
         };
         animation.RunAsync(this).ContinueWith(_ => Dispatcher.UIThread.Post(() => IsVisible = false));
     }
-    public CancellationTokenSource CancellationTokenSource { get; } = new();
 
     private IEnumerator<YieldInstruction?> LoadDataAsync()
     {
         var step = (PbPro.Maximum - PbPro.Minimum) / 100d;
-        while (PbPro.Value<PbPro.Maximum)
+        while (PbPro.Value < PbPro.Maximum)
         {
             PbPro.Value += step;
             yield return null;

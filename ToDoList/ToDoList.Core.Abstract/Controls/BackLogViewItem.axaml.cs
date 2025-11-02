@@ -1,11 +1,9 @@
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
-using Avalonia.Input;
 using Avalonia.Interactivity;
 using PropertyGenerator.Avalonia;
-using TaskStatus=ToDoList.DataBase.Models.TaskStatus;
+using TaskStatus = ToDoList.DataBase.Models.TaskStatus;
 
 namespace ToDoList.Core.Abstract.Controls;
 
@@ -14,55 +12,26 @@ namespace ToDoList.Core.Abstract.Controls;
 [TemplatePart(Name = "PART_Select", Type = typeof(ListBox))]
 public partial class BackLogViewItem : TemplatedControl
 {
-    #region Controls
+    public static readonly DirectProperty<BackLogViewItem, int> GroupIdProperty =
+        AvaloniaProperty.RegisterDirect<BackLogViewItem, int>(nameof(GroupId),
+            static o => o.GroupId);
 
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        base.OnApplyTemplate(e);
-        _tag = e.NameScope.Get<Label>("PART_Tag");
-        _title = e.NameScope.Get<TextBox>("PART_Title");
-        _title.LostFocus += OnTitleLostFocus;
-        _select= e.NameScope.Get<ListBox>("PART_Select");
-        _select.SelectionChanged += OnSelectionChanged;
-        OnStatusPropertyChanged(Status);
-    }
+    private BackGroup? _group;
 
-    private Label? _tag;
-    private TextBox? _title;
-    private ListBox? _select;
+    private int _groupId;
 
-    private void OnEditTitleClicked(object? sender, RoutedEventArgs e)
-    {
-        _title!.IsReadOnly = false;
-        _title.Focus();
-    }
+    [GeneratedStyledProperty("Default")] public partial string Title { get; set; }
 
-    private void OnTitleLostFocus(object? sender, RoutedEventArgs e)
-    {
-        if (string.IsNullOrWhiteSpace(_title!.Text))
-        {
-            _title!.Text = "默认认任务";
-        }
+    [GeneratedStyledProperty("")] public partial string Description { get; set; }
 
-        _title!.IsReadOnly = true;
-    }
-
-    private void OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
-    {
-        var lb = sender as ListBox;
-        Status = (TaskStatus)lb!.SelectedIndex;
-    }
-
-    #endregion
-
-    [GeneratedStyledProperty(defaultValue: "Default")]
-    public partial string Title { get; set; }
-
-    [GeneratedStyledProperty(defaultValue: "")]
-    public partial string Description { get; set; }
-
-    [GeneratedStyledProperty(defaultValue: TaskStatus.Default)]
+    [GeneratedStyledProperty(TaskStatus.Default)]
     public partial TaskStatus Status { get; set; }
+
+    public int GroupId
+    {
+        get => _groupId;
+        set => SetAndRaise(GroupIdProperty, ref _groupId, value);
+    }
 
     partial void OnStatusPropertyChanged(TaskStatus newValue)
     {
@@ -82,16 +51,41 @@ public partial class BackLogViewItem : TemplatedControl
         _select!.SelectedIndex = (int)newValue;
     }
 
-    public static readonly DirectProperty<BackLogViewItem, int> GroupIdProperty =
-        AvaloniaProperty.RegisterDirect<BackLogViewItem, int>(nameof(GroupId),
-            getter: static o => o.GroupId);
+    #region Controls
 
-    private int _groupId;
-    private BackGroup? _group;
-
-    public int GroupId
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
-        get => _groupId;
-        set => SetAndRaise(GroupIdProperty, ref _groupId, value);
+        base.OnApplyTemplate(e);
+        _tag = e.NameScope.Get<Label>("PART_Tag");
+        _title = e.NameScope.Get<TextBox>("PART_Title");
+        _title.LostFocus += OnTitleLostFocus;
+        _select = e.NameScope.Get<ListBox>("PART_Select");
+        _select.SelectionChanged += OnSelectionChanged;
+        OnStatusPropertyChanged(Status);
     }
+
+    private Label? _tag;
+    private TextBox? _title;
+    private ListBox? _select;
+
+    private void OnEditTitleClicked(object? sender, RoutedEventArgs e)
+    {
+        _title!.IsReadOnly = false;
+        _title.Focus();
+    }
+
+    private void OnTitleLostFocus(object? sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(_title!.Text)) _title!.Text = "默认认任务";
+
+        _title!.IsReadOnly = true;
+    }
+
+    private void OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        var lb = sender as ListBox;
+        Status = (TaskStatus)lb!.SelectedIndex;
+    }
+
+    #endregion
 }

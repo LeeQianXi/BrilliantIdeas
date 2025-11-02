@@ -1,22 +1,15 @@
-using Avalonia.Animation;
-using Avalonia.Animation.Easings;
-using Avalonia.Interactivity;
-using Avalonia.Styling;
-using Avalonia.Threading;
-using AvaloniaUtility;
-using AvaloniaUtility.Views;
-using ToDoList.Core.Abstract.ViewModels;
-
 namespace ToDoList.Core.Views;
 
 public partial class SplashView : ViewModelUserControlBase<ISplashViewModel>, ICoroutinator
 {
+    private Coroutine? _coroutine;
+
     public SplashView()
     {
         InitializeComponent();
     }
 
-    private Coroutine? _coroutine;
+    public CancellationTokenSource CancellationTokenSource { get; } = new();
 
     private void Splash_Loaded(object? sender, RoutedEventArgs e)
     {
@@ -61,23 +54,15 @@ public partial class SplashView : ViewModelUserControlBase<ISplashViewModel>, IC
 
         TbInfo.Text = "Loading Groups...";
         var iter = ViewModel!.LoadGroupInfo();
-        while (!iter.MoveNext())
-        {
-            yield return iter.Current;
-        }
+        while (!iter.MoveNext()) yield return iter.Current;
 
         TbInfo.Text = "Loading Tasks...";
         iter = ViewModel!.LoadTaskInfo();
-        while (!iter.MoveNext())
-        {
-            yield return iter.Current;
-        }
+        while (!iter.MoveNext()) yield return iter.Current;
 
         PbPro.ShowProgressText = false;
         PbPro.Classes.Add("Success");
         TbInfo.Text = "Loading Complete";
         yield return new WaitForTask(ViewModel!.ApplyInitWith());
     }
-
-    public CancellationTokenSource CancellationTokenSource { get; } = new();
 }

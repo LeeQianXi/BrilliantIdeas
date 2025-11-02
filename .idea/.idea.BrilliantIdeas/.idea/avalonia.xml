@@ -3,13 +3,20 @@
   <component name="AvaloniaProject">
     <option name="projectPerEditor">
       <map>
+        <entry key="DynamicLoading/DLManager.Core.Abstract/Styles/ThemeStyles.axaml" value="DynamicLoading/DLManager/DLManager.csproj" />
         <entry key="DynamicLoading/DLManager.Core/DlManagerApp.axaml" value="DynamicLoading/DLManager/DLManager.csproj" />
         <entry key="DynamicLoading/DLManager.Core/TagImageApp.axaml" value="DynamicLoading/DLManager/DLManager.csproj" />
         <entry key="DynamicLoading/DLManager.Core/Views/DlManagerWindow.axaml" value="DynamicLoading/DLManager/DLManager.csproj" />
+        <entry key="DynamicLoading/DLManager.Core/Views/a.axaml" value="DynamicLoading/DLManager/DLManager.csproj" />
+        <entry key="DynamicLoading/DLManager.Plugin.GadgetPlugin/Views/CountdownTimerView.axaml" value="DynamicLoading/DLManager/DLManager.csproj" />
+        <entry key="DynamicLoading/DLManager.Plugin.Test/Styles/TestPluginStyles.axaml" value="DynamicLoading/DLManager/DLManager.csproj" />
         <entry key="TagImage/TagImage.Core.Abstract/Controls/CustomControls.axaml" value="TagImage/TagImage/TagImage.csproj" />
         <entry key="TagImage/TagImage.Core/ToDoListApp.axaml" value="TagImage/TagImage/TagImage.csproj" />
         <entry key="TagImage/TagImage.Core/Views/SplashView.axaml" value="TagImage/TagImage/TagImage.csproj" />
         <entry key="TagImage/TagImage.Core/Views/TagImageWindow.axaml" value="TagImage/TagImage/TagImage.csproj" />
+        <entry key="ToDoList/ToDoList.Core.Abstract/Controls/BackLogViewItem.axaml" value="ToDoList/ToDoList/ToDoList.csproj" />
+        <entry key="ToDoList/ToDoList.Core/ToDoListApp.axaml" value="ToDoList/ToDoList/ToDoList.csproj" />
+        <entry key="ToDoList/ToDoList.Core/Views/MainMenuView.axaml" value="ToDoList/ToDoList/ToDoList.csproj" />
         <entry key="ToDoList/ToDoList.Core/Views/SplashView.axaml" value="ToDoList/ToDoList/ToDoList.csproj" />
         <entry key="ToDoList/ToDoList.Core/Views/ToDoListWindow.axaml" value="ToDoList/ToDoList/ToDoList.csproj" />
       </map>

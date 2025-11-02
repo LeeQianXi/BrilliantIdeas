@@ -7,15 +7,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="11.3.7" />
-        <PackageReference Include="PropertyGenerator.Avalonia" Version="1.2.4" />
+        <PackageReference Include="Avalonia" Version="11.3.7"/>
+        <PackageReference Include="PropertyGenerator.Avalonia" Version="1.2.4"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Converters\" />
+        <Folder Include="Converters\"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\DIAbstract\DIAbstract.csproj" />
+        <ProjectReference Include="..\DIAbstract\DIAbstract.csproj"/>
     </ItemGroup>
 </Project>

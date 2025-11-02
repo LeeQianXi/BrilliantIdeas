@@ -1,18 +1,12 @@
-using AvaloniaUtility;
-using ToDoList.Core.Abstract.Bases;
-using ToDoList.Core.Abstract.ViewModels;
-using ToDoList.Core.Abstract.Views;
-using ToDoList.DataBase.Services;
-
 namespace ToDoList.Core.ViewModels;
 
 internal class SplashViewModel(IServiceProvider serviceProvider) : ViewModelBase, ISplashViewModel
 {
+    private readonly IBackGroupStorage _backGroupStorage = serviceProvider.GetRequiredService<IBackGroupStorage>();
+    private readonly IBackLogStorage _backLogStorage = serviceProvider.GetRequiredService<IBackLogStorage>();
+    private readonly IMainMenuViewModel _mainMenuViewModel = serviceProvider.GetRequiredService<IMainMenuViewModel>();
     public override IServiceProvider ServiceProvider { get; } = serviceProvider;
     public override ILogger Logger { get; } = serviceProvider.GetRequiredService<ILogger<SplashViewModel>>();
-    private readonly IBackLogStorage _backLogStorage = serviceProvider.GetRequiredService<IBackLogStorage>();
-    private readonly IBackGroupStorage _backGroupStorage = serviceProvider.GetRequiredService<IBackGroupStorage>();
-    private readonly IMainMenuViewModel _mainMenuViewModel = serviceProvider.GetRequiredService<IMainMenuViewModel>();
 
     public void SplashCompleted()
     {

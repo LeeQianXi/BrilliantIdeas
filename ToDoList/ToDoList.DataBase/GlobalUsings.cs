@@ -1,3 +1,7 @@
+// global using 指令
+
+global using DataBaseAbstract.Services;
+global using NetUtility.Cache;
 global using System.Drawing;
 global using System.Drawing;
 global using DataBaseAbstract.Storage;

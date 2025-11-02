@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <LangVersion>preview</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <AvaloniaResource Include="Assets\**"/>
+        <Folder Include="Models\"/>
+        <Folder Include="Styles\"/>
+        <Folder Include="ViewModels\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\DLManager.Plugin.Abstract\DLManager.Plugin.Abstract.csproj"/>
+    </ItemGroup>
+
+</Project>

@@ -2,14 +2,39 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:DLManager.Core.Abstract.ViewModels;assembly=DLManager.Core.Abstract"
         mc:Ignorable="d" WindowStartupLocation="CenterScreen"
         d:DesignWidth="800" d:DesignHeight="450"
         Width="800" Height="450"
+        MinWidth="400" MinHeight="200"
         x:Class="DLManager.Core.Views.DlManagerView"
         DataContext="{Binding DlManagerViewModel,Source={StaticResource ServiceLocator}}"
         Title="DlManagerWindow">
+    <Window.Resources>
+        <DataTemplate x:Key="PluginViewInfoDataTemplate" DataType="vm:PluginViewInfo">
+            <Panel>
+                <TextBlock Text="{Binding DisplayName}" />
+            </Panel>
+        </DataTemplate>
+    </Window.Resources>
     <Border>
-        <Panel>
-        </Panel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200" MinWidth="150" MaxWidth="300" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Border>
+                <ListBox ItemsSource="{Binding PluginViews}"
+                         ItemTemplate="{StaticResource PluginViewInfoDataTemplate}"
+                         SelectionChanged="PluginTitle_OnSelectionChanged" />
+            </Border>
+            <GridSplitter Grid.Column="1" />
+            <Border Grid.Column="2">
+                <ScrollViewer Background="AliceBlue">
+                    <ContentControl Name="Container" />
+                </ScrollViewer>
+            </Border>
+        </Grid>
     </Border>
 </Window>

@@ -1,10 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-using AvaloniaUtility.Services;
-using ToDoList.Core.Abstract.ViewModels;
-using ToDoList.Core.Abstract.Views;
-using ToDoList.Core.ViewModels;
-using ToDoList.Core.Views;
-
 namespace ToDoList.Core;
 
 [SuppressMessage("Performance", "CA1822:将成员标记为 static")]

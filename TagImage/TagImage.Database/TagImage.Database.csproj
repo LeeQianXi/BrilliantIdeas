@@ -8,8 +8,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Utility\DIAbstract\DIAbstract.csproj" />
-        <ProjectReference Include="..\..\Utility\DataBaseAbstract\DataBaseAbstract.csproj" />
+        <ProjectReference Include="..\..\Utility\DIAbstract\DIAbstract.csproj"/>
+        <ProjectReference Include="..\..\Utility\DataBaseAbstract\DataBaseAbstract.csproj"/>
     </ItemGroup>
 
 </Project>

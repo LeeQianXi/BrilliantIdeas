@@ -1,46 +1,19 @@
-using NetUtility.Cache;
-
 namespace ToDoList.DataBase.Instances;
 
 public class BackGroupStorage : BaseStorage<BackGroup>, IBackGroupStorage
 {
-    public IServiceProvider ServiceProvider { get; }
-    public ILogger Logger { get; }
     private readonly ReaderWriterLockSlim _lock = new();
     private readonly IReferenceCache<int, BackGroup> _referenceCache = new LruCache<int, BackGroup>();
 
-    public BackGroupStorage(IServiceProvider serviceProvider):base(nameof(ToDoList))
+    public BackGroupStorage(IServiceProvider serviceProvider) : base(nameof(ToDoList))
     {
         ServiceProvider = serviceProvider;
         Logger = serviceProvider.GetRequiredService<ILogger<BackGroupStorage>>();
         Initializing();
     }
 
-    private void Initializing()
-    {
-        _lock.EnterWriteLock();
-        try
-        {
-            var bgs = Connection.Table<BackGroup>().ToListAsync().Result;
-            var dBg = bgs.Find(bg => string.Equals(bg.GroupName, BackGroup.Default.GroupName));
-            if (dBg is null)
-            {
-                var nBi = Connection.InsertAsync(BackGroup.Default).Result;
-                BackGroup.Default.PrimaryKey = nBi;
-                bgs.Add(BackGroup.Default);
-            }
-            else
-            {
-                BackGroup.Default.PrimaryKey = dBg.PrimaryKey;
-            }
-
-            _referenceCache.UpdateAll(bgs.Select(bg => (bg.PrimaryKey, bg)));
-        }
-        finally
-        {
-            _lock.ExitWriteLock();
-        }
-    }
+    public IServiceProvider ServiceProvider { get; }
+    public ILogger Logger { get; }
 
     public async Task<BackGroup> CreateNewGroupAsync(string groupName, string color)
     {
@@ -52,7 +25,7 @@ public class BackGroupStorage : BaseStorage<BackGroup>, IBackGroupStorage
             _lock.EnterWriteLock();
             try
             {
-                cb=BackGroup.CreateNew(groupName, color);
+                cb = BackGroup.CreateNew(groupName, color);
                 var id = await Connection.InsertAsync(cb);
                 cb.PrimaryKey = id;
                 _referenceCache.Update(id, cb);
@@ -222,9 +195,39 @@ public class BackGroupStorage : BaseStorage<BackGroup>, IBackGroupStorage
         }
     }
 
-    public Task<bool> ChangeGroupColorAsync(int groupId, Color newColor) =>
-        ChangeGroupColorAsync(groupId, newColor.ToArgb());
+    public Task<bool> ChangeGroupColorAsync(int groupId, Color newColor)
+    {
+        return ChangeGroupColorAsync(groupId, newColor.ToArgb());
+    }
 
-    public Task<bool> ChangeGroupColorAsync(int groupId, string newColor) =>
-        ChangeGroupColorAsync(groupId, newColor.StringColorToArgbInt());
+    public Task<bool> ChangeGroupColorAsync(int groupId, string newColor)
+    {
+        return ChangeGroupColorAsync(groupId, newColor.StringToColor());
+    }
+
+    private void Initializing()
+    {
+        _lock.EnterWriteLock();
+        try
+        {
+            var bgs = Connection.Table<BackGroup>().ToListAsync().Result;
+            var dBg = bgs.Find(bg => string.Equals(bg.GroupName, BackGroup.Default.GroupName));
+            if (dBg is null)
+            {
+                var nBi = Connection.InsertAsync(BackGroup.Default).Result;
+                BackGroup.Default.PrimaryKey = nBi;
+                bgs.Add(BackGroup.Default);
+            }
+            else
+            {
+                BackGroup.Default.PrimaryKey = dBg.PrimaryKey;
+            }
+
+            _referenceCache.UpdateAll(bgs.Select(bg => (bg.PrimaryKey, bg)));
+        }
+        finally
+        {
+            _lock.ExitWriteLock();
+        }
+    }
 }

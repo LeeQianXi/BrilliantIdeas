@@ -8,11 +8,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <AvaloniaResource Include="Assets\**" />
+        <AvaloniaResource Include="Assets\**"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\DLManager.Core.Abstract\DLManager.Core.Abstract.csproj" />
+        <ProjectReference Include="..\DLManager.Core.Abstract\DLManager.Core.Abstract.csproj"/>
     </ItemGroup>
 
 </Project>

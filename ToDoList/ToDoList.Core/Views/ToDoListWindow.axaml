@@ -11,8 +11,8 @@
         Title="ToDoListWindow">
     <Border>
         <Grid>
-            <views:SplashView/>
-            <ContentControl Content="{Binding MainMenuView, Source={StaticResource ServiceLocator}}"/>
+            <views:SplashView />
+            <ContentControl Content="{Binding MainMenuView, Source={StaticResource ServiceLocator}}" />
         </Grid>
     </Border>
 </Window>

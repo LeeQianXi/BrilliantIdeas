@@ -1,7 +1,3 @@
-using NetUtility.Singleton;
-using ToDoList.Core.Abstract.ViewModels;
-using ToDoList.Core.Abstract.Views;
-
 namespace ToDoList.Core;
 
 public class ServiceLocator : StaticSingleton<ServiceLocator>

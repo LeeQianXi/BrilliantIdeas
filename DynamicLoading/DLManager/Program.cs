@@ -9,7 +9,7 @@ internal static class Program
         BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);
     }
-    
+
     public static AppBuilder BuildAvaloniaApp()
     {
         ServiceLocator.Instance.ServiceProvider = StartUp.ServiceProvider;
