@@ -45,9 +45,13 @@ internal sealed partial class EventBus : IEventBus, IEventExceptionHandler
     public void Register(object target)
     {
         if (_listeners.ContainsKey(target)) return;
+        if (target is Type subscribeType)
+        {
+            Register(subscribeType);
+            return;
+        }
 
-        var isStatic = target is Type;
-        var type = isStatic ? (Type)target : target.GetType();
+        var type = target.GetType();
 
         CheckSupertypes(type, type);
 
@@ -57,14 +61,11 @@ internal sealed partial class EventBus : IEventBus, IEventExceptionHandler
             if (!methodInfo.HasAttribute<SubscribeEventAttribute>())
                 continue;
 
-            if (methodInfo.IsStatic == isStatic)
+            if (!methodInfo.IsStatic)
                 RegisterListener(target, methodInfo);
             else
-                throw isStatic
-                    ? new ArgumentException(
-                        $"预期的SubscribeEventAttribute方法{methodInfo.Name}不是静态的,因为Register方法是由类Type对象调用的，要么将该方法设置为静态，要么使用{type.Name}的实例调用Register().")
-                    : new ArgumentException(
-                        $"预期的SubscribeEventAttribute方法{methodInfo.Name}是静态的,因为Register方法是由类实例对象调用的，要么将该方法设置为非静态，要么使用{type.Name}的Type对象调用Register().");
+                throw new ArgumentException(
+                    $"预期的SubscribeEventAttribute方法{methodInfo.Name}是静态的,因为Register方法是由类实例对象调用的，要么将该方法设置为非静态，要么使用{type.Name}的Type对象调用Register().");
 
             ++foundMethods;
         }
@@ -74,9 +75,28 @@ internal sealed partial class EventBus : IEventBus, IEventExceptionHandler
                 $"{type.Name}没有SubscribeEventAttribute方法，但Register仍被调用。\n事件总线仅识别具有SubscribeEventAttribute特性的侦听器方法。");
     }
 
-    public void Register(Type target)
+    public void Register(Type type)
     {
-        throw new NotImplementedException();
+        CheckSupertypes(type, type);
+
+        var foundMethods = 0;
+        foreach (var methodInfo in type.GetDeclaredMethods())
+        {
+            if (!methodInfo.HasAttribute<SubscribeEventAttribute>())
+                continue;
+
+            if (methodInfo.IsStatic)
+                RegisterListener(type, methodInfo);
+            else
+                throw new ArgumentException(
+                    $"预期的SubscribeEventAttribute方法{methodInfo.Name}不是静态的,因为Register方法是由类Type对象调用的，要么将该方法设置为静态，要么使用{type.Name}的实例调用Register().");
+
+            ++foundMethods;
+        }
+
+        if (foundMethods is 0)
+            throw new ArgumentException(
+                $"{type.Name}没有SubscribeEventAttribute方法，但Register仍被调用。\n事件总线仅识别具有SubscribeEventAttribute特性的侦听器方法。");
     }
 
     public void AddListener<T>(Action<T> listener) where T : Event
@@ -128,12 +148,20 @@ internal sealed partial class EventBus : IEventBus, IEventExceptionHandler
 
     public T PostEventNow<T>(T @event) where T : Event
     {
-        throw new NotImplementedException();
+        if (_shutdown)
+            return @event;
+        DoPostChecks(@event);
+        return PostEventNow(@event, GetListenerList(typeof(T)).GetListeners());
     }
 
     public T PostEventNow<T>(EventPriority phase, T @event) where T : Event
     {
-        throw new NotImplementedException();
+        if (!_allowPerPhasePost)
+            throw new ArgumentException("该事件总线不允许呼叫阶段限定的事件分派.");
+        if (_shutdown)
+            return @event;
+        DoPostChecks(@event);
+        return PostEventNow(@event, GetListenerList(typeof(T)).GetPhaseListeners(phase));
     }
 
     public void Start()
@@ -189,10 +217,10 @@ internal sealed partial class EventBus : IEventBus, IEventExceptionHandler
         Register(eventType, target, methodInfo);
     }
 
-    private static Predicate<T> PassNotGenericFilter<T>(bool receiveCanceled) where T : Event
+    private static Predicate<T>? PassNotGenericFilter<T>(bool receiveCanceled) where T : Event
     {
         // The cast is safe because the filter is removed if the event is not cancellable
-        return receiveCanceled ? null : e => !((ICancellableEvent)e).IsCanceled();
+        return receiveCanceled ? null : e => !((ICancellableEvent)e).IsCanceled;
     }
 
     private void AddListener<T>(EventPriority property, Predicate<T>? filter, Action<T> consumer) where T : Event
@@ -229,15 +257,24 @@ internal sealed partial class EventBus : IEventBus, IEventExceptionHandler
 
     private ListenerList GetListenerList(Type eventType)
     {
-        if (!_listenerLists.TryGetValue(eventType, out var list))
-            list = null;
+        var list = _listenerLists.GetValueOrDefault(eventType);
         if (list is not null) return list;
         if (!eventType.BaseType!.IsAbstract)
-            return _listenerLists.GetOrAdd(eventType,
-                type => new ListenerList(type, GetListenerList(eventType.BaseType), _allowPerPhasePost));
         {
-            ValidateAbstractChain(eventType.BaseType);
-            return _listenerLists.GetOrAdd(eventType, type => new ListenerList(type, _allowPerPhasePost));
+            return _listenerLists.GetOrAdd(eventType, ValueFactory1);
+
+            ListenerList ValueFactory1(Type type)
+            {
+                return new ListenerList(type, GetListenerList(eventType.BaseType), _allowPerPhasePost);
+            }
+        }
+
+        ValidateAbstractChain(eventType.BaseType);
+        return _listenerLists.GetOrAdd(eventType, ValueFactory2);
+
+        ListenerList ValueFactory2(Type type)
+        {
+            return new ListenerList(type, _allowPerPhasePost);
         }
     }
 
@@ -266,6 +303,11 @@ internal sealed partial class EventBus : IEventBus, IEventExceptionHandler
     }
 
     private T PostEvent<T>(T @event, IEventListener[] listeners) where T : Event
+    {
+        return PostEventNow(@event, listeners);
+    }
+
+    private T PostEventNow<T>(T @event, IEventListener[] listeners) where T : Event
     {
         var index = 0;
         try

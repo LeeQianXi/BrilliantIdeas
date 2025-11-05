@@ -1,286 +1,305 @@
-﻿// ReSharper disable MemberCanBePrivate.Global
-
-#pragma warning disable CS8600 // 将 null 字面量或可能为 null 的值转换为非 null 类型。
-#pragma warning disable CS8603 // 可能返回 null 引用。
+﻿using System.Diagnostics.Contracts;
+using NetUtility.Cache;
 
 namespace NetUtility;
 
+[SuppressMessage("Performance", "CA1822:将成员标记为 static")]
 public static partial class Extension
 {
     private const BindingFlags DeclaredFlags = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance |
                                                BindingFlags.Static | BindingFlags.DeclaredOnly;
 
-    public static Type[] EmptyTypes = [];
+    public static readonly Type[] EmptyTypes = [];
 
-    public static PropertyInfo GetDeclaredProperty(this Type type, string propertyName)
+    extension(Type type)
     {
-        var props = GetDeclaredProperties(type);
-
-        return props.FirstOrDefault(t => t.Name == propertyName);
-    }
-
-    public static MethodInfo GetDeclaredMethod(this Type type, string methodName)
-    {
-        var methods = GetDeclaredMethods(type);
-
-        return methods.FirstOrDefault(t => t.Name == methodName);
-    }
-
-    public static ConstructorInfo GetDeclaredConstructor(this Type type, Type[] parameters)
-    {
-        var ctors = GetDeclaredConstructors(type);
-
-        foreach (var ctor in ctors)
+        [Pure]
+        public MemberInfo[] GetDeclaredMembers()
         {
-            var ctorParams = ctor.GetParameters();
-
-            if (parameters.Length != ctorParams.Length) continue;
-
-            for (var j = 0; j < ctorParams.Length; ++j)
-                // require an exact match
-                if (ctorParams[j].ParameterType != parameters[j])
-                {
-                }
-
-            return ctor;
+            return type.GetMembers(DeclaredFlags);
         }
 
-        return null;
-    }
+        [Pure]
+        public FieldInfo[] GetDeclaredFields()
+        {
+            return type.GetFields(DeclaredFlags);
+        }
 
-    public static ConstructorInfo[] GetDeclaredConstructors(this Type type)
-    {
-        return type.GetConstructors(DeclaredFlags & ~BindingFlags.Static); // LUDIQ: Exclude static constructors
-    }
+        [Pure]
+        public PropertyInfo[] GetDeclaredProperties()
+        {
+            return type.GetProperties(DeclaredFlags);
+        }
 
-    public static MemberInfo[] GetFlattenedMember(this Type type, string memberName)
-    {
-        var result = new List<MemberInfo>();
+        [Pure]
+        public MethodInfo[] GetDeclaredMethods()
+        {
+            return type.GetMethods(DeclaredFlags);
+        }
 
-        while (type != null)
+        [Pure]
+        public ConstructorInfo[] GetDeclaredConstructors()
+        {
+            return type.GetConstructors(DeclaredFlags & ~BindingFlags.Static); // LUDIQ: Exclude static constructors
+        }
+
+        [Pure]
+        public MemberInfo? GetDeclaredMember(string memberName)
         {
             var members = GetDeclaredMembers(type);
-
-            result.AddRange(members.Where(t => t.Name == memberName));
-
-            type = type.Resolve().BaseType;
+            return members.FirstOrDefault(t => t.Name == memberName);
         }
 
-        return result.ToArray();
-    }
+        [Pure]
+        public MemberInfo? GetDeclaredField(string fieldName)
+        {
+            var fields = GetDeclaredFields(type);
+            return fields.FirstOrDefault(t => t.Name == fieldName);
+        }
 
-    public static MethodInfo GetFlattenedMethod(this Type type, string methodName)
-    {
-        while (type != null)
+        [Pure]
+        public PropertyInfo? GetDeclaredProperty(string propertyName)
+        {
+            var props = GetDeclaredProperties(type);
+            return props.FirstOrDefault(t => t.Name == propertyName);
+        }
+
+        [Pure]
+        public MethodInfo? GetDeclaredMethod(string methodName)
         {
             var methods = GetDeclaredMethods(type);
-
-            foreach (var t in methods)
-                if (t.Name == methodName)
-                    return t;
-
-            type = type.Resolve().BaseType;
+            return methods.FirstOrDefault(t => t.Name == methodName);
         }
 
-        return null;
-    }
-
-    public static IEnumerable<MethodInfo> GetFlattenedMethods(this Type type, string methodName)
-    {
-        while (type != null)
+        [Pure]
+        public ConstructorInfo? GetDeclaredConstructor(Type[] parameters)
         {
-            var methods = GetDeclaredMethods(type);
+            foreach (var ctor in GetDeclaredConstructors(type))
+                if (ExactMatch(ctor))
+                    return ctor;
+            return null;
 
-            foreach (var t in methods)
-                if (t.Name == methodName)
-                    yield return t;
-
-            type = type.Resolve().BaseType;
+            bool ExactMatch(ConstructorInfo ctor)
+            {
+                var @params = ctor.GetParameters();
+                if (@params.Length != parameters.Length)
+                    return false;
+                return !@params.Where((t, i) => t.ParameterType != parameters[i]).Any();
+            }
         }
     }
 
-    public static PropertyInfo GetFlattenedProperty(this Type type, string propertyName)
+    extension(Type type)
     {
-        while (type != null)
+        [Pure]
+        public MemberInfo[] GetFlattenedMember(string memberName)
         {
-            var properties = GetDeclaredProperties(type);
+            var result = new List<MemberInfo>();
+            var cur = type;
+            while (cur != null)
+            {
+                var members = GetDeclaredMembers(cur);
 
-            foreach (var t in properties)
-                if (t.Name == propertyName)
-                    return t;
+                result.AddRange(members.Where(t => t.Name == memberName));
 
-            type = type.Resolve().BaseType;
+                cur = cur.Resolve().BaseType;
+            }
+
+            return result.ToArray();
         }
 
-        return null;
+        [Pure]
+        public IEnumerable<MethodInfo> GetFlattenedMethods(string methodName)
+        {
+            var cur = type;
+            while (cur != null)
+            {
+                var methods = GetDeclaredMethods(cur);
+
+                foreach (var t in methods)
+                    if (t.Name == methodName)
+                        yield return t;
+
+                cur = cur.Resolve().BaseType;
+            }
+        }
+
+        [Pure]
+        public MethodInfo? GetFlattenedMethod(string methodName)
+        {
+            var cur = type;
+            while (cur != null)
+            {
+                var methods = GetDeclaredMethods(cur);
+                foreach (var t in methods)
+                    if (t.Name == methodName)
+                        return t;
+                cur = cur.Resolve().BaseType;
+            }
+
+            return null;
+        }
+
+        [Pure]
+        public PropertyInfo? GetFlattenedProperty(string propertyName)
+        {
+            var cur = type;
+            while (cur != null)
+            {
+                var properties = GetDeclaredProperties(cur);
+                foreach (var t in properties)
+                    if (t.Name == propertyName)
+                        return t;
+                cur = cur.Resolve().BaseType;
+            }
+
+            return null;
+        }
+
+        [Pure]
+        public MemberInfo AsMemberInfo()
+        {
+            return type;
+        }
+
+        [Pure]
+        public Type Resolve()
+        {
+            return type;
+        }
     }
 
-    public static MemberInfo GetDeclaredMember(this Type type, string memberName)
+    extension(MemberInfo member)
     {
-        var members = GetDeclaredMembers(type);
+        [Pure]
+        public bool IsType()
+        {
+            return member is Type;
+        }
 
-        return members.FirstOrDefault(t => t.Name == memberName);
+        [Pure]
+        public Type AsType()
+        {
+            return (Type)member;
+        }
     }
 
-    public static MethodInfo[] GetDeclaredMethods(this Type type)
-    {
-        return type.GetMethods(DeclaredFlags);
-    }
-
-    public static PropertyInfo[] GetDeclaredProperties(this Type type)
-    {
-        return type.GetProperties(DeclaredFlags);
-    }
-
-    public static FieldInfo[] GetDeclaredFields(this Type type)
-    {
-        return type.GetFields(DeclaredFlags);
-    }
-
-    public static MemberInfo[] GetDeclaredMembers(this Type type)
-    {
-        return type.GetMembers(DeclaredFlags);
-    }
-
-    public static MemberInfo AsMemberInfo(this Type type)
-    {
-        return type;
-    }
-
-    public static bool IsType(this MemberInfo member)
-    {
-        return member is Type;
-    }
-
-    public static Type AsType(this MemberInfo member)
-    {
-        return (Type)member;
-    }
-
-    public static Type Resolve(this Type type)
-    {
-        return type;
-    }
 
     #region Attribute Queries
 
-    /// <summary>
-    ///     Returns true if the given attribute is defined on the given element.
-    /// </summary>
-    public static bool HasAttribute<TAttribute>(this MemberInfo element)
+    private record AttributeQuery
     {
-        return HasAttribute(element, typeof(TAttribute));
-    }
+        public required MemberInfo MemberInfo { get; init; }
+        public required Type AttributeType { get; init; }
 
-    /// <summary>
-    ///     Returns true if the given attribute is defined on the given element.
-    /// </summary>
-    public static bool HasAttribute<TAttribute>(this MemberInfo element, bool shouldCache)
-    {
-        return HasAttribute(element, typeof(TAttribute), shouldCache);
-    }
-
-    /// <summary>
-    ///     Returns true if the given attribute is defined on the given element.
-    /// </summary>
-    public static bool HasAttribute(this MemberInfo element, Type attributeType)
-    {
-        return HasAttribute(element, attributeType, true);
-    }
-
-    /// <summary>
-    ///     Returns true if the given attribute is defined on the given element.
-    /// </summary>
-    public static bool HasAttribute(this MemberInfo element, Type attributeType, bool shouldCache)
-    {
-        // LAZLO / LUDIQ FIX
-        // Inheritance on property overrides. MemberInfo.IsDefined ignores the inherited parameter.
-        // https://stackoverflow.com/questions/2520035
-        return Attribute.IsDefined(element, attributeType, true);
-        //return element.IsDefined(attributeType, true);
-    }
-
-    /// <summary>
-    ///     Fetches the given attribute from the given MemberInfo. This method
-    ///     applies caching and is allocation free (after caching has been
-    ///     performed).
-    /// </summary>
-    /// <param name="element">
-    ///     The MemberInfo the get the attribute from.
-    /// </param>
-    /// <param name="attributeType">The type of attribute to fetch.</param>
-    /// <param name="shouldCache"></param>
-    /// <returns>The attribute or null.</returns>
-    public static Attribute GetAttribute(this MemberInfo element, Type attributeType, bool shouldCache)
-    {
-        var query = new AttributeQuery
+        public virtual bool Equals(AttributeQuery? other)
         {
-            MemberInfo = element,
-            AttributeType = attributeType
-        };
-
-        if (_cachedAttributeQueries.TryGetValue(query, out var attribute)) return attribute;
-        // LAZLO / LUDIQ FIX
-        // Inheritance on property overrides. MemberInfo.IsDefined ignores the inherited parameter
-        //var attributes = element.GetCustomAttributes(attributeType, /*inherit:*/ true).ToArray();
-        var attributes = Attribute.GetCustomAttributes(element, attributeType, true);
-
-        if (attributes.Length > 0) attribute = attributes[0];
-
-        if (shouldCache) _cachedAttributeQueries[query] = attribute;
-
-        return attribute;
-    }
-
-    /// <summary>
-    ///     Fetches the given attribute from the given MemberInfo.
-    /// </summary>
-    /// <typeparam name="TAttribute">
-    ///     The type of attribute to fetch.
-    /// </typeparam>
-    /// <param name="element">
-    ///     The MemberInfo to get the attribute from.
-    /// </param>
-    /// <param name="shouldCache">
-    ///     Should this computation be cached? If this is the only time it will
-    ///     ever be done, don't bother caching.
-    /// </param>
-    /// <returns>The attribute or null.</returns>
-    public static TAttribute GetAttribute<TAttribute>(this MemberInfo element, bool shouldCache)
-        where TAttribute : Attribute
-    {
-        return (TAttribute)GetAttribute(element, typeof(TAttribute), shouldCache);
-    }
-
-    public static TAttribute GetAttribute<TAttribute>(this MemberInfo element)
-        where TAttribute : Attribute
-    {
-        return GetAttribute<TAttribute>(element, /*shouldCache:*/ true);
-    }
-
-    private struct AttributeQuery
-    {
-        public MemberInfo MemberInfo;
-        public Type AttributeType;
-    }
-
-    private static readonly IDictionary<AttributeQuery, Attribute> _cachedAttributeQueries =
-        new Dictionary<AttributeQuery, Attribute>(new AttributeQueryComparator());
-
-    private class AttributeQueryComparator : IEqualityComparer<AttributeQuery>
-    {
-        public bool Equals(AttributeQuery x, AttributeQuery y)
-        {
-            return
-                x.MemberInfo == y.MemberInfo &&
-                x.AttributeType == y.AttributeType;
+            return other is not null && MemberInfo == other.MemberInfo && AttributeType == other.AttributeType;
         }
 
-        public int GetHashCode(AttributeQuery obj)
+        public override int GetHashCode()
         {
             return
-                obj.MemberInfo.GetHashCode() +
-                17 * obj.AttributeType.GetHashCode();
+                MemberInfo.GetHashCode() +
+                17 * AttributeType.GetHashCode();
+        }
+    }
+
+    private static readonly IReferenceCache<AttributeQuery, Attribute> CachedAttributeQueries =
+        new LruCache<AttributeQuery, Attribute>();
+
+    extension(MemberInfo element)
+    {
+        /// <summary>
+        ///     Returns true if the given attribute is defined on the given element.
+        /// </summary>
+        [Pure]
+        public bool HasAttribute<TAttribute>()
+        {
+            return HasAttribute(element, typeof(TAttribute));
+        }
+
+        /// <summary>
+        ///     Returns true if the given attribute is defined on the given element.
+        /// </summary>
+        [Pure]
+        public bool HasAttribute<TAttribute>(bool shouldCache)
+        {
+            return HasAttribute(element, typeof(TAttribute), shouldCache);
+        }
+
+        /// <summary>
+        ///     Returns true if the given attribute is defined on the given element.
+        /// </summary>
+        [Pure]
+        public bool HasAttribute(Type attributeType)
+        {
+            return HasAttribute(element, attributeType, true);
+        }
+
+        /// <summary>
+        ///     Returns true if the given attribute is defined on the given element.
+        /// </summary>
+        [Pure]
+        public bool HasAttribute(Type attributeType, bool shouldCache)
+        {
+            // LAZLO / LUDIQ FIX
+            // Inheritance on property overrides. MemberInfo.IsDefined ignores the inherited parameter.
+            // https://stackoverflow.com/questions/2520035
+            return Attribute.IsDefined(element, attributeType, true);
+            //return element.IsDefined(attributeType, true);
+        }
+
+        /// <summary>
+        ///     Fetches the given attribute from the given MemberInfo. This method
+        ///     applies caching and is allocation free (after caching has been
+        ///     performed).
+        /// </summary>
+        /// <param name="attributeType">The type of attribute to fetch.</param>
+        /// <param name="shouldCache"></param>
+        /// <returns>The attribute or null.</returns>
+        [Pure]
+        public Attribute? GetAttribute(Type attributeType, bool shouldCache)
+        {
+            var query = new AttributeQuery
+            {
+                MemberInfo = element,
+                AttributeType = attributeType
+            };
+            if (CachedAttributeQueries.TryGetValue(query, out var attribute)) return attribute;
+            // LAZLO / LUDIQ FIX
+            // Inheritance on property overrides. MemberInfo.IsDefined ignores the inherited parameter
+            //var attributes = element.GetCustomAttributes(attributeType, /*inherit:*/ true).ToArray();
+            var attributes = Attribute.GetCustomAttributes(element, attributeType, true);
+            attribute = attributes.FirstOrDefault();
+            if (attribute is null) return null;
+            if (shouldCache) CachedAttributeQueries.Update(query, attribute);
+            return attribute;
+        }
+
+        /// <summary>
+        ///     Fetches the given attribute from the given MemberInfo.
+        /// </summary>
+        /// <typeparam name="TAttribute">
+        ///     The type of attribute to fetch.
+        /// </typeparam>
+        /// <param name="shouldCache">
+        ///     Should this computation be cached? If this is the only time it will
+        ///     ever be done, don't bother caching.
+        /// </param>
+        /// <returns>The attribute or null.</returns>
+        [Pure]
+        public TAttribute? GetAttribute<TAttribute>(bool shouldCache)
+            where TAttribute : Attribute
+        {
+            return (TAttribute?)GetAttribute(element, typeof(TAttribute), shouldCache);
+        }
+
+        [Pure]
+        public TAttribute? GetAttribute<TAttribute>()
+            where TAttribute : Attribute
+        {
+            return GetAttribute<TAttribute>(element, true);
         }
     }
 

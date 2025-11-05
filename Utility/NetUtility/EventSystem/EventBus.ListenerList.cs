@@ -118,9 +118,7 @@ internal sealed partial class EventBus
                 var phaseListeners = GetListeners(phase);
                 UnwrapListeners(phaseListeners);
                 all.AddRange(phaseListeners);
-
-                if (perPhase is not null)
-                    perPhase[(int)phase] = phaseListeners.ToArray();
+                perPhase?[(int)phase] = phaseListeners.ToArray();
             }
 
             _listeners = all.ToArray();
