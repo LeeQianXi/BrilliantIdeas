@@ -1,4 +1,5 @@
 ﻿// ReSharper disable MemberCanBePrivate.Global
+
 #pragma warning disable CS8600 // 将 null 字面量或可能为 null 的值转换为非 null 类型。
 #pragma warning disable CS8603 // 可能返回 null 引用。
 

@@ -135,7 +135,7 @@ public static partial class Extension
 
     public static IEnumerable<T> Catch<T>(this IEnumerable<T> source, Action<Exception> @catch)
     {
-        if(source is null)throw new ArgumentNullException(nameof(source));
+        if (source is null) throw new ArgumentNullException(nameof(source));
 
         using var enumerator = source.GetEnumerator();
         bool success;
