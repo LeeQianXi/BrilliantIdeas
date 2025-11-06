@@ -1,5 +1,3 @@
-using NetUtility.Module;
-
 namespace NetUtility.RefPool;
 
 public static partial class ReferencePool
