@@ -1,14 +1,11 @@
 using NetUtility.Module;
 
-namespace NetUtility.Fsm;
+namespace NetUtility.HFsm;
 
-/// <summary>
-///     有限状态机管理器。
-/// </summary>
-internal sealed class FsmManager : NetUtilityModule, IFsmManager
+internal sealed class HFsmManager : NetUtilityModule, IHFsmManager
 {
-    private readonly Dictionary<TypeNamePair, FsmBase> _fsms = new();
-    private readonly List<FsmBase> _tempFsms = [];
+    private readonly Dictionary<TypeNamePair, HFsmBase> _hfsms = new();
+    private readonly List<HFsmBase> _tempFsms = [];
 
     /// <summary>
     ///     获取游戏框架模块优先级。
@@ -19,16 +16,16 @@ internal sealed class FsmManager : NetUtilityModule, IFsmManager
     /// <summary>
     ///     获取有限状态机数量。
     /// </summary>
-    public int Count => _fsms.Count;
+    public int Count => _hfsms.Count;
 
     /// <summary>
     ///     检查是否存在有限状态机。
     /// </summary>
     /// <typeparam name="T">有限状态机持有者类型。</typeparam>
     /// <returns>是否存在有限状态机。</returns>
-    public bool HasFsm<T>() where T : class
+    public bool HasHFsm<T>() where T : class
     {
-        return InternalHasFsm(new TypeNamePair(typeof(T)));
+        return InternalHasHFsm(new TypeNamePair(typeof(T)));
     }
 
     /// <summary>
@@ -36,11 +33,11 @@ internal sealed class FsmManager : NetUtilityModule, IFsmManager
     /// </summary>
     /// <param name="ownerType">有限状态机持有者类型。</param>
     /// <returns>是否存在有限状态机。</returns>
-    public bool HasFsm(Type ownerType)
+    public bool HasHFsm(Type ownerType)
     {
         return ownerType == null
             ? throw new NetUtilityException("Owner type is invalid.")
-            : InternalHasFsm(new TypeNamePair(ownerType));
+            : InternalHasHFsm(new TypeNamePair(ownerType));
     }
 
     /// <summary>
@@ -49,9 +46,9 @@ internal sealed class FsmManager : NetUtilityModule, IFsmManager
     /// <typeparam name="T">有限状态机持有者类型。</typeparam>
     /// <param name="name">有限状态机名称。</param>
     /// <returns>是否存在有限状态机。</returns>
-    public bool HasFsm<T>(string name) where T : class
+    public bool HasHFsm<T>(string name) where T : class
     {
-        return InternalHasFsm(new TypeNamePair(typeof(T), name));
+        return InternalHasHFsm(new TypeNamePair(typeof(T), name));
     }
 
     /// <summary>
@@ -60,11 +57,11 @@ internal sealed class FsmManager : NetUtilityModule, IFsmManager
     /// <param name="ownerType">有限状态机持有者类型。</param>
     /// <param name="name">有限状态机名称。</param>
     /// <returns>是否存在有限状态机。</returns>
-    public bool HasFsm(Type ownerType, string name)
+    public bool HasHFsm(Type ownerType, string name)
     {
         return ownerType == null
             ? throw new NetUtilityException("Owner type is invalid.")
-            : InternalHasFsm(new TypeNamePair(ownerType, name));
+            : InternalHasHFsm(new TypeNamePair(ownerType, name));
     }
 
     /// <summary>
@@ -72,9 +69,9 @@ internal sealed class FsmManager : NetUtilityModule, IFsmManager
     /// </summary>
     /// <typeparam name="T">有限状态机持有者类型。</typeparam>
     /// <returns>要获取的有限状态机。</returns>
-    public IFsm<T>? GetFsm<T>() where T : class
+    public IHFsm<T>? GetHFsm<T>() where T : class
     {
-        return InternalGetFsm(new TypeNamePair(typeof(T))) as IFsm<T>;
+        return InternalGetHFsm(new TypeNamePair(typeof(T))) as IHFsm<T>;
     }
 
     /// <summary>
@@ -82,11 +79,11 @@ internal sealed class FsmManager : NetUtilityModule, IFsmManager
     /// </summary>
     /// <param name="ownerType">有限状态机持有者类型。</param>
     /// <returns>要获取的有限状态机。</returns>
-    public FsmBase? GetFsm(Type ownerType)
+    public HFsmBase? GetHFsm(Type ownerType)
     {
-        return ownerType is null
+        return ownerType == null
             ? throw new NetUtilityException("Owner type is invalid.")
-            : InternalGetFsm(new TypeNamePair(ownerType));
+            : InternalGetHFsm(new TypeNamePair(ownerType));
     }
 
     /// <summary>
@@ -95,9 +92,9 @@ internal sealed class FsmManager : NetUtilityModule, IFsmManager
     /// <typeparam name="T">有限状态机持有者类型。</typeparam>
     /// <param name="name">有限状态机名称。</param>
     /// <returns>要获取的有限状态机。</returns>
-    public IFsm<T>? GetFsm<T>(string name) where T : class
+    public IHFsm<T>? GetHFsm<T>(string name) where T : class
     {
-        return InternalGetFsm(new TypeNamePair(typeof(T), name)) as IFsm<T>;
+        return InternalGetHFsm(new TypeNamePair(typeof(T), name)) as IHFsm<T>;
     }
 
     /// <summary>
@@ -106,29 +103,29 @@ internal sealed class FsmManager : NetUtilityModule, IFsmManager
     /// <param name="ownerType">有限状态机持有者类型。</param>
     /// <param name="name">有限状态机名称。</param>
     /// <returns>要获取的有限状态机。</returns>
-    public FsmBase? GetFsm(Type ownerType, string name)
+    public HFsmBase? GetHFsm(Type ownerType, string name)
     {
         return ownerType == null
             ? throw new NetUtilityException("Owner type is invalid.")
-            : InternalGetFsm(new TypeNamePair(ownerType, name));
+            : InternalGetHFsm(new TypeNamePair(ownerType, name));
     }
 
     /// <summary>
     ///     获取所有有限状态机。
     /// </summary>
     /// <returns>所有有限状态机。</returns>
-    public FsmBase[] GetAllFsms()
+    public HFsmBase[] GetAllHFsms()
     {
-        return _fsms.Select(p => p.Value).ToArray();
+        return _hfsms.Select(p => p.Value).ToArray();
     }
 
     /// <summary>
     ///     获取所有有限状态机。
     /// </summary>
     /// <param name="results">所有有限状态机。</param>
-    public void GetAllFsms(out List<FsmBase> results)
+    public void GetAllHFsms(out List<HFsmBase> results)
     {
-        results = _fsms.Select(fsm => fsm.Value).ToList();
+        results = _hfsms.Select(p => p.Value).ToList();
     }
 
     /// <summary>
@@ -136,42 +133,11 @@ internal sealed class FsmManager : NetUtilityModule, IFsmManager
     /// </summary>
     /// <typeparam name="T">有限状态机持有者类型。</typeparam>
     /// <param name="owner">有限状态机持有者。</param>
-    /// <param name="states">有限状态机状态集合。</param>
+    /// <param name="rootState">有限状态机状态集合。</param>
     /// <returns>要创建的有限状态机。</returns>
-    public IFsm<T> CreateFsm<T>(T owner, params FsmState<T>[] states) where T : class
+    public IHFsm<T> CreateHFsm<T>(T owner, HFsmState<T> rootState) where T : class
     {
-        return CreateFsm(string.Empty, owner, states);
-    }
-
-    /// <summary>
-    ///     创建有限状态机。
-    /// </summary>
-    /// <typeparam name="T">有限状态机持有者类型。</typeparam>
-    /// <param name="name">有限状态机名称。</param>
-    /// <param name="owner">有限状态机持有者。</param>
-    /// <param name="states">有限状态机状态集合。</param>
-    /// <returns>要创建的有限状态机。</returns>
-    public IFsm<T> CreateFsm<T>(string name, T owner, params FsmState<T>[] states) where T : class
-    {
-        var typeNamePair = new TypeNamePair(typeof(T), name);
-        if (HasFsm<T>(name))
-            throw new NetUtilityException(Utility.Text.Format("Already exist FSM '{0}'.", typeNamePair));
-
-        var fsm = Fsm<T>.Create(name, owner, states);
-        _fsms.Add(typeNamePair, fsm);
-        return fsm;
-    }
-
-    /// <summary>
-    ///     创建有限状态机。
-    /// </summary>
-    /// <typeparam name="T">有限状态机持有者类型。</typeparam>
-    /// <param name="owner">有限状态机持有者。</param>
-    /// <param name="states">有限状态机状态集合。</param>
-    /// <returns>要创建的有限状态机。</returns>
-    public IFsm<T> CreateFsm<T>(T owner, List<FsmState<T>> states) where T : class
-    {
-        return CreateFsm(string.Empty, owner, states);
+        return CreateHFsm(string.Empty, owner, rootState);
     }
 
     /// <summary>
@@ -180,17 +146,17 @@ internal sealed class FsmManager : NetUtilityModule, IFsmManager
     /// <typeparam name="T">有限状态机持有者类型。</typeparam>
     /// <param name="name">有限状态机名称。</param>
     /// <param name="owner">有限状态机持有者。</param>
-    /// <param name="states">有限状态机状态集合。</param>
+    /// <param name="rootState">有限状态机状态集合。</param>
     /// <returns>要创建的有限状态机。</returns>
-    public IFsm<T> CreateFsm<T>(string name, T owner, List<FsmState<T>> states) where T : class
+    public IHFsm<T> CreateHFsm<T>(string name, T owner, HFsmState<T> rootState) where T : class
     {
         var typeNamePair = new TypeNamePair(typeof(T), name);
-        if (HasFsm<T>(name))
-            throw new NetUtilityException(Utility.Text.Format("Already exist FSM '{0}'.", typeNamePair));
+        if (HasHFsm<T>(name))
+            throw new NetUtilityException(Utility.Text.Format("Already exist HFsm '{0}'.", typeNamePair));
 
-        var fsm = Fsm<T>.Create(name, owner, states);
-        _fsms.Add(typeNamePair, fsm);
-        return fsm;
+        var hFsm = HFsm<T>.Create(name, owner, rootState);
+        _hfsms.Add(typeNamePair, hFsm);
+        return hFsm;
     }
 
     /// <summary>
@@ -198,9 +164,9 @@ internal sealed class FsmManager : NetUtilityModule, IFsmManager
     /// </summary>
     /// <typeparam name="T">有限状态机持有者类型。</typeparam>
     /// <returns>是否销毁有限状态机成功。</returns>
-    public bool DestroyFsm<T>() where T : class
+    public bool DestroyHFsm<T>() where T : class
     {
-        return InternalDestroyFsm(new TypeNamePair(typeof(T)));
+        return InternalDestroyHFsm(new TypeNamePair(typeof(T)));
     }
 
     /// <summary>
@@ -208,11 +174,11 @@ internal sealed class FsmManager : NetUtilityModule, IFsmManager
     /// </summary>
     /// <param name="ownerType">有限状态机持有者类型。</param>
     /// <returns>是否销毁有限状态机成功。</returns>
-    public bool DestroyFsm(Type ownerType)
+    public bool DestroyHFsm(Type ownerType)
     {
         return ownerType == null
             ? throw new NetUtilityException("Owner type is invalid.")
-            : InternalDestroyFsm(new TypeNamePair(ownerType));
+            : InternalDestroyHFsm(new TypeNamePair(ownerType));
     }
 
     /// <summary>
@@ -221,9 +187,9 @@ internal sealed class FsmManager : NetUtilityModule, IFsmManager
     /// <typeparam name="T">有限状态机持有者类型。</typeparam>
     /// <param name="name">要销毁的有限状态机名称。</param>
     /// <returns>是否销毁有限状态机成功。</returns>
-    public bool DestroyFsm<T>(string name) where T : class
+    public bool DestroyHFsm<T>(string name) where T : class
     {
-        return InternalDestroyFsm(new TypeNamePair(typeof(T), name));
+        return InternalDestroyHFsm(new TypeNamePair(typeof(T), name));
     }
 
     /// <summary>
@@ -232,37 +198,38 @@ internal sealed class FsmManager : NetUtilityModule, IFsmManager
     /// <param name="ownerType">有限状态机持有者类型。</param>
     /// <param name="name">要销毁的有限状态机名称。</param>
     /// <returns>是否销毁有限状态机成功。</returns>
-    public bool DestroyFsm(Type ownerType, string name)
+    public bool DestroyHFsm(Type ownerType, string name)
     {
         return ownerType == null
             ? throw new NetUtilityException("Owner type is invalid.")
-            : InternalDestroyFsm(new TypeNamePair(ownerType, name));
+            : InternalDestroyHFsm(new TypeNamePair(ownerType, name));
     }
 
     /// <summary>
     ///     销毁有限状态机。
     /// </summary>
     /// <typeparam name="T">有限状态机持有者类型。</typeparam>
-    /// <param name="fsm">要销毁的有限状态机。</param>
+    /// <param name="hFsm">要销毁的有限状态机。</param>
     /// <returns>是否销毁有限状态机成功。</returns>
-    public bool DestroyFsm<T>(IFsm<T> fsm) where T : class
+    public bool DestroyHFsm<T>(IHFsm<T> hFsm) where T : class
     {
-        return fsm == null
-            ? throw new NetUtilityException("FSM is invalid.")
-            : InternalDestroyFsm(new TypeNamePair(typeof(T), fsm.Name));
+        return hFsm == null
+            ? throw new NetUtilityException("HFsm is invalid.")
+            : InternalDestroyHFsm(new TypeNamePair(typeof(T), hFsm.Name));
     }
 
     /// <summary>
     ///     销毁有限状态机。
     /// </summary>
-    /// <param name="fsm">要销毁的有限状态机。</param>
+    /// <param name="hFsm">要销毁的有限状态机。</param>
     /// <returns>是否销毁有限状态机成功。</returns>
-    public bool DestroyFsm(FsmBase fsm)
+    public bool DestroyHFsm(HFsmBase hFsm)
     {
-        return fsm == null
-            ? throw new NetUtilityException("FSM is invalid.")
-            : InternalDestroyFsm(new TypeNamePair(fsm.OwnerType, fsm.Name));
+        return hFsm == null
+            ? throw new NetUtilityException("HFsm is invalid.")
+            : InternalDestroyHFsm(new TypeNamePair(hFsm.OwnerType, hFsm.Name));
     }
+
 
     /// <summary>
     ///     有限状态机管理器轮询。
@@ -272,10 +239,8 @@ internal sealed class FsmManager : NetUtilityModule, IFsmManager
     internal override void Update(float elapseSeconds, float realElapseSeconds)
     {
         _tempFsms.Clear();
-        if (_fsms.Count <= 0) return;
-
-        foreach (var fsm in _fsms) _tempFsms.Add(fsm.Value);
-
+        if (_hfsms.Count <= 0) return;
+        foreach (var fsm in _hfsms) _tempFsms.Add(fsm.Value);
         foreach (var fsm in _tempFsms.Where(fsm => !fsm.IsDestroyed)) fsm.Update(elapseSeconds, realElapseSeconds);
     }
 
@@ -284,26 +249,26 @@ internal sealed class FsmManager : NetUtilityModule, IFsmManager
     /// </summary>
     internal override void Shutdown()
     {
-        foreach (var fsm in _fsms) fsm.Value.Shutdown();
+        foreach (var fsm in _hfsms) fsm.Value.Shutdown();
 
-        _fsms.Clear();
+        _hfsms.Clear();
         _tempFsms.Clear();
     }
 
-    private bool InternalHasFsm(TypeNamePair typeNamePair)
+    private bool InternalHasHFsm(TypeNamePair typeNamePair)
     {
-        return _fsms.ContainsKey(typeNamePair);
+        return _hfsms.ContainsKey(typeNamePair);
     }
 
-    private FsmBase? InternalGetFsm(TypeNamePair typeNamePair)
+    private HFsmBase? InternalGetHFsm(TypeNamePair typeNamePair)
     {
-        return _fsms.GetValueOrDefault(typeNamePair);
+        return _hfsms.GetValueOrDefault(typeNamePair);
     }
 
-    private bool InternalDestroyFsm(TypeNamePair typeNamePair)
+    private bool InternalDestroyHFsm(TypeNamePair typeNamePair)
     {
-        if (!_fsms.TryGetValue(typeNamePair, out var fsm)) return false;
-        fsm.Shutdown();
-        return _fsms.Remove(typeNamePair);
+        if (!_hfsms.TryGetValue(typeNamePair, out var hFsm)) return false;
+        hFsm.Shutdown();
+        return _hfsms.Remove(typeNamePair);
     }
 }
