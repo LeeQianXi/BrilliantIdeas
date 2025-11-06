@@ -1,6 +1,6 @@
 namespace NetUtility;
 
-public static class ColorExtension
+public static partial class Extension
 {
     private static int ParseRgbShort(string str)
     {
