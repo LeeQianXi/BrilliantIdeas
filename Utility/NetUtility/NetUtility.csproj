@@ -13,9 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Fsm\"/>
         <Folder Include="HFsm\"/>
-        <Folder Include="ReferencePool\"/>
     </ItemGroup>
 
 </Project>

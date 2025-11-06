@@ -32,27 +32,27 @@ public class BackLog : IModelBasic
 public enum TaskStatus
 {
     /// <summary>
-    ///     默认状态
+    /// 默认状态
     /// </summary>
     Default,
 
     /// <summary>
-    ///     正在处理
+    /// 正在处理
     /// </summary>
     InProgress,
 
     /// <summary>
-    ///     成功完成
+    /// 成功完成
     /// </summary>
     Completed,
 
     /// <summary>
-    ///     失败
+    /// 失败
     /// </summary>
     Failed,
 
     /// <summary>
-    ///     忽略
+    /// 忽略
     /// </summary>
     Ignored
 }

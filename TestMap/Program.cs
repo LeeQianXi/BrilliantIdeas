@@ -27,7 +27,7 @@ internal static class Program
     }
 
     /// <summary>
-    ///     获取一个数的所有正因数（包括1和自身）
+    /// 获取一个数的所有正因数（包括1和自身）
     /// </summary>
     /// <param name="number">要获取因数的数字</param>
     /// <returns>所有正因数的有序集合</returns>
@@ -59,7 +59,7 @@ internal static class Program
     }
 
     /// <summary>
-    ///     获取一个数的所有因数（包括负因数）
+    /// 获取一个数的所有因数（包括负因数）
     /// </summary>
     /// <param name="number">要获取因数的数字</param>
     /// <returns>所有因数的有序集合</returns>
@@ -76,7 +76,7 @@ internal static class Program
     }
 
     /// <summary>
-    ///     获取一个数的所有真因数（不包括自身）
+    /// 获取一个数的所有真因数（不包括自身）
     /// </summary>
     /// <param name="number">要获取因数的数字</param>
     /// <returns>所有真因数的有序集合</returns>

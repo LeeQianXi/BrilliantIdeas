@@ -1,7 +1,4 @@
-﻿using System.Diagnostics.Contracts;
-using NetUtility.Cache;
-
-namespace NetUtility;
+﻿namespace NetUtility;
 
 [SuppressMessage("Performance", "CA1822:将成员标记为 static")]
 public static partial class Extension

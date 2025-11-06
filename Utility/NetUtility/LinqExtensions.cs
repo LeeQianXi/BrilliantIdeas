@@ -1,5 +1,3 @@
-using System.Diagnostics.Contracts;
-
 namespace NetUtility;
 
 public static partial class Extension
