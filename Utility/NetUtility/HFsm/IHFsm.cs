@@ -1,5 +1,3 @@
-using NetUtility.Module;
-
 namespace NetUtility.HFsm;
 
 public interface IHFsm<T> where T : class

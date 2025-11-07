@@ -15,3 +15,4 @@ global using System.Threading;
 global using System.Threading.Tasks;
 global using Avalonia.Controls;
 global using Avalonia.Threading;
+global using AvaloniaUtility.utils;

@@ -1,32 +1,28 @@
-using AvaloniaUtility.utils;
-
 namespace AvaloniaUtility;
 
 public sealed class Coroutine : IDisposable
 {
     private readonly CancellationTokenRegistration _ctr;
     private readonly IEnumerator<YieldInstruction?> _iter;
-    private readonly Stopwatch _sw;
-    private readonly DispatcherTimer _timer;
     private readonly CancellationToken _token;
-    private double _accumulator;
+
+    public readonly int CoroutineId = -1;
     private bool _disposed;
 
-    private BooleanBox _isStop = false;
+    private BooleanBox _isActive = false;
     private bool _waiting; // 是否正等待异步指令
 
-    internal Coroutine(IEnumerator<YieldInstruction?> iter, CancellationToken token)
+    internal Coroutine(IEnumerator<YieldInstruction?> iter, bool createRunning, CancellationToken token)
     {
         ArgumentNullException.ThrowIfNull(iter, nameof(iter));
+        Internal.RegisterInstance(this);
         _iter = iter;
         _token = token;
-        _sw = Stopwatch.StartNew();
-        _timer = new DispatcherTimer(DispatcherPriority.Render)
-        {
-            Interval = TimeSpan.FromMilliseconds(1)
-        };
-        _timer.Tick += OnTick;
-        _timer.Start();
+        if (createRunning)
+            Continue();
+        else
+            Stop();
+
         _ctr = _token.Register(Dispose);
     }
 
@@ -34,8 +30,6 @@ public sealed class Coroutine : IDisposable
     {
         if (_disposed) return;
         _disposed = true;
-        _timer.Stop();
-        _timer.Tick -= OnTick;
         _iter.Dispose();
         _ctr.Dispose();
     }
@@ -51,41 +45,20 @@ public sealed class Coroutine : IDisposable
             return;
         }
 
-        var delta = _sw.Elapsed.TotalSeconds;
-        _sw.Restart();
-        _accumulator = double.Min(_accumulator + delta, 0.25);
-
-        while (!_waiting && _accumulator >= 0 && !_disposed)
-            if (!ExecuteCoroutineStep())
-                return;
-    }
-
-    private bool ExecuteCoroutineStep()
-    {
         try
         {
             if (!_iter.MoveNext())
             {
                 CompleteCoroutine();
-                return false;
+                return;
             }
 
             var cur = _iter.Current;
-            if (cur is not null)
-            {
-                ExecuteYieldInstruction(cur);
-                return false; // 暂停执行，等待异步操作完成
-            }
-
-            const double frameTime = 1d / 60d;
-            _accumulator -= frameTime;
-
-            return true;
+            if (cur is not null) ExecuteYieldInstruction(cur);
         }
         catch (Exception ex)
         {
             HandleCoroutineException(ex);
-            return false;
         }
     }
 
@@ -117,10 +90,6 @@ public sealed class Coroutine : IDisposable
             var ex = task.Exception?.GetBaseException() ?? new Exception("Unknown coroutine error");
             HandleCoroutineException(ex);
         }
-        else if (!task.IsCanceled)
-        {
-            _sw.Restart();
-        }
     }
 
     private void CompleteCoroutine()
@@ -138,28 +107,87 @@ public sealed class Coroutine : IDisposable
 
     public void Stop()
     {
-        if (_isStop) return;
-        lock (_isStop)
+        if (!_isActive) return;
+        lock (_isActive)
         {
-            if (_isStop) return;
-            _isStop = true;
-            _timer.Tick -= OnTick;
+            if (!_isActive) return;
+            _isActive = false;
         }
     }
 
     public void Continue()
     {
-        if (!_isStop) return;
-        lock (_isStop)
+        if (_isActive) return;
+        lock (_isActive)
         {
-            if (!_isStop) return;
-            _isStop = true;
-            _timer.Tick += OnTick;
+            if (_isActive) return;
+            _isActive = true;
         }
     }
 
     public void Close()
     {
         Dispose();
+    }
+
+    public override int GetHashCode()
+    {
+        return CoroutineId;
+    }
+
+    private static class Internal
+    {
+        public const double FrameTime = 1d / 60d;
+        private static readonly DispatcherTimer GlobalTimer;
+        private static readonly Stopwatch Sw;
+        internal static double Accumulator;
+        private static readonly Dictionary<int, Coroutine> Instances = new();
+        private static readonly FieldInfo CoroutineIdField;
+
+        private static readonly object _sync = new();
+
+        static Internal()
+        {
+            Sw = Stopwatch.StartNew();
+            CoroutineIdField = typeof(Coroutine).GetRuntimeField(nameof(CoroutineId))!;
+            GlobalTimer = new DispatcherTimer(DispatcherPriority.Render)
+            {
+                Interval = TimeSpan.FromMilliseconds(1)
+            };
+            GlobalTimer.Tick += OnGlobalTick;
+            GlobalTimer.Start();
+        }
+
+        private static void OnGlobalTick(object? sender, EventArgs e)
+        {
+            var delta = Sw.Elapsed.TotalSeconds;
+            Sw.Restart();
+            Accumulator = double.Min(Accumulator + delta, 0.25);
+            foreach (var (k, cor) in Instances)
+            {
+                if (Accumulator < 0) break;
+                if (cor._disposed)
+                {
+                    Instances.Remove(k);
+                    continue;
+                }
+
+                if (!cor._isActive || cor._waiting) continue;
+                cor.OnTick(sender, e);
+            }
+        }
+
+        public static void RegisterInstance(Coroutine coroutine)
+        {
+            ArgumentNullException.ThrowIfNull(coroutine, nameof(coroutine));
+            lock (_sync)
+            {
+                var i = Instances.Count;
+                while (Instances.ContainsKey(i)) i++;
+
+                CoroutineIdField.SetValue(coroutine, i);
+                Instances.Add(i, coroutine);
+            }
+        }
     }
 }

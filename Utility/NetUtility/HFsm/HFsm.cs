@@ -1,5 +1,3 @@
-using NetUtility.Module;
-
 namespace NetUtility.HFsm;
 
 internal sealed class HFsm<T> : HFsmBase, IReference, IHFsm<T> where T : class
