@@ -12,7 +12,7 @@
         Title="DeadLine">
     <Panel>
         <Grid>
-            <ListBox Name="ListBox" />
+            <ListBox Name="ListBox" Grid.IsSharedSizeScope="True" />
         </Grid>
     </Panel>
 </Window>

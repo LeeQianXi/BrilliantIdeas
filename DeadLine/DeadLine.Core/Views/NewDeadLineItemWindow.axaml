@@ -9,5 +9,5 @@
         Icon="avares://DeadLine.Core/Assets/avalonia-logo.ico"
         x:Class="DeadLine.Core.Views.NewDeadLineItemWindow"
         Title="NewDeadLineItemWindow">
-    <Button Name="BtnTest" Content="Welcome to Avalonia!" Click="BtnTest_OnClick" />
+
 </Window>

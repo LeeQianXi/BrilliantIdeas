@@ -21,15 +21,18 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Background="{TemplateBinding Background}" Padding="4" CornerRadius="4">
-                    <Grid>
+                    <Grid ColumnSpacing="10" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" MinWidth="50" SharedSizeGroup="DeadLineItem_C0" />
-                            <ColumnDefinition Width="*" SharedSizeGroup="DeadLineItem_C1" />
-                            <ColumnDefinition Width="Auto" SharedSizeGroup="DeadLineItem_C2" />
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="DeadLineItem_C1" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="{TemplateBinding Title}" />
-                        <ProgressBar x:Name="PART_Progress" Grid.Column="1" Classes="Secondary"
-                                     Value="{TemplateBinding Progress}" />
+                        <Label x:Name="PART_Tag" Grid.Column="1" Content="{TemplateBinding Status}"
+                               Theme="{DynamicResource TagLabel}" />
+                        <Panel Grid.Column="2">
+                            <ProgressBar x:Name="PART_Progress" Value="{TemplateBinding Progress}" />
+                        </Panel>
                     </Grid>
                 </Border>
             </ControlTemplate>
