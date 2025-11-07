@@ -16,7 +16,8 @@ public static class Extensions
         {
             return collection
                 .AddSingleton<IDeadLineView, DeadLineWindow>()
-                .AddSingleton<IDeadLineViewModel, DeadLineViewModel>();
+                .AddSingleton<IDeadLineViewModel, DeadLineViewModel>()
+                .AddTransient<INewDeadLineItemView, NewDeadLineItemWindow>();
         }
     }
 }

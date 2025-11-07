@@ -1,3 +1,29 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="clr-namespace:DeadLine.Core.Abstract.Controls">
+    <Design.PreviewWith>
+        <c:DeadLineItem Width="400"
+                        Title="TestDeadLine">
+            <c:DeadLineItem.StartTime />
+        </c:DeadLineItem>
+    </Design.PreviewWith>
+    <Style Selector="c|DeadLineItem">
+        <Setter Property="Background" Value="Lavender" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Background="{TemplateBinding Background}" Padding="4" CornerRadius="4">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" MinWidth="50" SharedSizeGroup="DeadLineItem_C0" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="DeadLineItem_C1" />
+                            <ColumnDefinition Width="*" SharedSizeGroup="DeadLineItem_C2" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{TemplateBinding Title}" />
+                        <ProgressBar Grid.Column="1" Minimum="0" Maximum="1" Value="{TemplateBinding Progress}"
+                                     Classes="Secondary" />
+                    </Grid>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
 </Styles>

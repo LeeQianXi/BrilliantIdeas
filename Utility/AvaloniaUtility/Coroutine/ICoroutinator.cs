@@ -11,11 +11,11 @@ public static class Extensions
     extension(ICoroutinator cor)
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Coroutine StartCoroutine(Func<IEnumerator<YieldInstruction?>> routine)
+        public Coroutine StartCoroutine(Func<IEnumerator<YieldInstruction?>> routine, bool createRunning = true)
         {
             ArgumentNullException.ThrowIfNull(cor, nameof(cor));
             ArgumentNullException.ThrowIfNull(routine, nameof(routine));
-            return new Coroutine(routine.Invoke(), cor.CancellationTokenSource.Token);
+            return new Coroutine(routine.Invoke(), cor.CancellationTokenSource.Token, createRunning);
         }
     }
 }

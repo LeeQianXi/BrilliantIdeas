@@ -18,6 +18,7 @@
         </PackageReference>
         <PackageReference Include="Semi.Avalonia" Version="11.3.7"/>
         <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.6"/>
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -27,7 +28,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <AdditionalFiles Include="Controls\CustomControls.axaml"/>
+        <Folder Include="Model\"/>
     </ItemGroup>
 
 </Project>

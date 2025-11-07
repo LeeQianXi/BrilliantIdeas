@@ -12,10 +12,10 @@ public sealed class Coroutine : IDisposable
     private double _accumulator;
     private bool _disposed;
 
-    private BooleanBox _isStop = false;
+    private BooleanBox _isStop = true;
     private bool _waiting; // 是否正等待异步指令
 
-    internal Coroutine(IEnumerator<YieldInstruction?> iter, CancellationToken token)
+    internal Coroutine(IEnumerator<YieldInstruction?> iter, CancellationToken token, bool createRunning)
     {
         ArgumentNullException.ThrowIfNull(iter, nameof(iter));
         _iter = iter;
@@ -26,7 +26,11 @@ public sealed class Coroutine : IDisposable
             Interval = TimeSpan.FromMilliseconds(1)
         };
         _timer.Tick += OnTick;
-        _timer.Start();
+        if (createRunning)
+            Continue();
+        else
+            Stop();
+
         _ctr = _token.Register(Dispose);
     }
 
@@ -143,7 +147,7 @@ public sealed class Coroutine : IDisposable
         {
             if (_isStop) return;
             _isStop = true;
-            _timer.Tick -= OnTick;
+            _timer.Stop();
         }
     }
 
@@ -153,8 +157,8 @@ public sealed class Coroutine : IDisposable
         lock (_isStop)
         {
             if (!_isStop) return;
-            _isStop = true;
-            _timer.Tick += OnTick;
+            _isStop = false;
+            _timer.Start();
         }
     }
 
