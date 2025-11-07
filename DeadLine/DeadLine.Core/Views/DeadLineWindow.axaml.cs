@@ -7,7 +7,7 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
         InitializeComponent();
         ViewModel.ShowDialogInteraction.RegisterHandler(ShowDialogInteraction);
         var dlis = new List<DeadLineItem>();
-        for (var i = 0; i < 1000; i++)
+        for (var i = 0; i < 3; i++)
             dlis.Add(new DeadLineItem
             {
                 Title = "Item " + i,
