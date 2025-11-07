@@ -7,6 +7,8 @@ public sealed class Coroutine : IDisposable
     private readonly Stopwatch _sw;
     private readonly DispatcherTimer _timer;
     private readonly CancellationToken _token;
+
+    public readonly int CoroutineId = -1;
     private double _accumulator;
     private bool _disposed;
 
@@ -16,6 +18,7 @@ public sealed class Coroutine : IDisposable
     internal Coroutine(IEnumerator<YieldInstruction?> iter, bool createRunning, CancellationToken token)
     {
         ArgumentNullException.ThrowIfNull(iter, nameof(iter));
+        Internal.RegisterInstance(this);
         _iter = iter;
         _token = token;
         _sw = Stopwatch.StartNew();
@@ -163,5 +166,47 @@ public sealed class Coroutine : IDisposable
     public void Close()
     {
         Dispose();
+    }
+
+    public override int GetHashCode()
+    {
+        return CoroutineId;
+    }
+
+    private static class Internal
+    {
+        public static readonly DispatcherTimer GlobalTimer;
+        private static readonly Dictionary<int, Coroutine> _instances = new();
+        private static readonly FieldInfo CoroutineIdField;
+
+        private static readonly object _sync = new();
+
+        static Internal()
+        {
+            CoroutineIdField = typeof(Coroutine).GetRuntimeField(nameof(CoroutineId))!;
+            GlobalTimer = new DispatcherTimer(DispatcherPriority.Render)
+            {
+                Interval = TimeSpan.FromMilliseconds(1)
+            };
+            GlobalTimer.Tick += OnGlobalTick;
+            GlobalTimer.Start();
+        }
+
+        private static void OnGlobalTick(object? sender, EventArgs e)
+        {
+        }
+
+        public static void RegisterInstance(Coroutine coroutine)
+        {
+            ArgumentNullException.ThrowIfNull(coroutine, nameof(coroutine));
+            lock (_sync)
+            {
+                var i = _instances.Count;
+                while (_instances.ContainsKey(i)) i++;
+
+                CoroutineIdField.SetValue(coroutine, i);
+                _instances.Add(i, coroutine);
+            }
+        }
     }
 }
