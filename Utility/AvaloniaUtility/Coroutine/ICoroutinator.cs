@@ -15,7 +15,7 @@ public static class Extensions
         {
             ArgumentNullException.ThrowIfNull(cor, nameof(cor));
             ArgumentNullException.ThrowIfNull(routine, nameof(routine));
-            return new Coroutine(routine.Invoke(), cor.CancellationTokenSource.Token, createRunning);
+            return new Coroutine(routine.Invoke(), createRunning, cor.CancellationTokenSource.Token);
         }
     }
 }

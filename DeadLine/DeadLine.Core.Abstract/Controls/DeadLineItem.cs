@@ -36,7 +36,7 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
 
     protected override void OnUnloaded(RoutedEventArgs e)
     {
-        _coroutine.Dispose();
+        _coroutine.Stop();
         base.OnUnloaded(e);
     }
 

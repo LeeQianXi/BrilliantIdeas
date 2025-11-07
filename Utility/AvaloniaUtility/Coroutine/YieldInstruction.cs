@@ -50,9 +50,9 @@ public sealed record WaitForTask : YieldInstruction
 
 public sealed record WaitWhenCondition : YieldInstruction
 {
-    private readonly Func<CancellationToken, Task<bool>> _predicate;
     private readonly bool _condition;
     private readonly TimeSpan _pollingInterval;
+    private readonly Func<CancellationToken, Task<bool>> _predicate;
 
     public WaitWhenCondition(Func<CancellationToken, Task<bool>> predicate, bool condition = true,
         TimeSpan? pollingInterval = null)
@@ -88,16 +88,26 @@ public sealed record WaitWhenCondition : YieldInstruction
     }
 
     public static WaitWhenCondition UntilTrue(Func<bool> predicate, TimeSpan? pollingInterval = null)
-        => new(_ => Task.FromResult(predicate()), true, pollingInterval ?? TimeSpan.FromMilliseconds(50));
+    {
+        return new WaitWhenCondition(_ => Task.FromResult(predicate()), true,
+            pollingInterval ?? TimeSpan.FromMilliseconds(50));
+    }
 
     public static WaitWhenCondition UntilTrue(Func<CancellationToken, Task<bool>> predicate,
         TimeSpan? pollingInterval = null)
-        => new(predicate, true, pollingInterval ?? TimeSpan.FromMilliseconds(50));
+    {
+        return new WaitWhenCondition(predicate, true, pollingInterval ?? TimeSpan.FromMilliseconds(50));
+    }
 
     public static WaitWhenCondition UntilFalse(Func<bool> predicate, TimeSpan? pollingInterval = null)
-        => new(_ => Task.FromResult(predicate()), false, pollingInterval ?? TimeSpan.FromMilliseconds(50));
+    {
+        return new WaitWhenCondition(_ => Task.FromResult(predicate()), false,
+            pollingInterval ?? TimeSpan.FromMilliseconds(50));
+    }
 
     public static WaitWhenCondition UntilFalse(Func<CancellationToken, Task<bool>> predicate,
         TimeSpan? pollingInterval = null)
-        => new(predicate, false, pollingInterval ?? TimeSpan.FromMilliseconds(50));
+    {
+        return new WaitWhenCondition(predicate, false, pollingInterval ?? TimeSpan.FromMilliseconds(50));
+    }
 }

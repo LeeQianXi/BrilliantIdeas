@@ -1,5 +1,3 @@
-using AvaloniaUtility.utils;
-
 namespace AvaloniaUtility;
 
 public sealed class Coroutine : IDisposable
@@ -15,7 +13,7 @@ public sealed class Coroutine : IDisposable
     private BooleanBox _isStop = true;
     private bool _waiting; // 是否正等待异步指令
 
-    internal Coroutine(IEnumerator<YieldInstruction?> iter, CancellationToken token, bool createRunning)
+    internal Coroutine(IEnumerator<YieldInstruction?> iter, bool createRunning, CancellationToken token)
     {
         ArgumentNullException.ThrowIfNull(iter, nameof(iter));
         _iter = iter;
