@@ -45,13 +45,6 @@ public sealed class Coroutine : IDisposable
             return;
         }
 
-        while (!_waiting && !_disposed)
-            if (!ExecuteCoroutineStep())
-                return;
-    }
-
-    private void ExecuteCoroutineStep()
-    {
         try
         {
             if (!_iter.MoveNext())
@@ -61,19 +54,11 @@ public sealed class Coroutine : IDisposable
             }
 
             var cur = _iter.Current;
-            if (cur is not null)
-            {
-                ExecuteYieldInstruction(cur);
-                return; // 暂停执行，等待异步操作完成
-            }
-
-            Internal.Accumulator -= Internal.FrameTime;
-            return;
+            if (cur is not null) ExecuteYieldInstruction(cur);
         }
         catch (Exception ex)
         {
             HandleCoroutineException(ex);
-            return;
         }
     }
 
