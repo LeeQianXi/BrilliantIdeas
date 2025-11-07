@@ -52,9 +52,9 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
         double CalcDuring()
         {
             var now = DateTime.UtcNow;
-            if (now < StartTime) return 0;
-            if (now > EndTime) return 1;
-            return (now - StartTime) / space;
+            if (now < StartTime) return 1;
+            if (now > EndTime) return 0;
+            return (EndTime - now) / space;
         }
     }
 }

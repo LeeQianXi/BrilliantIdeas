@@ -7,11 +7,12 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
         InitializeComponent();
         ViewModel.ShowDialogInteraction.RegisterHandler(ShowDialogInteraction);
         var dlis = new List<DeadLineItem>();
-        for (var i = 0; i < 100; i++)
+        for (var i = 0; i < 1000; i++)
             dlis.Add(new DeadLineItem
             {
-                StartTime = DateTime.UtcNow.AddMinutes(-5),
-                EndTime = DateTime.UtcNow.AddMinutes(5)
+                Title = "Item " + i,
+                StartTime = DateTime.UtcNow,
+                EndTime = DateTime.UtcNow.AddMinutes(1)
             });
 
         ListBox.ItemsSource = dlis;
