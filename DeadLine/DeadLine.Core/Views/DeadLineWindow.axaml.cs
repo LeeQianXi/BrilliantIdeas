@@ -1,26 +1,48 @@
 namespace DeadLine.Core.Views;
 
-public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, IStartupWindow, IDeadLineView
+public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, IStartupWindow, IDeadLineView,
+    ICoroutinator
 {
+    private readonly Coroutine _coroutine;
+
+    private bool _isClosed;
+
     public DeadLineWindow()
     {
         InitializeComponent();
-        ViewModel.ShowDialogInteraction.RegisterHandler(ShowDialogInteraction);
-        var dlis = new List<DeadLineItem>();
-        for (var i = 0; i < 10; i++)
-            dlis.Add(new DeadLineItem
-            {
-                Title = "Item " + i,
-                StartTime = DateTime.UtcNow,
-                EndTime = DateTime.UtcNow.AddMinutes(1)
-            });
-
-        ListBox.ItemsSource = dlis;
+        _coroutine = this.StartCoroutine(TimeSpanSave);
+        this.StartCoroutine(LoadExistedDeadLineItems);
+        ViewModel!.ShowDialogInteraction.RegisterHandler(ShowDialogInteraction);
     }
 
-    private async Task ShowDialogInteraction(IInteractionContext<INewDeadLineItemView, string> arg)
+    public CancellationTokenSource CancellationTokenSource { get; } = new();
+
+    private async Task ShowDialogInteraction(IInteractionContext<INewDeadLineItemView, DeadLineItemInfo?> arg)
     {
-        var ret = await arg.Input.ShowDialog<string>(this);
-        arg.SetOutput(ret);
+        arg.SetOutput(await arg.Input.ShowDialog<DeadLineItemInfo>(this));
+    }
+
+    private IEnumerator<YieldInstruction?> LoadExistedDeadLineItems()
+    {
+        foreach (var item in ViewModel!.LoadDeadLineItems(CancellationTokenSource.Token))
+        {
+            ViewModel!.AddDeadLineItemCommand.Execute(item);
+            yield return null;
+        }
+    }
+
+    private IEnumerator<YieldInstruction?> TimeSpanSave()
+    {
+        while (!_isClosed)
+        {
+            yield return new WaitForSeconds(TimeSpan.FromSeconds(10));
+            ViewModel!.SaveDeadLineItemsCommand.Execute(null);
+        }
+    }
+
+    private void Window_OnClosing(object? sender, WindowClosingEventArgs e)
+    {
+        _isClosed = true;
+        _coroutine.Close();
     }
 }

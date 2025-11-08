@@ -153,7 +153,7 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
         Lock.EnterWriteLock();
         try
         {
-            await Connection.UpdateAsync(values);
+            await Connection.UpdateAllAsync(values);
         }
         finally
         {

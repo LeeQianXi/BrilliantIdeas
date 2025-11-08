@@ -4,6 +4,7 @@
     <option name="projectPerEditor">
       <map>
         <entry key="DeadLine/DeadLine.Core.Abstract/Controls/CustomControls.axaml" value="DeadLine/DeadLine/DeadLine.csproj" />
+        <entry key="DeadLine/DeadLine.Core/DeadLineApp.axaml" value="DeadLine/DeadLine/DeadLine.csproj" />
         <entry key="DeadLine/DeadLine.Core/Views/DeadLineWindow.axaml" value="DeadLine/DeadLine/DeadLine.csproj" />
         <entry key="DeadLine/DeadLine.Core/Views/NewDeadLineItemWindow.axaml" value="DeadLine/DeadLine/DeadLine.csproj" />
         <entry key="DynamicLoading/DLManager.Core.Abstract/Styles/ThemeStyles.axaml" value="DynamicLoading/DLManager/DLManager.csproj" />

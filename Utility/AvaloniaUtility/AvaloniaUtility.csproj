@@ -17,6 +17,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\DIAbstract\DIAbstract.csproj"/>
-        <ProjectReference Include="..\NetUtility\NetUtility.csproj" />
+        <ProjectReference Include="..\NetUtility\NetUtility.csproj"/>
     </ItemGroup>
 </Project>
