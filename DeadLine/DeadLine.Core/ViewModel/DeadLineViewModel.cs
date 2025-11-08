@@ -42,6 +42,7 @@ public partial class DeadLineViewModel(IServiceProvider serviceProvider)
     private async Task AddDeadLineItem(DeadLineItemInfo lii)
     {
         DeadLineItems.Add(lii);
+        lii.PropertyChanged += (sender, _) => { _storage.UpdateDataAsync((DeadLineItemInfo)sender!); };
         if (!_isLoaded) return;
         if (lii.PrimaryKey is -1 || await _storage.FindDataAsync(lii.PrimaryKey) is null)
             await _storage.InsertDataAsync(lii);
@@ -50,7 +51,7 @@ public partial class DeadLineViewModel(IServiceProvider serviceProvider)
     }
 
     [RelayCommand]
-    public async Task SaveDeadLineItems()
+    private async Task SaveDeadLineItems()
     {
         await _storage.UpdateDataAsync(DeadLineItems);
     }
