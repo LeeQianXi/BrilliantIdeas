@@ -1,13 +1,17 @@
+using DeadLine.DataBase.Core.Model;
+
 namespace DeadLine.Core.Abstract.Controls;
 
 [TemplatePart("PART_Progress", typeof(ProgressBar))]
 [TemplatePart("PART_Tag", typeof(Label))]
+[TemplatePart("PART_DoneWork", typeof(CheckBox))]
 public partial class DeadLineItem : TemplatedControl, ICoroutinator
 {
     public static readonly DirectProperty<DeadLineItem, double> ProgressProperty =
         AvaloniaProperty.RegisterDirect<DeadLineItem, double>(nameof(Progress), o => o.Progress);
 
     private readonly Coroutine _coroutine;
+    private CheckBox? _partDoneWork;
 
     private ProgressBar? _partProgressBar;
     private Label? _partTag;
@@ -38,10 +42,24 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
     {
         _partProgressBar = e.NameScope.Find<ProgressBar>("PART_Progress")!;
         _partTag = e.NameScope.Find<Label>("PART_Tag");
+        _partDoneWork = e.NameScope.Find<CheckBox>("PART_DoneWork");
+        _partDoneWork!.IsCheckedChanged += OnDongWorkChanged;
         OnStatusPropertyChanged(Status);
         OnProgressChanged(Progress);
     }
 
+    private void OnDongWorkChanged(object? sender, RoutedEventArgs e)
+    {
+        e.Handled = true;
+        if (_partDoneWork is null) return;
+        if (!_partDoneWork.IsChecked!.Value) return;
+        Status = DeadLineStatus.Done;
+    }
+
+    /// <summary>
+    ///     计算Progress改变,影响ProgressBar样式
+    /// </summary>
+    /// <param name="progress"></param>
     partial void OnProgressChanged(double progress);
 
     partial void OnProgressChanged(double progress)
@@ -115,11 +133,13 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
         {
             Progress = CalcDuring();
             yield return null;
-        } while (true);
+        } while (Status is not (DeadLineStatus.Done or DeadLineStatus.Failed or DeadLineStatus.TimedOut));
+
+        yield break;
 
         double CalcDuring()
         {
-            var now = DateTime.UtcNow;
+            var now = DateTime.Now;
             if (now < StartTime)
             {
                 Status = DeadLineStatus.ToDo;
@@ -138,9 +158,4 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
             return (EndTime - now) / space;
         }
     }
-}
-
-public readonly record struct DeadLineInfo(DateTime StartTime, DateTime EndTime, DeadLineStatus Status)
-{
-    public string Title { get; init; } = "新建任务";
 }

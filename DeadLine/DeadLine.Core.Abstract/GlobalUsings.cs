@@ -10,7 +10,6 @@ global using Avalonia.Interactivity;
 global using AvaloniaUtility;
 global using AvaloniaUtility.Services;
 global using CommunityToolkit.Mvvm.Input;
-global using DeadLine.Core.Abstract.Model;
 global using DeadLine.Core.Abstract.View;
 global using DIAbstract.Services;
 global using Microsoft.Extensions.Logging;

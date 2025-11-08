@@ -3,11 +3,49 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" WindowStartupLocation="CenterScreen"
-        d:DesignWidth="800" d:DesignHeight="450"
-        Width="800" Height="450"
-        MinWidth="400" MinHeight="200"
+        d:DesignWidth="420" d:DesignHeight="540"
+        Width="420" Height="540"
+        MinWidth="400" MinHeight="300"
         Icon="avares://DeadLine.Core/Assets/avalonia-logo.ico"
         x:Class="DeadLine.Core.Views.NewDeadLineItemWindow"
         Title="NewDeadLineItemWindow">
-
+    <Border>
+        <DockPanel LastChildFill="True" Background="LightCyan">
+            <Panel DockPanel.Dock="Top">
+                <TextBlock Theme="{DynamicResource TitleTextBlock}" Classes="H2" Text="新建任务" TextAlignment="Center" />
+            </Panel>
+            <Panel DockPanel.Dock="Bottom">
+                <UniformGrid Columns="2" VerticalAlignment="Center">
+                    <Button Theme="{DynamicResource SolidButton}" Classes="Large Tertiary" Margin="6"
+                            Padding="40,0" Content="取消" Click="BtnCancel_OnClick" />
+                    <Button Theme="{DynamicResource SolidButton}" Classes="Large Success" Margin="6"
+                            Padding="40,0" Content="创建" Click="BtnCreate_OnClick" />
+                </UniformGrid>
+            </Panel>
+            <Border Margin="5" CornerRadius="10" Padding="10" Background="AliceBlue">
+                <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Spacing="10">
+                        <StackPanel>
+                            <TextBlock Theme="{DynamicResource TitleTextBlock}" Text="任务标题" TextAlignment="Left" />
+                            <TextBox Name="TbTitle" Classes="ClearButton" Watermark="新建任务" />
+                        </StackPanel>
+                        <DockPanel HorizontalSpacing="10">
+                            <TextBlock DockPanel.Dock="Top"
+                                       Theme="{DynamicResource TitleTextBlock}" Text="开始日期" TextAlignment="Left" />
+                            <CalendarDatePicker Name="CdpStart" DockPanel.Dock="Left"
+                                                SelectedDateChanged="CdpStart_OnSelectedDateChanged" />
+                            <TimePicker Name="TpStart" SelectedTimeChanged="TpStart_OnSelectedTimeChanged" />
+                        </DockPanel>
+                        <DockPanel HorizontalSpacing="10">
+                            <TextBlock DockPanel.Dock="Top"
+                                       Theme="{DynamicResource TitleTextBlock}" Text="截止日期" TextAlignment="Left" />
+                            <CalendarDatePicker Name="CdpEnd" DockPanel.Dock="Left"
+                                                SelectedDateChanged="CdpEnd_OnSelectedDateChanged" />
+                            <TimePicker Name="TpEnd" SelectedTimeChanged="TpEnd_OnSelectedTimeChanged" />
+                        </DockPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </DockPanel>
+    </Border>
 </Window>

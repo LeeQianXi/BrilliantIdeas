@@ -1,4 +1,4 @@
-namespace DeadLine.Core.Abstract.Model;
+namespace DeadLine.DataBase.Core.Model;
 
 public enum DeadLineStatus
 {
