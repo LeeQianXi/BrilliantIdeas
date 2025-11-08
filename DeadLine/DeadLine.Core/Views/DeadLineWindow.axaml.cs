@@ -35,7 +35,7 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
     {
         while (!_isClosed)
         {
-            yield return new WaitForSeconds(TimeSpan.FromSeconds(10));
+            yield return new WaitForSeconds(TimeSpan.FromMinutes(5));
             ViewModel!.SaveDeadLineItemsCommand.Execute(null);
         }
     }
@@ -44,5 +44,6 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
     {
         _isClosed = true;
         _coroutine.Close();
+        ViewModel!.SaveDeadLineItemsCommand.Execute(null);
     }
 }

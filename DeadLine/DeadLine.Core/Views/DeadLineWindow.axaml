@@ -19,7 +19,7 @@
                              Title="{Binding Title}"
                              StartTime="{Binding StartTime}"
                              EndTime="{Binding EndTime}"
-                             Status="{Binding Status,UpdateSourceTrigger=PropertyChanged}" />
+                             Status="{Binding Status,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" />
         </DataTemplate>
     </Window.Resources>
     <Panel>
