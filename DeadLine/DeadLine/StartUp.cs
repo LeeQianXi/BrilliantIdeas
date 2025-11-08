@@ -1,3 +1,5 @@
+using DeadLine.DataBase.Core;
+
 namespace DeadLine;
 
 public static class StartUp
@@ -28,7 +30,8 @@ public static class StartUp
     {
         return collection
             .UseAvaloniaCore<DeadLineWindow>()
-            .UseDeadLineCore();
+            .UseDeadLineCore()
+            .UseDeadLineDataBase();
     }
 
     private static IConfigurationBuilder UseDlManagerOptions(this IConfigurationBuilder builder)

@@ -25,6 +25,7 @@
         <ProjectReference Include="..\..\Utility\DIAbstract\DIAbstract.csproj"/>
         <ProjectReference Include="..\..\Utility\AvaloniaUtility\AvaloniaUtility.csproj"/>
         <ProjectReference Include="..\..\Utility\NetUtility\NetUtility.csproj"/>
+        <ProjectReference Include="..\DeadLine.DataBase.Core\DeadLine.DataBase.Core.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
