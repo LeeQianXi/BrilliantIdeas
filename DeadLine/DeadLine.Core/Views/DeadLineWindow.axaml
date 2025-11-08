@@ -33,10 +33,11 @@
                         Content="新建任务" Command="{Binding NewDeadLineItemCommand}" />
             </Panel>
             <Border Background="AliceBlue" Margin="5" CornerRadius="10" Padding="10">
-                <ItemsControl ItemsSource="{Binding DeadLineItems}"
-                              Grid.IsSharedSizeScope="True"
-                              ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                              ItemTemplate="{StaticResource DataTemplateDeadLineItemInfo}" />
+                <ListBox ItemsSource="{Binding DeadLineItems}"
+                         Grid.IsSharedSizeScope="True"
+                         ScrollViewer.VerticalScrollBarVisibility="Visible"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         ItemTemplate="{StaticResource DataTemplateDeadLineItemInfo}" />
             </Border>
         </DockPanel>
     </Panel>

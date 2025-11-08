@@ -17,6 +17,7 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
 
     public CancellationTokenSource CancellationTokenSource { get; } = new();
 
+
     private async Task ShowDialogInteraction(IInteractionContext<INewDeadLineItemView, DeadLineItemInfo?> arg)
     {
         arg.SetOutput(await arg.Input.ShowDialog<DeadLineItemInfo>(this));
@@ -44,6 +45,6 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
     {
         _isClosed = true;
         _coroutine.Close();
-        ViewModel!.SaveDeadLineItemsCommand.Execute(null);
+        ViewModel!.SaveDeadLineItemsCommand.ExecuteAsync(null);
     }
 }

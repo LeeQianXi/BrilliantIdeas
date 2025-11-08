@@ -77,7 +77,7 @@ public partial class DeadLineViewModel(IServiceProvider serviceProvider)
     [RelayCommand]
     private async Task SaveDeadLineItems()
     {
-        Logger.LogInformation("Save All DeadLineItems");
         await _storage.UpdateDataAsync(DeadLineItems);
+        Logger.LogInformation("Save All DeadLineItems");
     }
 }
