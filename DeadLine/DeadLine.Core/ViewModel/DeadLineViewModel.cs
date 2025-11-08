@@ -14,15 +14,21 @@ public partial class DeadLineViewModel(IServiceProvider serviceProvider)
     public IEnumerable<DeadLineItemInfo> LoadDeadLineItems(CancellationToken token)
     {
         if (_isLoaded)
+        {
+            Logger.LogInformation("Deadline items have already been loaded");
             yield break;
+        }
+
         IEnumerable<DeadLineItemInfo> items = [];
         var completed = false;
         _storage.BeginTransactionAsync(con =>
         {
             items = items.Concat(con.Table<DeadLineItemInfo>().ToList());
+            Logger.LogInformation("Loading deadline items From DataBase Success");
             completed = true;
         });
-        while (!completed) ;
+        while (!completed) Thread.Sleep(10);
+        Logger.LogInformation("Loading deadline items To UIForm");
         foreach (var item in items)
             yield return item;
         _isLoaded = true;
@@ -31,9 +37,15 @@ public partial class DeadLineViewModel(IServiceProvider serviceProvider)
     [RelayCommand]
     private async Task NewDeadLineItem()
     {
+        Logger.LogInformation("Try Add a New DeadLineItem");
         var niv = ServiceProvider.GetRequiredService<INewDeadLineItemView>();
         var lii = await ShowDialogInteraction.Handle(niv);
-        if (lii is null) return;
+        if (lii is null)
+        {
+            Logger.LogWarning("Failed to get New DeadLineItem");
+            return;
+        }
+
         Logger.LogInformation("Success Get new deadline item {lii}", lii);
         await AddDeadLineItemCommand.ExecuteAsync(lii);
     }
@@ -41,13 +53,21 @@ public partial class DeadLineViewModel(IServiceProvider serviceProvider)
     [RelayCommand]
     private async Task AddDeadLineItem(DeadLineItemInfo lii)
     {
+        Logger.LogInformation("Add New DeadLineItem {lii} To Display", lii);
         DeadLineItems.Add(lii);
         lii.PropertyChanged += (sender, e) =>
         {
             if (e.PropertyName != nameof(DeadLineItemInfo.Status)) return;
+            Logger.LogInformation("Status Changed {lii} ,Try to Save to DataBase", lii);
             _storage.UpdateDataAsync((DeadLineItemInfo)sender!);
         };
-        if (!_isLoaded) return;
+        if (!_isLoaded)
+        {
+            Logger.LogInformation("DeadlineItem {lii} is from DataBase", lii);
+            return;
+        }
+
+        Logger.LogInformation("Save DeadLineItem {lii} To DataBase", lii);
         if (lii.PrimaryKey is -1 || await _storage.FindDataAsync(lii.PrimaryKey) is null)
             await _storage.InsertDataAsync(lii);
         else
@@ -57,6 +77,7 @@ public partial class DeadLineViewModel(IServiceProvider serviceProvider)
     [RelayCommand]
     private async Task SaveDeadLineItems()
     {
+        Logger.LogInformation("Save All DeadLineItems");
         await _storage.UpdateDataAsync(DeadLineItems);
     }
 }
