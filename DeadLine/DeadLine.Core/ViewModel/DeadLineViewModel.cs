@@ -64,6 +64,11 @@ public partial class DeadLineViewModel(IServiceProvider serviceProvider) : ViewM
             Logger.LogInformation("Status Changed {lii} ,Try to Save to DataBase", lii);
             _storage.UpdateDataAsync((DeadLineItemInfo)sender!);
         };
+        lii.RemoveClickEvent += removal =>
+        {
+            Logger.LogInformation("Remove DeadLineItem {lii} From Display", lii);
+            RemoveDeadLineItemCommand.Execute(removal);
+        };
         if (!_isLoaded)
         {
             Logger.LogInformation("DeadlineItem {lii} is from DataBase", lii);
@@ -75,6 +80,23 @@ public partial class DeadLineViewModel(IServiceProvider serviceProvider) : ViewM
             await _storage.InsertDataAsync(lii);
         else
             await _storage.UpdateDataAsync(lii);
+    }
+
+    [RelayCommand]
+    private async Task RemoveDeadLineItem(DeadLineItemInfo lii)
+    {
+        Logger.LogInformation("Try  Remove DeadLineItem {key} From Display", lii.PrimaryKey);
+        var info = await _storage.FindDataAsync(lii.PrimaryKey);
+        if (info is null)
+        {
+            Logger.LogInformation("DeadLineItem {key} not found in DataBase", lii.PrimaryKey);
+            return;
+        }
+
+        _deadLineItems.Remove(lii);
+        await _storage.DeleteDataAsync(lii.PrimaryKey);
+        Logger.LogInformation("Success Remove DeadLineItem {lii} From Display", lii);
+        SaveDeadLineItemsCommand.Execute(null);
     }
 
     [RelayCommand]

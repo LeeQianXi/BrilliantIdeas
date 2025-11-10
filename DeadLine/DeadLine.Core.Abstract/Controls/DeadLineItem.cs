@@ -3,6 +3,7 @@ namespace DeadLine.Core.Abstract.Controls;
 [TemplatePart("PART_Progress", typeof(ProgressBar))]
 [TemplatePart("PART_Tag", typeof(Label))]
 [TemplatePart("PART_DoneWork", typeof(CheckBox))]
+[TemplatePart("PART_Remove", typeof(Button))]
 public partial class DeadLineItem : TemplatedControl, ICoroutinator
 {
     public static readonly DirectProperty<DeadLineItem, double> ProgressProperty =
@@ -10,8 +11,8 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
 
     private readonly Coroutine _coroutine;
     private CheckBox? _partDoneWork;
-
     private ProgressBar? _partProgressBar;
+    private Button? _partRemove;
     private Label? _partTag;
 
     public DeadLineItem()
@@ -41,9 +42,18 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
         _partProgressBar = e.NameScope.Find<ProgressBar>("PART_Progress")!;
         _partTag = e.NameScope.Find<Label>("PART_Tag");
         _partDoneWork = e.NameScope.Find<CheckBox>("PART_DoneWork");
+        _partRemove = e.NameScope.Find<Button>("PART_Remove");
+        _partRemove!.Click += OnRemoveClick;
         _partDoneWork!.IsCheckedChanged += OnDongWorkChanged;
         OnStatusPropertyChanged(Status);
         OnProgressChanged(Progress);
+    }
+
+
+    private void OnRemoveClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not DeadLineItemInfo info) return;
+        info.RemoveClickEvent?.Invoke(info);
     }
 
     private void OnDongWorkChanged(object? sender, RoutedEventArgs e)
@@ -106,6 +116,7 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
                 break;
             case DeadLineStatus.Done:
                 _partTag.Classes.Add("Green");
+                _partDoneWork!.IsChecked = true;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(newValue), newValue, null);

@@ -16,7 +16,7 @@
         Title="DeadLine">
     <Window.Resources>
         <DataTemplate x:Key="DataTemplateDeadLineItemInfo" DataType="dm:DeadLineItemInfo">
-            <ac:DeadLineItem Margin="5,3"
+            <ac:DeadLineItem Margin="-6,-3"
                              Title="{Binding Title}"
                              StartTime="{Binding StartTime}"
                              EndTime="{Binding EndTime}"
@@ -37,12 +37,12 @@
                         Content="新建任务" Command="{Binding NewDeadLineItemCommand}" />
             </Panel>
             <Border Background="AliceBlue" Margin="5" CornerRadius="10" Padding="10">
-                <DockPanel LastChildFill="True">
+                <DockPanel LastChildFill="True" VerticalSpacing="10">
                     <ComboBox Name="FilterComboBox" DockPanel.Dock="Top" HorizontalAlignment="Left"
                               ItemTemplate="{StaticResource DateTemplateFilterComboBoxItem}" />
                     <ListBox Name="DeadLineListBox"
                              Grid.IsSharedSizeScope="True"
-                             ScrollViewer.VerticalScrollBarVisibility="Visible"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                              ItemTemplate="{StaticResource DataTemplateDeadLineItemInfo}" />
                 </DockPanel>
