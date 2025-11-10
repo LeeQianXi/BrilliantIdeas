@@ -1,5 +1,6 @@
 // global using 指令
 
+global using System.Collections.ObjectModel;
 global using System.Reactive;
 global using Avalonia;
 global using Avalonia.Collections;
@@ -11,7 +12,10 @@ global using AvaloniaUtility;
 global using AvaloniaUtility.Services;
 global using CommunityToolkit.Mvvm.Input;
 global using DeadLine.Core.Abstract.View;
+global using DeadLine.DataBase.Core.Model;
 global using DIAbstract.Services;
+global using DynamicData;
+global using DynamicData.Binding;
 global using Microsoft.Extensions.Logging;
 global using PropertyGenerator.Avalonia;
 global using ReactiveUI;

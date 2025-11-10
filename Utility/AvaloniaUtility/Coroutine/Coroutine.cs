@@ -140,8 +140,8 @@ public sealed class Coroutine : IDisposable
         public const double FrameTime = 1d / 60d;
         private static readonly DispatcherTimer GlobalTimer;
         private static readonly Stopwatch Sw;
-        internal static double Accumulator;
-        private static readonly Dictionary<int, Coroutine> Instances = new();
+        private static double _accumulator;
+        private static readonly Dictionary<int, WeakReference<Coroutine>> Instances = new();
         private static readonly FieldInfo CoroutineIdField;
 
         private static readonly object _sync = new();
@@ -162,11 +162,11 @@ public sealed class Coroutine : IDisposable
         {
             var delta = Sw.Elapsed.TotalSeconds;
             Sw.Restart();
-            Accumulator = double.Min(Accumulator + delta, 0.25);
-            foreach (var (k, cor) in Instances)
+            _accumulator = double.Min(_accumulator + delta, 0.25);
+            foreach (var (k, wr) in Instances)
             {
-                if (Accumulator < 0) break;
-                if (cor._disposed)
+                if (_accumulator < 0) break;
+                if (!wr.TryGetTarget(out var cor) || cor._disposed)
                 {
                     Instances.Remove(k);
                     continue;
@@ -186,7 +186,7 @@ public sealed class Coroutine : IDisposable
                 while (Instances.ContainsKey(i)) i++;
 
                 CoroutineIdField.SetValue(coroutine, i);
-                Instances.Add(i, coroutine);
+                Instances.Add(i, new WeakReference<Coroutine>(coroutine));
             }
         }
     }

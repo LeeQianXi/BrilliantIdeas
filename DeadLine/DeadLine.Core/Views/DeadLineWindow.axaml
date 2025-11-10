@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ac="clr-namespace:DeadLine.Core.Abstract.Controls;assembly=DeadLine.Core.Abstract"
         xmlns:dm="clr-namespace:DeadLine.DataBase.Core.Model;assembly=DeadLine.DataBase.Core"
+        xmlns:views="clr-namespace:DeadLine.Core.Views"
         mc:Ignorable="d" WindowStartupLocation="CenterScreen"
         d:DesignWidth="430" d:DesignHeight="540"
         Width="430" Height="540"
@@ -21,6 +22,9 @@
                              EndTime="{Binding EndTime}"
                              Status="{Binding Status,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" />
         </DataTemplate>
+        <DataTemplate x:Key="DateTemplateFilterComboBoxItem" DataType="views:FilterComboBoxItem">
+            <Label Content="{Binding Text}" />
+        </DataTemplate>
     </Window.Resources>
     <Panel>
         <DockPanel LastChildFill="True" Background="LightCyan">
@@ -33,11 +37,15 @@
                         Content="新建任务" Command="{Binding NewDeadLineItemCommand}" />
             </Panel>
             <Border Background="AliceBlue" Margin="5" CornerRadius="10" Padding="10">
-                <ListBox ItemsSource="{Binding DeadLineItems}"
-                         Grid.IsSharedSizeScope="True"
-                         ScrollViewer.VerticalScrollBarVisibility="Visible"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                         ItemTemplate="{StaticResource DataTemplateDeadLineItemInfo}" />
+                <DockPanel LastChildFill="True">
+                    <ComboBox Name="FilterComboBox" DockPanel.Dock="Top" HorizontalAlignment="Left"
+                              ItemTemplate="{StaticResource DateTemplateFilterComboBoxItem}" />
+                    <ListBox Name="DeadLineListBox"
+                             Grid.IsSharedSizeScope="True"
+                             ScrollViewer.VerticalScrollBarVisibility="Visible"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             ItemTemplate="{StaticResource DataTemplateDeadLineItemInfo}" />
+                </DockPanel>
             </Border>
         </DockPanel>
     </Panel>

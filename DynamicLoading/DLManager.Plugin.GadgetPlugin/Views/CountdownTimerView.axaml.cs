@@ -13,7 +13,7 @@ public partial class CountdownTimerView : PluginView, ICoroutinator
     }
 
     [GeneratedStyledProperty] public partial CountdownTimerState TimerState { get; set; }
-    public CancellationTokenSource CancellationTokenSource { get; } = new();
+    public CancellationTokenSource CoroutinatorCancelTokenSource { get; } = new();
 
     partial void OnTimerStatePropertyChanged(CountdownTimerState newValue)
     {

@@ -1,5 +1,3 @@
-using DeadLine.DataBase.Core.Model;
-
 namespace DeadLine.Core.Abstract.Controls;
 
 [TemplatePart("PART_Progress", typeof(ProgressBar))]
@@ -36,7 +34,7 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
         }
     }
 
-    public CancellationTokenSource CancellationTokenSource { get; } = new();
+    public CancellationTokenSource CoroutinatorCancelTokenSource { get; } = new();
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {

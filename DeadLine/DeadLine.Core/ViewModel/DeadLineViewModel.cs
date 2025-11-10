@@ -1,15 +1,13 @@
 namespace DeadLine.Core.ViewModel;
 
-public partial class DeadLineViewModel(IServiceProvider serviceProvider)
-    : ViewModelBase, IDeadLineViewModel
+public partial class DeadLineViewModel(IServiceProvider serviceProvider) : ViewModelBase, IDeadLineViewModel, IDebouncer
 {
+    private readonly SourceList<DeadLineItemInfo> _deadLineItems = new();
     private readonly IDeadLineInfoStorage _storage = serviceProvider.GetRequiredService<IDeadLineInfoStorage>();
     private bool _isLoaded;
     public override IServiceProvider ServiceProvider { get; } = serviceProvider;
     public override ILogger Logger { get; } = serviceProvider.GetRequiredService<ILogger<DeadLineViewModel>>();
-
     public Interaction<INewDeadLineItemView, DeadLineItemInfo?> ShowDialogInteraction { get; } = new();
-    public AvaloniaList<DeadLineItemInfo> DeadLineItems { get; } = [];
 
     public IEnumerable<DeadLineItemInfo> LoadDeadLineItems(CancellationToken token)
     {
@@ -27,11 +25,16 @@ public partial class DeadLineViewModel(IServiceProvider serviceProvider)
             Logger.LogInformation("Loading deadline items From DataBase Success");
             completed = true;
         });
-        while (!completed) Thread.Sleep(10);
+        while (!completed) Thread.Sleep(2);
         Logger.LogInformation("Loading deadline items To UIForm");
         foreach (var item in items)
             yield return item;
         _isLoaded = true;
+    }
+
+    public IObservable<IChangeSet<DeadLineItemInfo>> DeadLineItemsConnect()
+    {
+        return _deadLineItems.Connect();
     }
 
     [RelayCommand]
@@ -54,7 +57,7 @@ public partial class DeadLineViewModel(IServiceProvider serviceProvider)
     private async Task AddDeadLineItem(DeadLineItemInfo lii)
     {
         Logger.LogInformation("Add New DeadLineItem {lii} To Display", lii);
-        DeadLineItems.Add(lii);
+        _deadLineItems.Add(lii);
         lii.PropertyChanged += (sender, e) =>
         {
             if (e.PropertyName != nameof(DeadLineItemInfo.Status)) return;
@@ -77,7 +80,7 @@ public partial class DeadLineViewModel(IServiceProvider serviceProvider)
     [RelayCommand]
     private async Task SaveDeadLineItems()
     {
-        await _storage.UpdateDataAsync(DeadLineItems);
+        await _storage.UpdateDataAsync(_deadLineItems.Items);
         Logger.LogInformation("Save All DeadLineItems");
     }
 }

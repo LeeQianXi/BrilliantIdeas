@@ -9,7 +9,7 @@ public partial class SplashView : ViewModelUserControlBase<ISplashViewModel>, IC
         InitializeComponent();
     }
 
-    public CancellationTokenSource CancellationTokenSource { get; } = new();
+    public CancellationTokenSource CoroutinatorCancelTokenSource { get; } = new();
 
     private void Splash_Loaded(object? sender, RoutedEventArgs e)
     {

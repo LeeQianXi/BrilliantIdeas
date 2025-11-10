@@ -1,5 +1,3 @@
-using DeadLine.DataBase.Core.Model;
-
 namespace DeadLine.Core.Abstract.ViewModel;
 
 public interface IDeadLineViewModel : IDependencyInjection
@@ -16,8 +14,8 @@ public interface IDeadLineViewModel : IDependencyInjection
     /// </summary>
     Interaction<INewDeadLineItemView, DeadLineItemInfo?> ShowDialogInteraction { get; }
 
-    AvaloniaList<DeadLineItemInfo> DeadLineItems { get; }
     IAsyncRelayCommand<DeadLineItemInfo> AddDeadLineItemCommand { get; }
     IAsyncRelayCommand SaveDeadLineItemsCommand { get; }
     IEnumerable<DeadLineItemInfo> LoadDeadLineItems(CancellationToken token);
+    IObservable<IChangeSet<DeadLineItemInfo>> DeadLineItemsConnect();
 }
