@@ -1,20 +1,12 @@
 namespace DeadLine.DataBase.Core.Model;
 
 [Table(nameof(DeadLineItemInfo))]
-public class DeadLineItemInfo : IModelBasic, INotifyPropertyChanged
+public class DeadLineItemInfo(string title, DateTime startTime, DateTime endTime) : IModelBasic, INotifyPropertyChanged
 {
-    public DeadLineItemInfo()
-    {
-        Title = "Default";
-        StartTime = DateTime.MinValue;
-        EndTime = DateTime.MaxValue;
-    }
+    public Action<DeadLineItemInfo>? RemoveClickEvent;
 
-    public DeadLineItemInfo(string title, DateTime startTime, DateTime endTime)
+    public DeadLineItemInfo() : this("Default", DateTime.MinValue, DateTime.MaxValue)
     {
-        Title = title;
-        StartTime = startTime;
-        EndTime = endTime;
     }
 
     public DeadLineStatus Status
@@ -23,9 +15,9 @@ public class DeadLineItemInfo : IModelBasic, INotifyPropertyChanged
         set => SetField(ref field, value);
     } = DeadLineStatus.ToDo;
 
-    public string Title { get; init; }
-    public DateTime StartTime { get; init; }
-    public DateTime EndTime { get; init; }
+    public string Title { get; init; } = title;
+    public DateTime StartTime { get; init; } = startTime;
+    public DateTime EndTime { get; init; } = endTime;
 
     [PrimaryKey] [AutoIncrement] public int PrimaryKey { get; set; } = -1;
 

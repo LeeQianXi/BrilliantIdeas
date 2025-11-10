@@ -27,20 +27,32 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Background="{TemplateBinding Background}" Padding="4" CornerRadius="4">
-                    <Grid ColumnSpacing="10" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" MinWidth="50" SharedSizeGroup="DeadLineItem_C0" />
-                            <ColumnDefinition Width="Auto" SharedSizeGroup="DeadLineItem_C1" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="{TemplateBinding Title}" />
-                        <Label x:Name="PART_Tag" Grid.Column="1" Content="{TemplateBinding Status}"
-                               Theme="{DynamicResource TagLabel}" />
-                        <Panel Grid.Column="2">
+                    <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*,Auto"
+                          ColumnSpacing="10" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                        <DockPanel Grid.ColumnSpan="3"
+                                   LastChildFill="False" Margin="10,1">
+                            <TextBlock DockPanel.Dock="Left" Theme="{DynamicResource TitleTextBlock}" Classes="H6"
+                                       Text="{TemplateBinding Title}" TextAlignment="Center" />
+                            <Label x:Name="PART_Tag" DockPanel.Dock="Left" Content="{TemplateBinding Status}"
+                                   Theme="{DynamicResource TagLabel}"
+                                   VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+                        </DockPanel>
+                        <Button x:Name="PART_Remove" Grid.Row="0" Grid.Column="2" DockPanel.Dock="Right"
+                                Padding="-2,-5" Width="20" Height="20" MinHeight="0"
+                                Theme="{DynamicResource BorderlessButton}">
+                            <Button.ContentTemplate>
+                                <DataTemplate>
+                                    <ContentPresenter Content="{Binding}" />
+                                </DataTemplate>
+                            </Button.ContentTemplate>
+                            <Image Source="avares://DeadLine.Core.Abstract/Assets/trash.ico" Width="16" Height="16" />
+                        </Button>
+                        <TextBlock Grid.Row="1" Grid.Column="0" />
+                        <Panel Grid.Row="1" Grid.Column="1" VerticalAlignment="Stretch">
                             <ProgressBar x:Name="PART_Progress" Value="{TemplateBinding Progress}" />
                         </Panel>
-                        <Panel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="3">
+                        <Panel Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center"
+                               Margin="4">
                             <CheckBox x:Name="PART_DoneWork" Theme="{DynamicResource SimpleCheckBox}" />
                         </Panel>
                     </Grid>

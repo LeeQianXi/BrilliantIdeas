@@ -2,11 +2,11 @@ namespace AvaloniaUtility;
 
 public interface ICoroutinator
 {
-    CancellationTokenSource CancellationTokenSource { get; }
+    CancellationTokenSource CoroutinatorCancelTokenSource { get; }
 }
 
 [SuppressMessage("Performance", "CA1822:将成员标记为 static")]
-public static class Extensions
+public static partial class Extensions
 {
     extension(ICoroutinator cor)
     {
@@ -15,7 +15,7 @@ public static class Extensions
         {
             ArgumentNullException.ThrowIfNull(cor, nameof(cor));
             ArgumentNullException.ThrowIfNull(routine, nameof(routine));
-            return new Coroutine(routine.Invoke(), createRunning, cor.CancellationTokenSource.Token);
+            return new Coroutine(routine.Invoke(), createRunning, cor.CoroutinatorCancelTokenSource.Token);
         }
     }
 }
