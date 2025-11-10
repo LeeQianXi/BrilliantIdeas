@@ -9,6 +9,9 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
     public static readonly DirectProperty<DeadLineItem, double> ProgressProperty =
         AvaloniaProperty.RegisterDirect<DeadLineItem, double>(nameof(Progress), o => o.Progress);
 
+    public static readonly DirectProperty<DeadLineItem, TimeSpan> RemainingTimeProperty =
+        AvaloniaProperty.RegisterDirect<DeadLineItem, TimeSpan>(nameof(RemainingTime), o => o.RemainingTime);
+
     private readonly Coroutine _coroutine;
     private CheckBox? _partDoneWork;
     private ProgressBar? _partProgressBar;
@@ -33,6 +36,12 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
             OnProgressChanged(value);
             SetAndRaise(ProgressProperty, ref field, value);
         }
+    }
+
+    public TimeSpan RemainingTime
+    {
+        get;
+        private set => SetAndRaise(RemainingTimeProperty, ref field, value);
     }
 
     public CancellationTokenSource CoroutinatorCancelTokenSource { get; } = new();
@@ -152,6 +161,7 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
             if (now < StartTime)
             {
                 Status = DeadLineStatus.ToDo;
+                RemainingTime = space;
                 return 1;
             }
 
@@ -159,12 +169,14 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
             {
                 if (Status is DeadLineStatus.Doing)
                     Status = DeadLineStatus.TimedOut;
+                RemainingTime = TimeSpan.Zero;
                 return 0;
             }
 
             if (Status is DeadLineStatus.ToDo)
                 Status = DeadLineStatus.Doing;
-            return (EndTime - now) / space;
+            RemainingTime = EndTime - now;
+            return RemainingTime / space;
         }
     }
 }

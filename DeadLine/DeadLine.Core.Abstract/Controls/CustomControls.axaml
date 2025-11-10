@@ -1,12 +1,16 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:c="clr-namespace:DeadLine.Core.Abstract.Controls">
+        xmlns:c="clr-namespace:DeadLine.Core.Abstract.Controls"
+        xmlns:xconverters="clr-namespace:DeadLine.Core.Abstract.Converters">
     <Design.PreviewWith>
         <c:DeadLineItem Width="400"
                         Title="TestDeadLine">
             <c:DeadLineItem.StartTime />
         </c:DeadLineItem>
     </Design.PreviewWith>
+    <Styles.Resources>
+        <xconverters:TimeToStringConverter x:Key="TimeToStringConverter" />
+    </Styles.Resources>
     <Style Selector="c|DeadLineItem ProgressBar#PART_Progress">
         <Setter Property="Minimum" Value="0" />
         <Setter Property="Maximum" Value="1" />
@@ -47,7 +51,8 @@
                             </Button.ContentTemplate>
                             <Image Source="avares://DeadLine.Core.Abstract/Assets/trash.ico" Width="16" Height="16" />
                         </Button>
-                        <TextBlock Grid.Row="1" Grid.Column="0" />
+                        <TextBlock Grid.Row="1" Grid.Column="0"
+                                   Text="{TemplateBinding RemainingTime,Converter={StaticResource TimeToStringConverter}}" />
                         <Panel Grid.Row="1" Grid.Column="1" VerticalAlignment="Stretch">
                             <ProgressBar x:Name="PART_Progress" Value="{TemplateBinding Progress}" />
                         </Panel>
