@@ -1,3 +1,5 @@
+using DynamicData.Alias;
+
 namespace DeadLine.Core.Views;
 
 public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, IStartupWindow, IDeadLineView,
@@ -9,7 +11,6 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
         new(DeadLineFilterType.ToDo, "未开始"),
         new(DeadLineFilterType.Doing, "进行中"),
         new(DeadLineFilterType.Done, "已完成"),
-        new(DeadLineFilterType.Failed, "已失败"),
         new(DeadLineFilterType.TimedOut, "已超时")
     ];
 
@@ -27,13 +28,24 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
             .WhenAnyValue(x => x.FilterComboBox.SelectedItem)
             .Select(item => item is FilterComboBoxItem filter ? filter.FilterType : DeadLineFilterType.All)
             .Throttle(TimeSpan.FromMilliseconds(250))
-            .Select(FilterInteraction);
+            .Select(FilterFlagInteraction);
+        var filterTextObservable = this
+            .WhenAnyValue(x => x.FilterTextBox.Text)
+            .Select(text => text ??= string.Empty)
+            .Throttle(TimeSpan.FromMilliseconds(250))
+            .Select(FilterTextInteraction);
         ViewModel!.DeadLineItemsConnect()
             .ObserveOn(RxApp.MainThreadScheduler)
             .Filter(filterObservable)
+            .Filter(filterTextObservable)
             .Bind(out var displayedDeadLineItems)
             .Subscribe();
+        ViewModel!.DeadLineItemsConnect()
+            .Select(set => set.Title)
+            .Bind(out var filtercomboboxitems)
+            .Subscribe();
         DeadLineListBox.ItemsSource = displayedDeadLineItems;
+        FilterTextBox.ItemsSource = filtercomboboxitems;
         this.StartCoroutine(LoadExistedDeadLineItems);
         _coroutine = this.StartCoroutine(TimeSpanSave);
     }
@@ -45,9 +57,15 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
         arg.SetOutput(await arg.Input.ShowDialog<DeadLineItemInfo>(this));
     }
 
-    private static Func<DeadLineItemInfo, bool> FilterInteraction(DeadLineFilterType filter)
+    private static Func<DeadLineItemInfo, bool> FilterFlagInteraction(DeadLineFilterType filter)
     {
         return info => filter is DeadLineFilterType.All || (int)info.Status == (int)filter;
+    }
+
+    private static Func<DeadLineItemInfo, bool> FilterTextInteraction(string filter)
+    {
+        return text => string.IsNullOrWhiteSpace(filter) ||
+                       text.Title.Contains(filter, StringComparison.OrdinalIgnoreCase);
     }
 
     private IEnumerator<YieldInstruction?> LoadExistedDeadLineItems()
@@ -82,7 +100,6 @@ internal enum DeadLineFilterType
     ToDo = DeadLineStatus.ToDo,
     Doing = DeadLineStatus.Doing,
     Done = DeadLineStatus.Done,
-    Failed = DeadLineStatus.Failed,
     TimedOut = DeadLineStatus.TimedOut
 }
 

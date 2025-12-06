@@ -44,7 +44,7 @@ public class BackGroupStorage : BaseStorage<BackGroup>, IBackGroupStorage
 
     public async Task<bool> RemoveGroupAsync(BackGroup group)
     {
-        ArgumentNullException.ThrowIfNull(group, nameof(group));
+        ArgumentNullException.ThrowIfNull(group);
         _lock.EnterUpgradeableReadLock();
         try
         {

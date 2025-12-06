@@ -21,7 +21,7 @@ public partial class NewDeadLineItemWindow : Window, INewDeadLineItemView
     private DeadLineItemInfo GetDeadLineItemInfo()
     {
         var (start, end) = GetCurrentInfoTime();
-        return new DeadLineItemInfo(TbTitle.Text!, start, end);
+        return new DeadLineItemInfo(TbTitle.Text!, start, end) { Description = TbDesc.Text ?? string.Empty };
     }
 
     private (DateTime Start, DateTime End) GetCurrentInfoTime()

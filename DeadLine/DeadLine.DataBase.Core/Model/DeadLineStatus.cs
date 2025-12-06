@@ -5,6 +5,5 @@ public enum DeadLineStatus
     ToDo,
     Doing,
     Done,
-    Failed,
     TimedOut
 }

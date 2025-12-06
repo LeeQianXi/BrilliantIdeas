@@ -14,7 +14,7 @@ public sealed class Coroutine : IDisposable
 
     internal Coroutine(IEnumerator<YieldInstruction?> iter, bool createRunning, CancellationToken token)
     {
-        ArgumentNullException.ThrowIfNull(iter, nameof(iter));
+        ArgumentNullException.ThrowIfNull(iter);
         Internal.RegisterInstance(this);
         _iter = iter;
         _token = token;
@@ -179,7 +179,7 @@ public sealed class Coroutine : IDisposable
 
         public static void RegisterInstance(Coroutine coroutine)
         {
-            ArgumentNullException.ThrowIfNull(coroutine, nameof(coroutine));
+            ArgumentNullException.ThrowIfNull(coroutine);
             lock (_sync)
             {
                 var i = Instances.Count;

@@ -12,6 +12,9 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
     public static readonly DirectProperty<DeadLineItem, TimeSpan> RemainingTimeProperty =
         AvaloniaProperty.RegisterDirect<DeadLineItem, TimeSpan>(nameof(RemainingTime), o => o.RemainingTime);
 
+    public static readonly DirectProperty<DeadLineItem, bool> WithDescriptionProperty =
+        AvaloniaProperty.RegisterDirect<DeadLineItem, bool>(nameof(WithDescription), o => o.WithDescription);
+
     private readonly Coroutine _coroutine;
     private CheckBox? _partDoneWork;
     private ProgressBar? _partProgressBar;
@@ -24,6 +27,7 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
     }
 
     [GeneratedStyledProperty] public partial string Title { get; set; }
+    [GeneratedStyledProperty] public partial string Description { get; set; }
     [GeneratedStyledProperty] public partial DateTime StartTime { get; set; }
     [GeneratedStyledProperty] public partial DateTime EndTime { get; set; }
     [GeneratedStyledProperty] public partial DeadLineStatus Status { get; set; }
@@ -36,6 +40,12 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
             OnProgressChanged(value);
             SetAndRaise(ProgressProperty, ref field, value);
         }
+    }
+
+    public bool WithDescription
+    {
+        get;
+        private set => SetAndRaise(WithDescriptionProperty, ref field, value);
     }
 
     public TimeSpan RemainingTime
@@ -58,6 +68,10 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
         OnProgressChanged(Progress);
     }
 
+    partial void OnDescriptionPropertyChanged(string? newValue)
+    {
+        WithDescription = !string.IsNullOrWhiteSpace(newValue);
+    }
 
     private void OnRemoveClick(object? sender, RoutedEventArgs e)
     {
@@ -83,7 +97,7 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
     {
         if (_partProgressBar is null) return;
         _partProgressBar.Classes.Clear();
-        if (Status is DeadLineStatus.TimedOut or DeadLineStatus.Failed)
+        if (Status is DeadLineStatus.TimedOut)
         {
             _partProgressBar.Classes.Add("Error");
             return;
@@ -119,7 +133,6 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
             case DeadLineStatus.Doing:
                 _partTag.Classes.Add("LightBlue");
                 break;
-            case DeadLineStatus.Failed:
             case DeadLineStatus.TimedOut:
                 _partTag.Classes.Add("Red");
                 break;
@@ -151,7 +164,7 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
         {
             Progress = CalcDuring();
             yield return null;
-        } while (Status is not (DeadLineStatus.Done or DeadLineStatus.Failed or DeadLineStatus.TimedOut));
+        } while (Status is not (DeadLineStatus.Done or DeadLineStatus.TimedOut));
 
         yield break;
 

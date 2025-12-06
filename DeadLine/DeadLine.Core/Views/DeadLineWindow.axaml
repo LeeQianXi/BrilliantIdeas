@@ -18,6 +18,7 @@
         <DataTemplate x:Key="DataTemplateDeadLineItemInfo" DataType="dm:DeadLineItemInfo">
             <ac:DeadLineItem Margin="-6,-3"
                              Title="{Binding Title}"
+                             Description="{Binding Description}"
                              StartTime="{Binding StartTime}"
                              EndTime="{Binding EndTime}"
                              Status="{Binding Status,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" />
@@ -38,8 +39,12 @@
             </Panel>
             <Border Background="AliceBlue" Margin="5" CornerRadius="10" Padding="10">
                 <DockPanel LastChildFill="True" VerticalSpacing="10">
-                    <ComboBox Name="FilterComboBox" DockPanel.Dock="Top" HorizontalAlignment="Left"
-                              ItemTemplate="{StaticResource DateTemplateFilterComboBoxItem}" />
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10" HorizontalSpacing="10">
+                        <ComboBox Name="FilterComboBox" DockPanel.Dock="Left" HorizontalAlignment="Left"
+                                  ItemTemplate="{StaticResource DateTemplateFilterComboBoxItem}" />
+                        <AutoCompleteBox Name="FilterTextBox" DockPanel.Dock="Right" Watermark="输入过滤条件"
+                                         FilterMode="ContainsOrdinal" />
+                    </DockPanel>
                     <ListBox Name="DeadLineListBox"
                              Grid.IsSharedSizeScope="True"
                              ScrollViewer.VerticalScrollBarVisibility="Auto"

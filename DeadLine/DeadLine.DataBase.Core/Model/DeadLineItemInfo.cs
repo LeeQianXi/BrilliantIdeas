@@ -16,6 +16,7 @@ public class DeadLineItemInfo(string title, DateTime startTime, DateTime endTime
     } = DeadLineStatus.ToDo;
 
     public string Title { get; init; } = title;
+    public string Description { get; set; } = string.Empty;
     public DateTime StartTime { get; init; } = startTime;
     public DateTime EndTime { get; init; } = endTime;
 

@@ -13,8 +13,8 @@ public static partial class Extensions
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Coroutine StartCoroutine(Func<IEnumerator<YieldInstruction?>> routine, bool createRunning = true)
         {
-            ArgumentNullException.ThrowIfNull(cor, nameof(cor));
-            ArgumentNullException.ThrowIfNull(routine, nameof(routine));
+            ArgumentNullException.ThrowIfNull(cor);
+            ArgumentNullException.ThrowIfNull(routine);
             return new Coroutine(routine.Invoke(), createRunning, cor.CoroutinatorCancelTokenSource.Token);
         }
     }

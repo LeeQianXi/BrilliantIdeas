@@ -30,7 +30,9 @@
         <Setter Property="Background" Value="Lavender" />
         <Setter Property="Template">
             <ControlTemplate>
-                <Border Background="{TemplateBinding Background}" Padding="4" CornerRadius="4">
+                <Border Background="{TemplateBinding Background}" Padding="4" CornerRadius="4"
+                        ToolTip.Tip="{TemplateBinding Description}"
+                        ToolTip.ServiceEnabled="{TemplateBinding WithDescription}">
                     <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*,Auto"
                           ColumnSpacing="10" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                         <DockPanel Grid.ColumnSpan="3"

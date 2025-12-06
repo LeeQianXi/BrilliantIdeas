@@ -29,6 +29,10 @@
                             <TextBlock Theme="{DynamicResource TitleTextBlock}" Text="任务标题" TextAlignment="Left" />
                             <TextBox Name="TbTitle" Classes="ClearButton" Watermark="新建任务" />
                         </StackPanel>
+                        <StackPanel>
+                            <TextBlock Theme="{DynamicResource TitleTextBlock}" Text="任务描述" TextAlignment="Left" />
+                            <TextBox Name="TbDesc" Classes="ClearButton" />
+                        </StackPanel>
                         <DockPanel HorizontalSpacing="10">
                             <TextBlock DockPanel.Dock="Top"
                                        Theme="{DynamicResource TitleTextBlock}" Text="开始日期" TextAlignment="Left" />
