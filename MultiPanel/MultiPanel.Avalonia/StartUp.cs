@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MultiPanel.Client;
+using MultiPanel.Client.Services;
 using MultiPanel.Client.Views;
 using Orleans.Configuration;
 
@@ -12,6 +13,7 @@ public static class StartUp
     static StartUp()
     {
         ClientHost = Host.CreateDefaultBuilder()
+            .ConfigureAppConfiguration((context, cbuilder) => { cbuilder.UseDlManagerOptions(); })
             .ConfigureServices(services => { services.StartUpWith(); })
             .UseOrleansClient(client =>
             {
@@ -20,15 +22,14 @@ public static class StartUp
                     {
                         options.ClusterId = "multi-panel-cluster";
                         options.ServiceId = "MultiPanelSilo";
-                    });
+                    })
+                    .UseConnectionRetryFilter<CustomClientConnectionRetryFilter>();
             })
             .UseConsoleLifetime()
             .Build();
     }
 
     public static IHost ClientHost { get; }
-
-    public static IServiceProvider ServiceProvider => ClientHost.Services;
 
     private static IServiceCollection StartUpWith(this IServiceCollection collection)
     {

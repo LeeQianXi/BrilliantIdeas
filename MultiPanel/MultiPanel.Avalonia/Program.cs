@@ -8,17 +8,17 @@ namespace MultiPanel.Avalonia;
 public class Program
 {
     [STAThread]
-    private static async Task Main(string[] args)
+    private static int Main(string[] args)
     {
-        await StartUp.ClientHost.StartAsync();
+        StartUp.ClientHost.StartAsync();
         Console.OutputEncoding = Encoding.UTF8;
-        BuildAvaloniaApp()
+        return BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);
     }
 
     public static AppBuilder BuildAvaloniaApp()
     {
-        ServiceLocator.Instance.ServiceProvider = StartUp.ServiceProvider;
+        ServiceLocator.Instance.ClientHost = StartUp.ClientHost;
         return AppBuilder.Configure<MultiPanelApp>()
             .UsePlatformDetect()
             .WithInterFont()
