@@ -1,0 +1,11 @@
+- 项目类型: .NET Standard 2.1 / .NET 8.0 类库
+- 职责: Grain实现
+- 引用:
+    - Orleans.Core NuGet包
+    - MyApp.Orleans.Interfaces
+    - MyApp.Orleans.Abstractions
+    - 数据库访问包 (如EF Core, Dapper等)
+- 包含:
+    - GrainImplementations/*.cs
+    - State/ # Grain状态类
+    - Persistence/ # 数据库访问逻辑

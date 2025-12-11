@@ -1,0 +1,7 @@
+- 项目类型: .NET Standard 2.1 / .NET 8.0 类库
+- 职责: 定义Grain接口
+- 引用:
+    - Orleans.Core.Abstract NuGet包
+    - MyApp.Orleans.Abstractions
+- 包含:
+    - IGrains/*.cs

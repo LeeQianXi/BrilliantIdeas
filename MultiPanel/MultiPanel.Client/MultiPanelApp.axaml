@@ -1,0 +1,18 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:locator="clr-namespace:MultiPanel.Client"
+             xmlns:semi="https://irihi.tech/semi"
+             x:Class="MultiPanel.Client.MultiPanelApp"
+             RequestedThemeVariant="Default">
+    <Application.Resources>
+        <ResourceDictionary>
+            <locator:ServiceLocator x:Key="ServiceLocator" />
+        </ResourceDictionary>
+    </Application.Resources>
+    <Application.Styles>
+        <!--<FluentTheme />-->
+        <semi:SemiTheme Locale="zh-CN" />
+        <semi:SemiPopupAnimations />
+        <StyleInclude Source="avares://AvaloniaUtility/Controls/CustomControls.axaml" />
+    </Application.Styles>
+</Application>
