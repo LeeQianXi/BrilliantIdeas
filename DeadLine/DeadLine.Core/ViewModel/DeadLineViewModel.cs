@@ -5,31 +5,33 @@ public partial class DeadLineViewModel(IServiceProvider serviceProvider) : ViewM
     private readonly SourceList<DeadLineItemInfo> _deadLineItems = new();
     private readonly IDeadLineInfoStorage _storage = serviceProvider.GetRequiredService<IDeadLineInfoStorage>();
     private bool _isLoaded;
+    private bool _isLoading;
     public override IServiceProvider ServiceProvider { get; } = serviceProvider;
     public override ILogger Logger { get; } = serviceProvider.GetRequiredService<ILogger<DeadLineViewModel>>();
     public Interaction<INewDeadLineItemView, DeadLineItemInfo?> ShowDialogInteraction { get; } = new();
 
-    public IEnumerable<DeadLineItemInfo> LoadDeadLineItems(CancellationToken token)
+    public async IAsyncEnumerable<DeadLineItemInfo> LoadDeadLineItems()
     {
-        if (_isLoaded)
+        if (_isLoading || _isLoaded)
         {
             Logger.LogInformation("Deadline items have already been loaded");
             yield break;
         }
 
-        IEnumerable<DeadLineItemInfo> items = [];
-        var completed = false;
-        _storage.BeginTransactionAsync(con =>
+        _isLoading = true;
+        try
         {
-            items = items.Concat(con.Table<DeadLineItemInfo>().ToList());
-            Logger.LogInformation("Loading deadline items From DataBase Success");
-            completed = true;
-        });
-        while (!completed) Thread.Sleep(2);
-        Logger.LogInformation("Loading deadline items To UIForm");
-        foreach (var item in items)
-            yield return item;
-        _isLoaded = true;
+            await foreach (var items in _storage.SelectDatasAsync(_ => true, 50))
+            foreach (var item in items)
+                yield return item;
+
+            Logger.LogInformation("Loading deadline items To UIForm");
+        }
+        finally
+        {
+            _isLoading = false;
+            _isLoaded = true;
+        }
     }
 
     public IObservable<IChangeSet<DeadLineItemInfo>> DeadLineItemsConnect()
@@ -49,14 +51,14 @@ public partial class DeadLineViewModel(IServiceProvider serviceProvider) : ViewM
             return;
         }
 
-        Logger.LogInformation("Success Get new deadline item {lii}", lii);
+        Logger.LogInformation("Success Get new deadline item {deadlineItem}", lii);
         await AddDeadLineItemCommand.ExecuteAsync(lii);
     }
 
     [RelayCommand]
     private async Task AddDeadLineItem(DeadLineItemInfo lii)
     {
-        Logger.LogInformation("Add New DeadLineItem {lii} To Display", lii);
+        Logger.LogInformation("Add New DeadLineItem To Display");
         _deadLineItems.Add(lii);
         lii.PropertyChanged += (sender, e) =>
         {
@@ -71,11 +73,11 @@ public partial class DeadLineViewModel(IServiceProvider serviceProvider) : ViewM
         };
         if (!_isLoaded)
         {
-            Logger.LogInformation("DeadlineItem {lii} is from DataBase", lii);
+            Logger.LogInformation("DeadlineItem {deadlineItem} is from DataBase", lii);
             return;
         }
 
-        Logger.LogInformation("Save DeadLineItem {lii} To DataBase", lii);
+        Logger.LogInformation("Save DeadLineItem {deadlineItem} To DataBase", lii);
         if (lii.PrimaryKey is -1 || await _storage.FindDataAsync(lii.PrimaryKey) is null)
             await _storage.InsertDataAsync(lii);
         else
@@ -85,17 +87,17 @@ public partial class DeadLineViewModel(IServiceProvider serviceProvider) : ViewM
     [RelayCommand]
     private async Task RemoveDeadLineItem(DeadLineItemInfo lii)
     {
-        Logger.LogInformation("Try  Remove DeadLineItem {key} From Display", lii.PrimaryKey);
+        _deadLineItems.Remove(lii);
+        Logger.LogInformation("Try Remove DeadLineItem {deadlineItem} From Display", lii);
         var info = await _storage.FindDataAsync(lii.PrimaryKey);
         if (info is null)
         {
-            Logger.LogInformation("DeadLineItem {key} not found in DataBase", lii.PrimaryKey);
+            Logger.LogInformation("DeadLineItem Id:{key} not found in DataBase", lii.PrimaryKey);
             return;
         }
 
-        _deadLineItems.Remove(lii);
         await _storage.DeleteDataAsync(lii.PrimaryKey);
-        Logger.LogInformation("Success Remove DeadLineItem {lii} From Display", lii);
+        Logger.LogInformation("Success Remove DeadLineItem From Display");
         SaveDeadLineItemsCommand.Execute(null);
     }
 

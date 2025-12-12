@@ -96,6 +96,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiPanel.Avalonia", "Mult
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiPanel.Client.Abstract", "MultiPanel\MultiPanel.Client.Abstract\MultiPanel.Client.Abstract.csproj", "{9EA00159-06D6-4A3E-A3D0-CFD6F0CBD70D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BreaTest", "BreaTest\BreaTest.csproj", "{8D8F1C69-B8EC-42A6-B7A2-EB3307D36021}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -230,6 +232,10 @@ Global
 		{9EA00159-06D6-4A3E-A3D0-CFD6F0CBD70D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9EA00159-06D6-4A3E-A3D0-CFD6F0CBD70D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9EA00159-06D6-4A3E-A3D0-CFD6F0CBD70D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D8F1C69-B8EC-42A6-B7A2-EB3307D36021}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D8F1C69-B8EC-42A6-B7A2-EB3307D36021}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D8F1C69-B8EC-42A6-B7A2-EB3307D36021}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D8F1C69-B8EC-42A6-B7A2-EB3307D36021}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C5FA2B9F-28D3-466C-9D36-71972E249943} = {6DC306D5-5976-424C-8331-8BFE202FE642}

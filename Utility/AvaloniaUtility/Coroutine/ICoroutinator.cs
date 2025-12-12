@@ -1,3 +1,5 @@
+// ReSharper disable CheckNamespace
+
 namespace AvaloniaUtility;
 
 public interface ICoroutinator
@@ -12,6 +14,14 @@ public static partial class Extensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Coroutine StartCoroutine(Func<IEnumerator<YieldInstruction?>> routine, bool createRunning = true)
+        {
+            ArgumentNullException.ThrowIfNull(cor);
+            ArgumentNullException.ThrowIfNull(routine);
+            return new Coroutine(routine.Invoke(), createRunning, cor.CoroutinatorCancelTokenSource.Token);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Coroutine StartCoroutine(Func<IAsyncEnumerator<YieldInstruction?>> routine, bool createRunning = true)
         {
             ArgumentNullException.ThrowIfNull(cor);
             ArgumentNullException.ThrowIfNull(routine);

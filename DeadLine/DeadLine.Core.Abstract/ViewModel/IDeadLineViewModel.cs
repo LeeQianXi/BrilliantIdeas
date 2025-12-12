@@ -17,6 +17,6 @@ public interface IDeadLineViewModel : IDependencyInjection
     IAsyncRelayCommand<DeadLineItemInfo> AddDeadLineItemCommand { get; }
     IAsyncRelayCommand<DeadLineItemInfo> RemoveDeadLineItemCommand { get; }
     IAsyncRelayCommand SaveDeadLineItemsCommand { get; }
-    IEnumerable<DeadLineItemInfo> LoadDeadLineItems(CancellationToken token);
+    IAsyncEnumerable<DeadLineItemInfo> LoadDeadLineItems();
     IObservable<IChangeSet<DeadLineItemInfo>> DeadLineItemsConnect();
 }

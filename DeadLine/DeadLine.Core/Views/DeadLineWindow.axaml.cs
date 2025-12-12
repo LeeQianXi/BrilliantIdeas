@@ -14,7 +14,8 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
         new(DeadLineFilterType.TimedOut, "已超时")
     ];
 
-    private readonly Coroutine _coroutine;
+    private readonly Coroutine? _loadingCoroutine;
+    private readonly Coroutine? _saveCoroutine;
 
     private bool _isClosed;
 
@@ -46,8 +47,9 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
             .Subscribe();
         DeadLineListBox.ItemsSource = displayedDeadLineItems;
         FilterTextBox.ItemsSource = filtercomboboxitems;
-        this.StartCoroutine(LoadExistedDeadLineItems);
-        _coroutine = this.StartCoroutine(TimeSpanSave);
+
+        _loadingCoroutine = this.StartCoroutine(LoadExistedDeadLineItems);
+        _saveCoroutine = this.StartCoroutine(TimeSpanSave);
     }
 
     public CancellationTokenSource CoroutinatorCancelTokenSource { get; } = new();
@@ -68,9 +70,9 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
                        text.Title.Contains(filter, StringComparison.OrdinalIgnoreCase);
     }
 
-    private IEnumerator<YieldInstruction?> LoadExistedDeadLineItems()
+    private async IAsyncEnumerator<YieldInstruction?> LoadExistedDeadLineItems()
     {
-        foreach (var item in ViewModel!.LoadDeadLineItems(CoroutinatorCancelTokenSource.Token))
+        await foreach (var item in ViewModel!.LoadDeadLineItems())
         {
             ViewModel!.AddDeadLineItemCommand.Execute(item);
             yield return null;
@@ -79,17 +81,18 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
 
     private IEnumerator<YieldInstruction?> TimeSpanSave()
     {
+        yield return new WaitForSeconds(TimeSpan.FromMinutes(5));
         while (!_isClosed)
         {
-            yield return new WaitForSeconds(TimeSpan.FromMinutes(5));
             ViewModel!.SaveDeadLineItemsCommand.Execute(null);
+            yield return new WaitForSeconds(TimeSpan.FromMinutes(5));
         }
     }
 
     private void Window_OnClosing(object? sender, WindowClosingEventArgs e)
     {
         _isClosed = true;
-        _coroutine.Close();
+        _saveCoroutine?.Close();
         ViewModel!.SaveDeadLineItemsCommand.Execute(null);
     }
 }

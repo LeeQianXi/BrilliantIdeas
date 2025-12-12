@@ -43,4 +43,9 @@ public class DeadLineItemInfo(string title, DateTime startTime, DateTime endTime
         startTime = StartTime;
         endTime = EndTime;
     }
+
+    public override string ToString()
+    {
+        return $"DeadLine[Title={Title}, StartTime={StartTime}, EndTime={EndTime}]";
+    }
 }
