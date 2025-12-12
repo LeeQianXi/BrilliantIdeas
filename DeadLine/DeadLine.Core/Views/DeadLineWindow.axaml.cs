@@ -89,7 +89,7 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
         }
     }
 
-    private void Window_OnClosing(object? sender, WindowClosingEventArgs e)
+    private void Window_OnUnloaded(object? sender, RoutedEventArgs e)
     {
         _isClosed = true;
         _saveCoroutine?.Close();

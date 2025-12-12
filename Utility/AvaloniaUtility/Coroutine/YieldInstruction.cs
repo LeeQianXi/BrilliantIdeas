@@ -44,7 +44,7 @@ public sealed record WaitForTask : YieldInstruction
 
     internal override async Task Execute(CancellationToken token)
     {
-        await _task.WaitAsync(token);
+        await _task.WaitAsync(token).ConfigureAwait(false);
     }
 }
 

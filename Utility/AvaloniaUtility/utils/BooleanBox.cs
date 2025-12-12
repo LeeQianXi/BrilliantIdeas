@@ -5,26 +5,26 @@ public sealed class BooleanBox
     public static readonly BooleanBox True = new(true);
     public static readonly BooleanBox False = new(false);
 
-    private readonly bool _value;
-
     private BooleanBox(bool value)
     {
-        _value = value;
+        Value = value;
     }
+
+    public bool Value { get; set; }
 
     public override bool Equals(object? obj)
     {
-        return obj is BooleanBox box ? _value.Equals(box._value) : _value.Equals(obj);
+        return obj is BooleanBox box ? Value.Equals(box.Value) : Value.Equals(obj);
     }
 
     public override int GetHashCode()
     {
-        return _value.GetHashCode();
+        return Value.GetHashCode();
     }
 
     public override string ToString()
     {
-        return _value.ToString();
+        return Value.ToString();
     }
 
     public static implicit operator BooleanBox(bool value)
@@ -34,6 +34,6 @@ public sealed class BooleanBox
 
     public static implicit operator bool(BooleanBox box)
     {
-        return box._value;
+        return box.Value;
     }
 }

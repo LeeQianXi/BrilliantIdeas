@@ -7,6 +7,7 @@ public sealed class Coroutine : IDisposable
     private readonly IAsyncEnumerator<YieldInstruction?>? _asyncIter;
     private readonly CancellationTokenRegistration _ctr;
     private readonly bool _isAsync;
+    private readonly object _stateLock = new();
     private readonly IEnumerator<YieldInstruction?>? _syncIter;
     private readonly CancellationToken _token;
 
@@ -22,12 +23,12 @@ public sealed class Coroutine : IDisposable
     /// <summary>
     ///     当前Corotine是否激活
     /// </summary>
-    private BooleanBox _isActive = false;
+    private bool _isActive;
 
     /// <summary>
     ///     是否正等待YieldInstruction指令
     /// </summary>
-    private bool _waiting;
+    private volatile bool _waiting;
 
     internal Coroutine(IEnumerator<YieldInstruction?> iter, bool createRunning, CancellationToken token)
     {
@@ -60,8 +61,19 @@ public sealed class Coroutine : IDisposable
 
     public void Dispose()
     {
-        if (_disposed) return;
-        _disposed = true;
+        var shouldDispose = false;
+        lock (_stateLock) //保护_disposed检查
+        {
+            if (!_disposed)
+            {
+                shouldDispose = true;
+                _disposed = true;
+                _isActive = false;
+            }
+        }
+
+        if (!shouldDispose) return;
+
         _ctr.Dispose();
         _syncIter?.Dispose();
         if (_asyncIter != null)
@@ -78,25 +90,34 @@ public sealed class Coroutine : IDisposable
     /// </summary>
     public event Action<Exception?>? Faulted;
 
-    private void OnTick()
+    private async Task OnTick()
     {
-        var start = Internal.Sw.Elapsed.TotalMilliseconds;
-        if (_disposed || _token.IsCancellationRequested)
+        // 在锁内检查状态，避免竞态
+        lock (_stateLock)
         {
-            Dispose();
-            return;
+            if (_disposed || _token.IsCancellationRequested || _waiting || !_isActive)
+                return;
         }
 
+        var start = Internal.Sw.Elapsed.TotalMilliseconds;
         try
         {
-            if (!MoveToNextInstruction())
+            // 每个await后重新检查状态
+            lock (_stateLock)
+            {
+                if (_disposed) return;
+            }
+
+            var hasNext = await MoveToNextInstruction().ConfigureAwait(false);
+
+            if (!hasNext)
             {
                 CompleteCoroutine();
                 return;
             }
 
-            if (_currentInstruction is null) return;
-            ExecuteYieldInstruction();
+            if (_currentInstruction is not null)
+                ExecuteYieldInstruction();
         }
         catch (OperationCanceledException)
         {
@@ -113,15 +134,11 @@ public sealed class Coroutine : IDisposable
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool MoveToNextInstruction()
+    private async Task<bool> MoveToNextInstruction()
     {
         try
         {
-            return _isAsync ? MoveToNextAsync().GetAwaiter().GetResult() : MoveToNextSync();
-        }
-        catch (OperationCanceledException)
-        {
-            throw; // 不包装
+            return _isAsync ? await MoveToNextAsync() : MoveToNextSync();
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -133,15 +150,20 @@ public sealed class Coroutine : IDisposable
         }
     }
 
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private async Task<bool> MoveToNextAsync()
     {
-        // 检查取消令牌
-        if (_token.IsCancellationRequested)
-            _token.ThrowIfCancellationRequested();
-        // 异步移动
+        _token.ThrowIfCancellationRequested();
+        var tmp = _waiting;
+        _waiting = true;
         if (!await _asyncIter!.MoveNextAsync().ConfigureAwait(false)) return false;
+        _waiting = tmp;
+        // 检查 disposed
+        lock (_stateLock)
+        {
+            if (_disposed) return false;
+        }
+
         _currentInstruction = _asyncIter.Current;
         return true;
     }
@@ -150,8 +172,7 @@ public sealed class Coroutine : IDisposable
     private bool MoveToNextSync()
     {
         // 检查取消令牌
-        if (_token.IsCancellationRequested)
-            _token.ThrowIfCancellationRequested();
+        _token.ThrowIfCancellationRequested();
         // 同步移动
         if (!_syncIter!.MoveNext()) return false;
         _currentInstruction = _syncIter.Current;
@@ -178,14 +199,14 @@ public sealed class Coroutine : IDisposable
         if (_currentInstruction is null) return;
         _waiting = true;
         _currentInstruction.Execute(_token)
-            .ContinueWith(OnInstructionCompleted, TaskScheduler.FromCurrentSynchronizationContext());
+            .ContinueWith(OnInstructionCompleted, TaskScheduler.Current);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void OnInstructionCompleted(Task task)
     {
-        if (_disposed) return;
         _waiting = false;
+        if (_disposed) return;
         if (!task.IsFaulted) return;
         var ex = task.Exception?.GetBaseException() ?? new Exception("Unknown coroutine error");
         HandleCoroutineException(ex);
@@ -207,8 +228,7 @@ public sealed class Coroutine : IDisposable
 
     public void Stop()
     {
-        if (!_isActive) return;
-        lock (_isActive)
+        lock (_stateLock)
         {
             if (!_isActive) return;
             _isActive = false;
@@ -217,8 +237,7 @@ public sealed class Coroutine : IDisposable
 
     public void Continue()
     {
-        if (_isActive) return;
-        lock (_isActive)
+        lock (_stateLock)
         {
             if (_isActive) return;
             _isActive = true;
@@ -229,6 +248,7 @@ public sealed class Coroutine : IDisposable
     {
         Dispose();
     }
+
 
     public override int GetHashCode()
     {
@@ -254,7 +274,7 @@ public sealed class Coroutine : IDisposable
             CoroutineIdField = typeof(Coroutine).GetRuntimeField(nameof(CoroutineId))!;
 
             Sw = Stopwatch.StartNew();
-            GlobalTimer = new DispatcherTimer(DispatcherPriority.Render)
+            GlobalTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(1)
             };
@@ -267,7 +287,7 @@ public sealed class Coroutine : IDisposable
             var delta = Sw.Elapsed.TotalMilliseconds;
             Sw.Restart();
             Accumulator += delta;
-            if (Accumulator >= FrameTime)
+            if (Accumulator > FrameTime)
                 OnGlobalFrame();
             Accumulator %= FrameTime;
         }
@@ -277,7 +297,7 @@ public sealed class Coroutine : IDisposable
         {
             lock (ToAdd)
             {
-                if (ToAdd.Count is not 0)
+                if (ToAdd.Count != 0)
                 {
                     Instances.UnionWith(ToAdd);
                     ToAdd.Clear();
@@ -287,32 +307,36 @@ public sealed class Coroutine : IDisposable
             List<Coroutine>? toRemove = null;
             foreach (var cor in Instances)
             {
-                if (cor._disposed)
+                bool isDisposed, isActive, isWaiting;
+                lock (cor._stateLock) // 读取状态时加锁
+                {
+                    isDisposed = cor._disposed;
+                    isActive = cor._isActive;
+                    isWaiting = cor._waiting;
+                }
+
+                if (isDisposed)
+                {
                     (toRemove ??= []).Add(cor);
-                if (!cor._isActive || cor._waiting) continue;
+                    continue;
+                }
+
+                if (!isActive || isWaiting) continue;
                 Dispatcher.UIThread.Invoke(cor.OnTick);
             }
 
-            if (toRemove is not null)
-                Instances.UnionWith(toRemove);
+            if (toRemove is null) return;
+            Instances.ExceptWith(toRemove);
         }
 
         public static void RegisterInstance(Coroutine coroutine)
         {
             ArgumentNullException.ThrowIfNull(coroutine);
-            CoroutineIdField.SetValue(coroutine, _nextId);
-            try
-            {
-                lock (ToAdd)
-                {
-                    ToAdd.Add(coroutine);
-                }
 
-                _nextId++;
-            }
-            catch (ArgumentException e)
+            lock (ToAdd) // 在锁内分配ID
             {
-                //TODO:整理序数
+                CoroutineIdField.SetValue(coroutine, Interlocked.Increment(ref _nextId));
+                ToAdd.Add(coroutine);
             }
         }
     }

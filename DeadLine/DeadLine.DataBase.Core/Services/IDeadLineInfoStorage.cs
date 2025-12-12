@@ -1,5 +1,3 @@
 namespace DeadLine.DataBase.Core.Services;
 
-public interface IDeadLineInfoStorage : IStorageBasic<DeadLineItemInfo>
-{
-}
+public interface IDeadLineInfoStorage : IStorageBasic<DeadLineItemInfo>;

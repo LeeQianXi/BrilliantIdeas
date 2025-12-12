@@ -11,7 +11,7 @@
         MinWidth="410" MinHeight="300"
         Icon="avares://DeadLine.Core/Assets/avalonia-logo.ico"
         x:Class="DeadLine.Core.Views.DeadLineWindow"
-        Closing="Window_OnClosing"
+        Unloaded="Window_OnUnloaded"
         DataContext="{Binding DeadLineViewModel,Source={StaticResource ServiceLocator}}"
         Title="DeadLine">
     <Window.Resources>

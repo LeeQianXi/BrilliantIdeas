@@ -57,6 +57,7 @@ public partial class CountdownTimerView : PluginView, ICoroutinator
                 if (Picker.SelectedTime is null) return;
                 Progress.Maximum = Picker.SelectedTime.Value.TotalSeconds;
                 _coroutine = this.StartCoroutine(ProgressTick);
+                _coroutine.Completed += CountdownCompleted;
                 TimerState = CountdownTimerState.Running;
                 break;
             case CountdownTimerState.Running:
@@ -100,8 +101,6 @@ public partial class CountdownTimerView : PluginView, ICoroutinator
             Progress.Value--;
             yield return new WaitForSeconds(1000);
         }
-
-        CountdownCompleted();
     }
 
 
