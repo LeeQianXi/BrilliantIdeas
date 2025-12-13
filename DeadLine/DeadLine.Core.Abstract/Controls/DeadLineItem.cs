@@ -6,15 +6,6 @@ namespace DeadLine.Core.Abstract.Controls;
 [TemplatePart("PART_Remove", typeof(Button))]
 public partial class DeadLineItem : TemplatedControl, ICoroutinator
 {
-    public static readonly DirectProperty<DeadLineItem, double> ProgressProperty =
-        AvaloniaProperty.RegisterDirect<DeadLineItem, double>(nameof(Progress), o => o.Progress);
-
-    public static readonly DirectProperty<DeadLineItem, TimeSpan> RemainingTimeProperty =
-        AvaloniaProperty.RegisterDirect<DeadLineItem, TimeSpan>(nameof(RemainingTime), o => o.RemainingTime);
-
-    public static readonly DirectProperty<DeadLineItem, bool> WithDescriptionProperty =
-        AvaloniaProperty.RegisterDirect<DeadLineItem, bool>(nameof(WithDescription), o => o.WithDescription);
-
     private readonly Coroutine _coroutine;
     private CheckBox? _partDoneWork;
     private ProgressBar? _partProgressBar;
@@ -31,29 +22,9 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
     [GeneratedStyledProperty] public partial DateTime StartTime { get; set; }
     [GeneratedStyledProperty] public partial DateTime EndTime { get; set; }
     [GeneratedStyledProperty] public partial DeadLineStatus Status { get; set; }
-
-    public double Progress
-    {
-        get;
-        private set
-        {
-            OnProgressChanged(value);
-            SetAndRaise(ProgressProperty, ref field, value);
-        }
-    }
-
-    public bool WithDescription
-    {
-        get;
-        private set => SetAndRaise(WithDescriptionProperty, ref field, value);
-    }
-
-    public TimeSpan RemainingTime
-    {
-        get;
-        private set => SetAndRaise(RemainingTimeProperty, ref field, value);
-    }
-
+    [GeneratedDirectProperty] public partial double Progress { get; set; }
+    [GeneratedDirectProperty] public partial bool WithDescription { get; set; }
+    [GeneratedDirectProperty] public partial TimeSpan RemainingTime { get; set; }
     public CancellationTokenSource CoroutinatorCancelTokenSource { get; } = new();
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
@@ -65,7 +36,7 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
         _partRemove!.Click += OnRemoveClick;
         _partDoneWork!.IsCheckedChanged += OnDongWorkChanged;
         OnStatusPropertyChanged(Status);
-        OnProgressChanged(Progress);
+        OnProgressPropertyChanged(Progress);
     }
 
     partial void OnDescriptionPropertyChanged(string newValue)
@@ -85,37 +56,40 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
         if (_partDoneWork is null) return;
         if (!_partDoneWork.IsChecked!.Value) return;
         Status = DeadLineStatus.Done;
+        Progress = 1;
     }
 
-    /// <summary>
-    ///     计算Progress改变,影响ProgressBar样式
-    /// </summary>
-    /// <param name="progress"></param>
-    partial void OnProgressChanged(double progress);
-
-    partial void OnProgressChanged(double progress)
+    partial void OnProgressPropertyChanged(double newValue)
     {
         if (_partProgressBar is null) return;
         _partProgressBar.Classes.Clear();
-        if (Status is DeadLineStatus.TimedOut)
+        switch (Status)
         {
-            _partProgressBar.Classes.Add("Error");
-            return;
-        }
-
-        switch (progress)
-        {
-            case >= 1d:
-                _partProgressBar.Classes.Add("Primary");
-                break;
-            case > 0.3d:
-                _partProgressBar.Classes.Add("Secondary");
-                break;
-            case > 0.1d:
-                _partProgressBar.Classes.Add("Warning");
-                break;
-            default:
+            case DeadLineStatus.TimedOut:
                 _partProgressBar.Classes.Add("Error");
+                return;
+            case DeadLineStatus.Done:
+                _partProgressBar.Classes.Add("Success");
+                return;
+            case DeadLineStatus.ToDo:
+            case DeadLineStatus.Doing:
+            default:
+                switch (newValue)
+                {
+                    case >= 1d:
+                        _partProgressBar.Classes.Add("Primary");
+                        break;
+                    case > 0.3d:
+                        _partProgressBar.Classes.Add("Secondary");
+                        break;
+                    case > 0.1d:
+                        _partProgressBar.Classes.Add("Warning");
+                        break;
+                    default:
+                        _partProgressBar.Classes.Add("Error");
+                        break;
+                }
+
                 break;
         }
     }
@@ -170,6 +144,12 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
 
         double CalcDuring()
         {
+            if (Status is DeadLineStatus.Done or DeadLineStatus.TimedOut)
+            {
+                RemainingTime = TimeSpan.Zero;
+                return 1;
+            }
+
             var now = DateTime.Now;
             if (now < StartTime)
             {
@@ -180,10 +160,10 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
 
             if (now > EndTime)
             {
-                if (Status is DeadLineStatus.Doing)
+                if (Status is not DeadLineStatus.Done)
                     Status = DeadLineStatus.TimedOut;
                 RemainingTime = TimeSpan.Zero;
-                return 0;
+                return 1;
             }
 
             if (Status is DeadLineStatus.ToDo)
