@@ -12,7 +12,19 @@
     <Border>
         <DockPanel LastChildFill="True" Background="LightCyan">
             <Panel DockPanel.Dock="Top">
-                <TextBlock Theme="{DynamicResource TitleTextBlock}" Classes="H2" Text="新建任务" TextAlignment="Center" />
+                <TextBlock Name="PART_Title" Theme="{DynamicResource TitleTextBlock}" Classes="H2" Text="新建任务"
+                           TextAlignment="Center"
+                           VerticalAlignment="Stretch" HorizontalAlignment="Center">
+                    <FlyoutBase.AttachedFlyout>
+                        <Flyout ShowMode="Transient" Placement="Bottom" VerticalOffset="20">
+                            <Border>
+                                <TextBlock Name="PART_FlyoutText" FontSize="18" FontWeight="Black"
+                                           TextAlignment="Center"
+                                           VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
+                            </Border>
+                        </Flyout>
+                    </FlyoutBase.AttachedFlyout>
+                </TextBlock>
             </Panel>
             <Panel DockPanel.Dock="Bottom">
                 <UniformGrid Columns="2" VerticalAlignment="Center">
