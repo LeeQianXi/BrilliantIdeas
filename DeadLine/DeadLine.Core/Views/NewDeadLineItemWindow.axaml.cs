@@ -1,5 +1,3 @@
-using Avalonia.Controls.Primitives;
-
 namespace DeadLine.Core.Views;
 
 public partial class NewDeadLineItemWindow : Window, INewDeadLineItemView

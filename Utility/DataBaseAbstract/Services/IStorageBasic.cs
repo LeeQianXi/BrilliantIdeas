@@ -1,5 +1,3 @@
-using System.Linq.Expressions;
-
 namespace DataBaseAbstract.Services;
 
 public interface IStorageBasic<TData> where TData : IModelBasic, new()

@@ -1,8 +1,3 @@
-using Avalonia;
-using Avalonia.Controls.Metadata;
-using Avalonia.Controls.Primitives;
-using Avalonia.Interactivity;
-using PropertyGenerator.Avalonia;
 using TaskStatus = ToDoList.DataBase.Models.TaskStatus;
 
 namespace ToDoList.Core.Abstract.Controls;

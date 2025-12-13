@@ -1,5 +1,3 @@
-using System.Linq.Expressions;
-
 namespace DataBaseAbstract.Storage;
 
 public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(dbName), IStorageBasic<TData>

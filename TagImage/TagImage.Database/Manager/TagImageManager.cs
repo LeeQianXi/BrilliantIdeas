@@ -1,5 +1,3 @@
-using System.Linq.Expressions;
-
 namespace TagImage.Database.Manager;
 
 public sealed class TagImageManager : ITagImageManager

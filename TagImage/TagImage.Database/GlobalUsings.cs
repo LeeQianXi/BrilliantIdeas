@@ -1,5 +1,6 @@
 // global using 指令
 
+global using System.Linq.Expressions;
 global using DataBaseAbstract.Services;
 global using DataBaseAbstract.Storage;
 global using Microsoft.Extensions.DependencyInjection;

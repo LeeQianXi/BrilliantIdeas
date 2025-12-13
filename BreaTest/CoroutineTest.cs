@@ -1,7 +1,4 @@
-﻿using System.Diagnostics;
-using AvaloniaUtility;
-
-namespace BreaTest;
+﻿namespace BreaTest;
 
 public class CoroutineTest : ICoroutinator
 {
