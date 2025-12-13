@@ -5,17 +5,17 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["MultiPanel/MultiPanelServer/MultiPanelServer.csproj", "MultiPanel/MultiPanelServer/"]
-RUN dotnet restore "MultiPanel/MultiPanelServer/MultiPanelServer.csproj"
+COPY ["MultiPanel/MultiPanel.Silo/MultiPanel.Silo.csproj", "MultiPanel/MultiPanel.Silo/"]
+RUN dotnet restore "MultiPanel/MultiPanel.Silo/MultiPanel.Silo.csproj"
 COPY . .
-WORKDIR "/src/MultiPanel/MultiPanelServer"
-RUN dotnet build "./MultiPanelServer.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/MultiPanel/MultiPanel.Silo"
+RUN dotnet build "./MultiPanel.Silo.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./MultiPanelServer.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./MultiPanel.Silo.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "MultiPanelServer.dll"]
+ENTRYPOINT ["dotnet", "MultiPanel.Silo.dll"]

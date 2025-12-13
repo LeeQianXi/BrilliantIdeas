@@ -17,7 +17,7 @@ internal class SplashViewModel(IServiceProvider serviceProvider) : ViewModelBase
 
     public async IAsyncEnumerator<YieldInstruction?> LoadGroupInfo()
     {
-        await foreach (var items in _backGroupStorage.SelectDatasAsync(_ => true, 50))
+        await foreach (var items in _backGroupStorage.SelectDatasAsync(50))
         foreach (var item in items)
         {
             _mainMenuViewModel.AddInitWithGroup(item);
@@ -27,7 +27,7 @@ internal class SplashViewModel(IServiceProvider serviceProvider) : ViewModelBase
 
     public async IAsyncEnumerator<YieldInstruction?> LoadTaskInfo()
     {
-        await foreach (var items in _backLogStorage.SelectDatasAsync(_ => true, 50))
+        await foreach (var items in _backLogStorage.SelectDatasAsync(50))
         foreach (var item in items)
         {
             _mainMenuViewModel.AddInitWithTask(item);

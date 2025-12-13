@@ -3,5 +3,5 @@
     image: multipanelserver
     build:
       context: .
-      dockerfile: MultiPanel/MultiPanelServer/Dockerfile
+      dockerfile: MultiPanel/MultiPanel.Silo/Dockerfile
 

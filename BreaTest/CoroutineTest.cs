@@ -6,11 +6,11 @@ namespace BreaTest;
 public class CoroutineTest : ICoroutinator
 {
     public CancellationTokenSource CoroutinatorCancelTokenSource { get; } = new();
-    
+
     [Fact]
     public void TestSync()
     {
-        int count = 1000;
+        var count = 1000;
         foreach (var i in Enumerable.Range(0, count))
             this.StartCoroutine(SyncAction).Completed += CompleteCount;
         while (count <= 0) ;
@@ -21,10 +21,11 @@ public class CoroutineTest : ICoroutinator
             count--;
         }
     }
+
     [Fact]
     public void TestAsync()
     {
-        int count = 1000;
+        var count = 1000;
         foreach (var i in Enumerable.Range(0, count))
             this.StartCoroutine(AsyncAction).Completed += CompleteCount;
         while (count <= 0) ;
@@ -35,6 +36,7 @@ public class CoroutineTest : ICoroutinator
             count--;
         }
     }
+
     private static IEnumerator<YieldInstruction?> SyncAction()
     {
         var l = new List<int>();
@@ -44,6 +46,7 @@ public class CoroutineTest : ICoroutinator
             yield return null;
             Debug.WriteLine("SyncAction: " + i);
         }
+
         Display(l);
     }
 
@@ -56,6 +59,7 @@ public class CoroutineTest : ICoroutinator
             yield return null;
             Debug.WriteLine("AsyncAction: " + i);
         }
+
         Display(l);
     }
 

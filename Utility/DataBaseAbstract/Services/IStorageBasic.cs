@@ -29,6 +29,11 @@ public interface IStorageBasic<TData> where TData : IModelBasic, new()
     Task<TV?> FindDataAsync<TV>(int key, Transform<TData, TV> select);
 
     //根据条件查询
+    IAsyncEnumerable<IEnumerable<TData>> SelectDatasAsync(int limit = 0);
+
+    IAsyncEnumerable<IEnumerable<TV>> SelectDatasAsync<TV>(Transform<TData, TV> select,
+        int limit = 0);
+
     IAsyncEnumerable<IEnumerable<TData>> SelectDatasAsync(Expression<Func<TData, bool>> predicate, int limit = 0);
 
     IAsyncEnumerable<IEnumerable<TV>> SelectDatasAsync<TV>(Expression<Func<TData, bool>> predicate,

@@ -21,7 +21,7 @@ public partial class DeadLineViewModel(IServiceProvider serviceProvider) : ViewM
         _isLoading = true;
         try
         {
-            await foreach (var items in _storage.SelectDatasAsync(_ => true, 50))
+            await foreach (var items in _storage.SelectDatasAsync(50))
             foreach (var item in items)
                 yield return item;
 
@@ -38,6 +38,7 @@ public partial class DeadLineViewModel(IServiceProvider serviceProvider) : ViewM
     {
         return _deadLineItems.Connect();
     }
+
 
     [RelayCommand]
     private async Task NewDeadLineItem()

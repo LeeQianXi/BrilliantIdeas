@@ -68,7 +68,7 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
         OnProgressChanged(Progress);
     }
 
-    partial void OnDescriptionPropertyChanged(string? newValue)
+    partial void OnDescriptionPropertyChanged(string newValue)
     {
         WithDescription = !string.IsNullOrWhiteSpace(newValue);
     }
