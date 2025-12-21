@@ -1,19 +1,24 @@
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using MultiPanel.Client.Orleans;
 using NetUtility.Singleton;
 
 namespace MultiPanel.Client;
 
 public class ServiceLocator : StaticSingleton<ServiceLocator>
 {
-    private static IHost _clientHost = null!;
+    private static IServiceProvider _serviceProvider = null!;
 
-    public IHost ClientHost
+    public IServiceProvider ServiceProvider
     {
-        get => _clientHost;
-        set => _clientHost = value;
+        get => _serviceProvider;
+        set => _serviceProvider = value;
     }
 
-    public IClusterClient ClusterClient => _clientHost.Services.GetRequiredService<IClusterClient>();
-    public IServiceProvider ServiceProvider => _clientHost.Services;
+    public IClientContext ClientContext => ServiceProvider.GetRequiredService<IClientContext>();
+
+    public ILogger<T> GetLogger<T>()
+    {
+        return ServiceProvider.GetRequiredService<ILogger<T>>();
+    }
 }

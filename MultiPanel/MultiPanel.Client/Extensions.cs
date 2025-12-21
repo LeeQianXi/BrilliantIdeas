@@ -15,7 +15,7 @@ public static class Extensions
                 .AddSingleton<IStartupWindow, TStartUp>();
         }
 
-        public IServiceCollection UseDeadLineCore()
+        public IServiceCollection UseMultiPanelClient()
         {
             return collection;
         }
