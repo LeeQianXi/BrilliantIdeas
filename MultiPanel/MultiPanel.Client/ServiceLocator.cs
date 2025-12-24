@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MultiPanel.Client.Abstract.ViewModels;
 using MultiPanel.Client.Orleans;
 using NetUtility.Singleton;
 
@@ -16,6 +17,8 @@ public class ServiceLocator : StaticSingleton<ServiceLocator>
         get => _clientContext;
         set => _clientContext = value;
     }
+
+    public ILoginInViewModel LoginInViewModel => ServiceProvider.GetRequiredService<ILoginInViewModel>();
 
     public ILogger<T> GetLogger<T>()
     {

@@ -1,5 +1,7 @@
 using AvaloniaUtility.Services;
 using Microsoft.Extensions.DependencyInjection;
+using MultiPanel.Client.Abstract.ViewModels;
+using MultiPanel.Client.ViewModels;
 using MultiPanel.Interfaces;
 
 namespace MultiPanel.Client;
@@ -19,7 +21,9 @@ public static class Extensions
         public IServiceCollection UseMultiPanelClient()
         {
             return collection
-                .UseMultiPanelOrleansServices();
+                    .UseMultiPanelOrleansServices()
+                    .AddSingleton<ILoginInViewModel, LoginInViewModel>()
+                ;
         }
     }
 }

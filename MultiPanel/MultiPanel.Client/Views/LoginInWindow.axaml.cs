@@ -1,20 +1,18 @@
-using Avalonia.Controls;
 using AvaloniaUtility;
 using AvaloniaUtility.Services;
+using AvaloniaUtility.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MultiPanel.Client.Abstract.ViewModels;
 using MultiPanel.Interfaces.IGrains;
 using MultiPanel.Shared.Services;
 
 namespace MultiPanel.Client.Views;
 
-public partial class StartUpLoadingWindow : Window, IStartupWindow, ICoroutinator
+public partial class LoginInWindow : ViewModelWindowBase<ILoginInViewModel>, IStartupWindow, ICoroutinator
 {
-    private readonly ILogger _logger;
-
-    public StartUpLoadingWindow()
+    public LoginInWindow()
     {
-        _logger = ServiceLocator.Instance.GetLogger<StartUpLoadingWindow>();
         InitializeComponent();
         this.StartCoroutine(ConnectionVerify);
     }
@@ -23,7 +21,7 @@ public partial class StartUpLoadingWindow : Window, IStartupWindow, ICoroutinato
 
     private async IAsyncEnumerator<YieldInstruction?> ConnectionVerify()
     {
-        _logger.LogInformation("Trying to connect to server");
+        ViewModel!.Logger.LogInformation("Trying to connect to server");
         yield return null;
         if (await ServiceLocator.Instance.ClientContext.TryConnect())
             await ConnectionSuccess();
@@ -33,27 +31,27 @@ public partial class StartUpLoadingWindow : Window, IStartupWindow, ICoroutinato
 
     private async Task ConnectionFailed()
     {
-        _logger.LogWarning("Connection failed, Program will be closed soon.");
+        ViewModel!.Logger.LogWarning("Connection failed, Program will be closed soon.");
         await Task.Delay(500);
         Close();
     }
 
     private async Task ConnectionSuccess()
     {
-        _logger.LogInformation("Connection successful, Jump to Main Window soon.");
+        ViewModel!.Logger.LogInformation("Connection successful, Jump to Main Window soon.");
         await Task.Delay(500);
 
         var uag = ServiceLocator.Instance.ClientContext.Client.GetGrain<IUserAccountGrain>("Dev");
         if (await uag.ValidatePassword("123456"))
         {
-            _logger.LogInformation("Successfully validated password");
+            ViewModel!.Logger.LogInformation("Successfully validated password");
         }
         else
         {
-            _logger.LogInformation("Failed to validate password");
+            ViewModel!.Logger.LogInformation("Failed to validate password");
             await uag.SetPasswordHash(ServiceLocator.Instance.ServiceProvider.GetRequiredService<IPasswordHasher>()
                 .Hash("123456"));
-            _logger.LogInformation("Successfully change password");
+            ViewModel!.Logger.LogInformation("Successfully change password");
         }
 
         if (await uag.ValidatePassword("123456"))

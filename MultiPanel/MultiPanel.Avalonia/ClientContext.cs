@@ -70,7 +70,7 @@ public class ClientContext : StaticSingleton<ClientContext>, IClientContext
     {
         collection
             .AddSingleton<IClientContext, ClientContext>(_ => Instance)
-            .UseAvaloniaCore<StartUpLoadingWindow>()
+            .UseAvaloniaCore<LoginInWindow>()
             .UseMultiPanelClient();
     }
 

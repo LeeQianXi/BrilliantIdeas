@@ -1,0 +1,31 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DesignWidth="800" d:DesignHeight="450"
+        Width="800" Height="450"
+        MinWidth="380" MinHeight="440"
+        Background="{DynamicResource BackgroundBrush}"
+        WindowStartupLocation="CenterScreen"
+        x:Class="MultiPanel.Client.Views.LoginInWindow"
+        DataContext="{Binding LoginInViewModel, Source={StaticResource ServiceLocator}}"
+        Title="LoginInWindow">
+    <Window.Resources>
+        <ImageBrush x:Key="BackgroundBrush" Source="avares://MultiPanel.Client/Assets/login_bg.jpg"
+                    Stretch="UniformToFill" />
+        <SolidColorBrush x:Key="HoverBackgroundBrush" Color="#88ffffff" />
+    </Window.Resources>
+    <Grid RowDefinitions="*,Auto,*" ColumnDefinitions="*,Auto,*" Margin="40,25">
+        <Border Grid.Row="1" Grid.Column="1"
+                Background="{DynamicResource HoverBackgroundBrush}" CornerRadius="15" Padding="15">
+            <StackPanel Width="240" Spacing="10">
+                <TextBox Watermark="账号" UseFloatingWatermark="True" />
+                <TextBox Watermark="账号" UseFloatingWatermark="True" Classes="FloatingTextBox FloatingClearButton" />
+                <TextBox Watermark="密码" UseFloatingWatermark="True"
+                         Classes="FloatingTextBox FloatingRevealPasswordButton"
+                         PasswordChar="*" RevealPassword="True" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

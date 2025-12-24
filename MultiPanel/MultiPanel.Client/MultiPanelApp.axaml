@@ -14,5 +14,6 @@
         <semi:SemiTheme Locale="zh-CN" />
         <semi:SemiPopupAnimations />
         <StyleInclude Source="avares://AvaloniaUtility/Controls/CustomControls.axaml" />
+        <StyleInclude Source="avares://MultiPanel.Client.Abstract/Styles/CustomStyles.axaml" />
     </Application.Styles>
 </Application>
