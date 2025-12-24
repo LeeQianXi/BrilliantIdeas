@@ -11,12 +11,13 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Orleans.Server" Version="9.2.1"/>
+        <ProjectReference Include="..\MultiPanel.Grains\MultiPanel.Grains.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\MultiPanel.Abstractions\MultiPanel.Abstractions.csproj"/>
-        <ProjectReference Include="..\MultiPanel.Grains\MultiPanel.Grains.csproj"/>
-        <ProjectReference Include="..\MultiPanel.Interfaces\MultiPanel.Interfaces.csproj"/>
+        <PackageReference Include="Microsoft.Orleans.Persistence.AdoNet" Version="9.2.1"/>
+        <PackageReference Include="Microsoft.Orleans.Clustering.Redis" Version="9.2.1"/>
+        <PackageReference Include="MySql.Data" Version="9.5.0"/>
     </ItemGroup>
 
     <ItemGroup>

@@ -80,6 +80,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CDEA1C1F-2F5D-41D4-BF9F-E4F6DFE657DD}"
 	ProjectSection(SolutionItems) = preProject
 		compose.yaml = compose.yaml
+		.gitignore = .gitignore
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiPanel.Client", "MultiPanel\MultiPanel.Client\MultiPanel.Client.csproj", "{32994640-F6B7-449E-A4F9-864ACDFF0C2D}"

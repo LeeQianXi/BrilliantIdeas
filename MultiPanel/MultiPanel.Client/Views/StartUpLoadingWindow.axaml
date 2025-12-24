@@ -8,5 +8,12 @@
         WindowStartupLocation="CenterScreen"
         x:Class="MultiPanel.Client.Views.StartUpLoadingWindow"
         Title="StartUpLoadingWindow">
-    Welcome to Avalonia!
+    <Border>
+        <Grid RowDefinitions="*,Auto,*" ColumnDefinitions="*,Auto,*">
+            <Border Grid.Row="1" Grid.Column="1"
+                    Background="Aqua" CornerRadius="15">
+                <Control Width="200" Height="300" />
+            </Border>
+        </Grid>
+    </Border>
 </Window>

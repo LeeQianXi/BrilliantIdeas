@@ -7,15 +7,15 @@ namespace MultiPanel.Client;
 
 public class ServiceLocator : StaticSingleton<ServiceLocator>
 {
-    private static IServiceProvider _serviceProvider = null!;
+    private static IClientContext _clientContext = null!;
 
-    public IServiceProvider ServiceProvider
+    public IServiceProvider ServiceProvider => _clientContext.ServiceProvider;
+
+    public IClientContext ClientContext
     {
-        get => _serviceProvider;
-        set => _serviceProvider = value;
+        get => _clientContext;
+        set => _clientContext = value;
     }
-
-    public IClientContext ClientContext => ServiceProvider.GetRequiredService<IClientContext>();
 
     public ILogger<T> GetLogger<T>()
     {

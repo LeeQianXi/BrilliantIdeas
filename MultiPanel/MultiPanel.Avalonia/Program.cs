@@ -17,7 +17,7 @@ public class Program
 
     public static AppBuilder BuildAvaloniaApp()
     {
-        ServiceLocator.Instance.ServiceProvider = ClientContext.Instance.ServiceProvider;
+        ServiceLocator.Instance.ClientContext = ClientContext.Instance;
         return AppBuilder.Configure<MultiPanelApp>()
             .UsePlatformDetect()
             .WithInterFont()

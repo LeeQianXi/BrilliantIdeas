@@ -1,7 +1,10 @@
 using Avalonia.Controls;
 using AvaloniaUtility;
 using AvaloniaUtility.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MultiPanel.Interfaces.IGrains;
+using MultiPanel.Shared.Services;
 
 namespace MultiPanel.Client.Views;
 
@@ -14,7 +17,6 @@ public partial class StartUpLoadingWindow : Window, IStartupWindow, ICoroutinato
         _logger = ServiceLocator.Instance.GetLogger<StartUpLoadingWindow>();
         InitializeComponent();
         this.StartCoroutine(ConnectionVerify);
-        ServiceLocator.Instance.ClientContext.TryConnect();
     }
 
     public CancellationTokenSource CoroutinatorCancelTokenSource { get; } = new();
@@ -40,5 +42,23 @@ public partial class StartUpLoadingWindow : Window, IStartupWindow, ICoroutinato
     {
         _logger.LogInformation("Connection successful, Jump to Main Window soon.");
         await Task.Delay(500);
+
+        var uag = ServiceLocator.Instance.ClientContext.Client.GetGrain<IUserAccountGrain>("Dev");
+        if (await uag.ValidatePassword("123456"))
+        {
+            _logger.LogInformation("Successfully validated password");
+        }
+        else
+        {
+            _logger.LogInformation("Failed to validate password");
+            await uag.SetPasswordHash(ServiceLocator.Instance.ServiceProvider.GetRequiredService<IPasswordHasher>()
+                .Hash("123456"));
+            _logger.LogInformation("Successfully change password");
+        }
+
+        if (await uag.ValidatePassword("123456"))
+        {
+            var ui = await uag.GetUserInfo();
+        }
     }
 }

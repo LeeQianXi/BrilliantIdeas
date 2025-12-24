@@ -8,15 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="9.2.1"/>
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\MultiPanel.Abstractions\MultiPanel.Abstractions.csproj"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="IGrains\"/>
     </ItemGroup>
 
 </Project>

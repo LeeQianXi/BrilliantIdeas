@@ -17,9 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="GrainImplementations\"/>
         <Folder Include="Persistence\"/>
-        <Folder Include="State\"/>
     </ItemGroup>
 
 </Project>

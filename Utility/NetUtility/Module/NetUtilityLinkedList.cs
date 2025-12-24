@@ -307,7 +307,7 @@ public sealed class NetUtilityLinkedList<T> : ICollection<T>, ICollection
 
     private void ReleaseNode(LinkedListNode<T> node)
     {
-        node.Value = default;
+        node.Value = default!;
         _cachedNodes.Enqueue(node);
     }
 

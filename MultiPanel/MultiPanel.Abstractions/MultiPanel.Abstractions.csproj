@@ -8,12 +8,15 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="9.2.1"/>
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\MultiPanel.Shared\MultiPanel.Shared.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
         <Folder Include="Constants\"/>
-        <Folder Include="DTOs\"/>
         <Folder Include="Entities\"/>
         <Folder Include="Enums\"/>
         <Folder Include="IRepository\"/>

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -24,6 +25,17 @@ public class ClientContext : StaticSingleton<ClientContext>, IClientContext
             .UseOrleansClient(OnConfigureClient)
             .UseConsoleLifetime()
             .Build();
+    }
+
+    [field: AllowNull]
+    public IClusterClient Client
+    {
+        get
+        {
+            if (_isInitialized && IsConnected)
+                field ??= ServiceProvider.GetRequiredService<IClusterClient>();
+            return field;
+        }
     }
 
     public IHost ClientHost { get; }
@@ -64,12 +76,15 @@ public class ClientContext : StaticSingleton<ClientContext>, IClientContext
 
     private static void OnConfigureClient(HostBuilderContext context, IClientBuilder client)
     {
-        client.UseLocalhostClustering()
+        var configuration = context.Configuration;
+        var redisConnectionString = configuration.GetConnectionString("Redis");
+        client
             .Configure<ClusterOptions>(options =>
             {
-                options.ClusterId = "multi-panel-cluster";
-                options.ServiceId = "MultiPanelSilo";
+                options.ClusterId = configuration["Orleans:ClusterId"] ?? "dev";
+                options.ServiceId = configuration["Orleans:ServiceId"] ?? "OrleansAuthentication";
             })
+            .UseRedisClustering(redisConnectionString)
             .UseConnectionRetryFilter<CustomClientConnectionRetryFilter>();
     }
 }

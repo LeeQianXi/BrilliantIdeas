@@ -1,25 +1,64 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using MultiPanel.Interfaces;
 using Orleans.Configuration;
 
 namespace MultiPanel.Silo;
 
-public class Program
+public static class Program
 {
     [STAThread]
     private static async Task Main(string[] args)
     {
-        await Host.CreateDefaultBuilder(args)
-            .UseOrleans(siloBuilder =>
+        using var host = Host.CreateDefaultBuilder(args)
+            .UseOrleans(ConfigureOrleans)
+            .ConfigureServices(ConfigureServices)
+            .ConfigureLogging(logging => logging.AddConsole())
+            .Build();
+
+        await host.RunAsync();
+    }
+
+    private static void ConfigureOrleans(HostBuilderContext context, ISiloBuilder builder)
+    {
+        var configuration = context.Configuration;
+        var redisConnectionString = configuration.GetConnectionString("Redis");
+        var mysqlConnectionString = configuration.GetConnectionString("Mysql");
+
+        builder
+            .Configure<ClusterOptions>(options =>
             {
-                siloBuilder.ConfigureLogging(logging => { logging.AddConsole(); })
-                    .UseLocalhostClustering()
-                    .Configure<ClusterOptions>(options =>
-                    {
-                        options.ClusterId = "multi-panel-cluster";
-                        options.ServiceId = "MultiPanelSilo";
-                    });
+                options.ClusterId = configuration["Orleans:ClusterId"];
+                options.ServiceId = configuration["Orleans:ServiceId"];
             })
-            .RunConsoleAsync();
+            .UseRedisClustering(redisConnectionString)
+            .AddAdoNetGrainStorage("MySqlStore", options =>
+            {
+                options.Invariant = configuration["Orleans:AdoNetInvariant"];
+                options.ConnectionString = mysqlConnectionString;
+            })
+            .Configure<GrainCollectionOptions>(options =>
+            {
+                options.CollectionAge = TimeSpan.FromMinutes(10);
+                options.CollectionQuantum = TimeSpan.FromMinutes(1);
+            })
+            .Configure<GrainDirectoryOptions>(options =>
+            {
+                options.CachingStrategy = GrainDirectoryOptions.CachingStrategyType.LRU;
+            });
+    }
+
+    private static void ConfigureServices(HostBuilderContext context, IServiceCollection collection)
+    {
+        collection
+            .UseMultiPanelOrleansServices()
+            .AddLogging(logging =>
+            {
+                logging.AddConsole()
+                    .AddDebug()
+                    .SetMinimumLevel(LogLevel.Information);
+            });
     }
 }
