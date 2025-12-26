@@ -10,8 +10,7 @@ public static class SharedExtension
         public IServiceCollection UseSharedServices()
         {
             return collection
-                .AddSingleton<IPasswordHasher, BCryptPasswordHasher>()
-                .AddSingleton<ITokenGenerator, SimpleTokenGenerator>();
+                .AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
         }
     }
 }

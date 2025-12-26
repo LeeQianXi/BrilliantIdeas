@@ -7,7 +7,7 @@ public interface IPasswordHasher
     bool NeedsRehash(string hash);
 }
 
-public class BCryptPasswordHasher(int workFactor = 12) : IPasswordHasher
+internal class BCryptPasswordHasher(int workFactor = 12) : IPasswordHasher
 {
     public string Hash(string password)
     {

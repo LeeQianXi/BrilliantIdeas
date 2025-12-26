@@ -2,6 +2,9 @@ using Orleans;
 
 namespace MultiPanel.Grains.State;
 
+/// <summary>
+///     会话的内部状态信息
+/// </summary>
 [GenerateSerializer]
 [Alias("MultiPanel.Grains.State.SessionState")]
 public class SessionState

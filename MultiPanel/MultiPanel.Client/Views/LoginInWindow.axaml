@@ -20,11 +20,18 @@
         <Border Grid.Row="1" Grid.Column="1"
                 Background="{DynamicResource HoverBackgroundBrush}" CornerRadius="15" Padding="15">
             <StackPanel Width="240" Spacing="10">
-                <TextBox Watermark="账号" UseFloatingWatermark="True" />
-                <TextBox Watermark="账号" UseFloatingWatermark="True" Classes="FloatingTextBox FloatingClearButton" />
-                <TextBox Watermark="密码" UseFloatingWatermark="True"
+                <TextBlock Name="TbTitle" Text="登陆" Classes="H2" VerticalAlignment="Stretch"
+                           HorizontalAlignment="Center" />
+                <TextBox Name="TbUsername" Watermark="账号" UseFloatingWatermark="True"
+                         Classes="FloatingTextBox FloatingClearButton"
+                         Text="{Binding Username,Mode=TwoWay}" />
+                <TextBox Name="TbPasswd" Watermark="密码" UseFloatingWatermark="True"
                          Classes="FloatingTextBox FloatingRevealPasswordButton"
+                         Text="{Binding Password,Mode=TwoWay}"
                          PasswordChar="*" RevealPassword="True" />
+                <CheckBox Name="CbRemember" Content="记住我"
+                          IsChecked="{Binding RememberMe,Mode=TwoWay}" />
+                <Button Content="登陆" Command="{Binding LoginCommand}" />
             </StackPanel>
         </Border>
     </Grid>

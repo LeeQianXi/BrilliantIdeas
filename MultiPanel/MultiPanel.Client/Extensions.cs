@@ -1,4 +1,5 @@
 using AvaloniaUtility.Services;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using MultiPanel.Client.Abstract.ViewModels;
 using MultiPanel.Client.ViewModels;
@@ -14,6 +15,7 @@ public static class Extensions
             where TStartUp : class, IStartupWindow
         {
             return collection
+                .AddValidatorsFromAssemblyContaining<LoginInValidator>(includeInternalTypes: true)
                 .AddSingleton<MultiPanelApp>()
                 .AddSingleton<IStartupWindow, TStartUp>();
         }

@@ -1,12 +1,76 @@
+using System.Reactive;
+using CommunityToolkit.Mvvm.Input;
+using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using MultiPanel.Abstractions.DTOs;
 using MultiPanel.Client.Abstract.Bases;
+using MultiPanel.Client.Abstract.Options;
 using MultiPanel.Client.Abstract.ViewModels;
+using MultiPanel.Interfaces.IGrains;
+using MultiPanel.Shared.Services;
+using ReactiveUI;
 
 namespace MultiPanel.Client.ViewModels;
 
-public class LoginInViewModel(IServiceProvider serviceProvider) : ViewModelBase, ILoginInViewModel
+public partial class LoginInViewModel : ViewModelBase, ILoginInViewModel
 {
-    public override IServiceProvider ServiceProvider { get; } = serviceProvider;
-    public override ILogger Logger { get; } = serviceProvider.GetRequiredService<ILogger<LoginInViewModel>>();
+    public LoginInViewModel(IServiceProvider serviceProvider)
+    {
+        ServiceProvider = serviceProvider;
+        Logger = serviceProvider.GetRequiredService<ILogger<LoginInViewModel>>();
+        var options = serviceProvider.GetRequiredService<IOptionsSnapshot<LoginWithOptions>>();
+        RememberMe = options.Value.RememberMe;
+        Username = options.Value.Username;
+        Token = options.Value.Token;
+    }
+
+    private string Token { get; set; }
+
+    public override IServiceProvider ServiceProvider { get; }
+    public override ILogger Logger { get; }
+
+    public bool RememberMe { get; set; }
+    public string Username { get; set; }
+
+    public string Password
+    {
+        get => field ?? string.Empty;
+        set;
+    }
+
+    public Interaction<string, Unit> WarningInfo { get; } = new();
+
+    [RelayCommand]
+    private async Task Login()
+    {
+        var validator = ServiceProvider.GetRequiredService<IValidator<LoginInViewModel>>();
+        var result = await validator.ValidateAsync(this);
+        if (!result.IsValid)
+        {
+            var errorInfo = result.Errors.First();
+            WarningInfo.Handle(errorInfo.ErrorMessage);
+            Logger.LogWarning("Something went wrong: {ErrorMessage}", errorInfo.ErrorMessage);
+            return;
+        }
+
+        Logger.LogInformation("Trying to login to server");
+        var client = ServiceLocator.Instance.ClientContext.Client;
+        var ag = client.GetGrain<IAccountGrain>(Username);
+        var ph = ServiceProvider.GetRequiredService<IPasswordHasher>();
+        var acInfo = await ag.TryLogin(ph.Hash(Password));
+        if (acInfo == AccountInfo.Empty) return;
+        var sg = client.GetGrain<ISessionGrain>(acInfo.UserId);
+    }
+}
+
+internal class LoginInValidator : AbstractValidator<LoginInViewModel>
+{
+    public LoginInValidator()
+    {
+        RuleFor(vm => vm.Username).NotEmpty().WithMessage("Username is required");
+        RuleFor(vm => vm.Password).NotEmpty().WithMessage("Password is required")
+            .MinimumLength(8).WithMessage("Password must have at least 8 characters");
+    }
 }
