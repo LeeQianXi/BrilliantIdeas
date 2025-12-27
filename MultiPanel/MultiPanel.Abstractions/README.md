@@ -1,0 +1,9 @@
+- 项目类型: .NET Standard 2.1 / .NET 8.0 类库
+- 职责: 定义数据库实体、DTO、通用接口
+- 引用: 无其他项目引用
+- 包含:
+    - Entities/*.cs # 数据库实体
+    - DTOs/*.cs # 数据传输对象
+    - Constants/*.cs # 常量定义
+    - Enums/*.cs # 枚举
+    - IRepository.cs # 仓储接口（如果使用仓储模式）

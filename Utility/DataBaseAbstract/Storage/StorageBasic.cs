@@ -69,15 +69,13 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
         return ret is null ? default : select.Invoke(ret);
     }
 
-    public virtual async IAsyncEnumerable<IEnumerable<TData>> SelectDatasAsync(Predicate<TData> predicate,
-        int limit = 0)
+    public async IAsyncEnumerable<IEnumerable<TData>> SelectDatasAsync(int limit = 0)
     {
-        ArgumentNullException.ThrowIfNull(predicate);
         if (limit < 0) throw new ArgumentException("limit cannot be less than zero", nameof(limit));
         Lock.EnterReadLock();
         try
         {
-            var rets = Connection.Table<TData>().Where(d => predicate(d));
+            var rets = Connection.Table<TData>();
             if (rets is null) yield break;
             if (limit is 0)
             {
@@ -97,7 +95,63 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
         }
     }
 
-    public virtual async IAsyncEnumerable<IEnumerable<TV>> SelectDatasAsync<TV>(Predicate<TData> predicate,
+    public async IAsyncEnumerable<IEnumerable<TV>> SelectDatasAsync<TV>(
+        IStorageBasic<TData>.Transform<TData, TV> select, int limit = 0)
+    {
+        ArgumentNullException.ThrowIfNull(select);
+        if (limit < 0) throw new ArgumentException("limit cannot be less than zero", nameof(limit));
+        Lock.EnterReadLock();
+        try
+        {
+            var rets = Connection.Table<TData>();
+            if (rets is null) yield break;
+            if (limit is 0)
+            {
+                yield return (await rets.ToListAsync()).Select(select.Invoke);
+                yield break;
+            }
+
+            do
+            {
+                yield return (await rets.Take(limit).ToListAsync()).Select(select.Invoke);
+                rets = rets.Skip(limit);
+            } while (await rets.CountAsync() > 0);
+        }
+        finally
+        {
+            Lock.ExitReadLock();
+        }
+    }
+
+    public virtual async IAsyncEnumerable<IEnumerable<TData>> SelectDatasAsync(Expression<Func<TData, bool>> predicate,
+        int limit = 0)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+        if (limit < 0) throw new ArgumentException("limit cannot be less than zero", nameof(limit));
+        Lock.EnterReadLock();
+        try
+        {
+            var rets = Connection.Table<TData>().Where(predicate);
+            if (rets is null) yield break;
+            if (limit is 0)
+            {
+                yield return await rets.ToListAsync();
+                yield break;
+            }
+
+            do
+            {
+                yield return await rets.Take(limit).ToListAsync();
+                rets = rets.Skip(limit);
+            } while (await rets.CountAsync() > 0);
+        }
+        finally
+        {
+            Lock.ExitReadLock();
+        }
+    }
+
+    public virtual async IAsyncEnumerable<IEnumerable<TV>> SelectDatasAsync<TV>(Expression<Func<TData, bool>> predicate,
         IStorageBasic<TData>.Transform<TData, TV> select, int limit = 0)
     {
         ArgumentNullException.ThrowIfNull(predicate);
@@ -106,7 +160,7 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
         Lock.EnterReadLock();
         try
         {
-            var rets = Connection.Table<TData>().Where(d => predicate(d));
+            var rets = Connection.Table<TData>().Where(predicate);
             if (rets is null) yield break;
             if (limit is 0)
             {
@@ -198,7 +252,7 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
         }
     }
 
-    public virtual async Task DeleteDataAsync(Predicate<TData> predicate)
+    public virtual async Task DeleteDataAsync(Expression<Func<TData, bool>> predicate)
     {
         Lock.EnterWriteLock();
         try
@@ -206,7 +260,7 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
             await Connection.RunInTransactionAsync(con =>
             {
                 con.BeginTransaction();
-                con.Table<TData>().Where(d => predicate(d)).Delete();
+                con.Table<TData>().Where(predicate).Delete();
                 con.Commit();
             });
         }

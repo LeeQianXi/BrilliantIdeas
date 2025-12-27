@@ -1,0 +1,13 @@
+- 项目类型: .NET 8.0 控制台应用 或 Web API
+- 职责: Orleans Silo主机
+- 引用:
+    - Orleans.Server NuGet包
+    - MyApp.Orleans.Grains
+    - MyApp.Orleans.Interfaces
+    - MyApp.Orleans.Abstractions
+    - 数据库提供程序包
+- 包含:
+    - Program.cs # 配置和启动Silo
+    - appsettings.json # 配置（数据库连接、集群配置等）
+    - HostedServices/ # 后台服务
+    - Configuration/ # 配置类

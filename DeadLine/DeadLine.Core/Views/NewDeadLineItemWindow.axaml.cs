@@ -18,12 +18,20 @@ public partial class NewDeadLineItemWindow : Window, INewDeadLineItemView
         TpStart.SelectedTime = TpEnd.SelectedTime = DateTime.Now.TimeOfDay;
     }
 
+    /// <summary>
+    ///     获取表单内容
+    /// </summary>
+    /// <returns></returns>
     private DeadLineItemInfo GetDeadLineItemInfo()
     {
         var (start, end) = GetCurrentInfoTime();
-        return new DeadLineItemInfo(TbTitle.Text!, start, end);
+        return new DeadLineItemInfo(TbTitle.Text!, start, end) { Description = TbDesc.Text ?? string.Empty };
     }
 
+    /// <summary>
+    ///     获取表单时间内容
+    /// </summary>
+    /// <returns></returns>
     private (DateTime Start, DateTime End) GetCurrentInfoTime()
     {
         var start = CdpStart.SelectedDate!.Value.Date.Add(TpStart.SelectedTime!.Value);
@@ -33,30 +41,70 @@ public partial class NewDeadLineItemWindow : Window, INewDeadLineItemView
 
     private void PopupWarning(string message)
     {
+        PART_FlyoutText.Text = message;
+        FlyoutBase.ShowAttachedFlyout(PART_Title);
     }
 
-    private void ValidateForm()
+    /// <summary>
+    ///     验证格式化内容
+    /// </summary>
+    private bool ValidateForm()
     {
         if (string.IsNullOrWhiteSpace(TbTitle.Text))
             TbTitle.Text = TbTitle.Watermark;
+        if (CdpStart.SelectedDate is null ||
+            CdpEnd.SelectedDate is null ||
+            TpStart.SelectedTime is null ||
+            TpEnd.SelectedTime is null) return false;
+        var (s, e) = GetCurrentInfoTime();
+        return s < e;
     }
 
+    /// <summary>
+    ///     创建新任务
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void BtnCreate_OnClick(object? sender, RoutedEventArgs e)
     {
-        ValidateForm();
+        if (!ValidateForm())
+        {
+            PopupWarning("表单未填写完成");
+            return;
+        }
+
         Close(GetDeadLineItemInfo());
     }
 
+    /// <summary>
+    ///     取消创建
+    /// </summary>
     private void BtnCancel_OnClick(object? sender, RoutedEventArgs e)
     {
         Close();
     }
 
+    private bool ValidateDate()
+    {
+        return CdpEnd.SelectedDate is null ||
+               CdpStart.SelectedDate is null ||
+               CdpStart.SelectedDate < CdpEnd.SelectedDate;
+    }
+
+    private bool ValidateTime()
+    {
+        return TpStart.SelectedTime is null ||
+               TpEnd.SelectedTime is null ||
+               TpStart.SelectedTime < TpEnd.SelectedTime;
+    }
+
+    /// <summary>
+    ///     日期相同时处理时间内容
+    /// </summary>
+    /// <param name="editEnd">修改哪个内容</param>
     private void ValidateTimeWhenSameDay(bool editEnd)
     {
-        if (TpStart.SelectedTime is null) return;
-        if (TpEnd.SelectedTime is null) return;
-        if (TpStart.SelectedTime < TpEnd.SelectedTime) return;
+        if (ValidateTime()) return;
         PopupWarning(StartLaterThanEnd);
         if (editEnd)
             TpEnd.Clear();
@@ -64,11 +112,12 @@ public partial class NewDeadLineItemWindow : Window, INewDeadLineItemView
             TpStart.Clear();
     }
 
+    /// <summary>
+    ///     日期开始修改
+    /// </summary>
     private void CdpStart_OnSelectedDateChanged(object? sender, SelectionChangedEventArgs e)
     {
-        if (CdpEnd.SelectedDate is null) return;
-        if (CdpStart.SelectedDate is null) return;
-        if (CdpStart.SelectedDate < CdpEnd.SelectedDate) return;
+        if (ValidateDate()) return;
         if (CdpStart.SelectedDate == CdpEnd.SelectedDate)
         {
             ValidateTimeWhenSameDay(true);
@@ -79,14 +128,15 @@ public partial class NewDeadLineItemWindow : Window, INewDeadLineItemView
         CdpEnd.Clear();
     }
 
+    /// <summary>
+    ///     日期结束修改
+    /// </summary>
     private void CdpEnd_OnSelectedDateChanged(object? sender, SelectionChangedEventArgs e)
     {
-        if (CdpEnd.SelectedDate is null) return;
-        if (CdpStart.SelectedDate is null) return;
-        if (CdpStart.SelectedDate < CdpEnd.SelectedDate) return;
+        if (ValidateDate()) return;
         if (CdpStart.SelectedDate == CdpEnd.SelectedDate)
         {
-            ValidateTimeWhenSameDay(false);
+            ValidateTimeWhenSameDay(true);
             return;
         }
 
@@ -94,19 +144,18 @@ public partial class NewDeadLineItemWindow : Window, INewDeadLineItemView
         CdpStart.Clear();
     }
 
+    /// <summary>
+    ///     时间开始修改
+    /// </summary>
     private void TpStart_OnSelectedTimeChanged(object? sender, TimePickerSelectedValueChangedEventArgs e)
     {
-        if (CdpEnd.SelectedDate is null) return;
-        if (CdpStart.SelectedDate is null) return;
-        if (CdpStart.SelectedDate < CdpEnd.SelectedDate) return;
+        if (ValidateDate() || TpStart.SelectedTime is null) return;
         ValidateTimeWhenSameDay(true);
     }
 
     private void TpEnd_OnSelectedTimeChanged(object? sender, TimePickerSelectedValueChangedEventArgs e)
     {
-        if (CdpEnd.SelectedDate is null) return;
-        if (CdpStart.SelectedDate is null) return;
-        if (CdpStart.SelectedDate < CdpEnd.SelectedDate) return;
+        if (ValidateDate() || TpEnd.SelectedTime is null) return;
         ValidateTimeWhenSameDay(false);
     }
 }

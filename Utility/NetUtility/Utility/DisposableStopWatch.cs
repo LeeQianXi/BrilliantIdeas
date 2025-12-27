@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace NetUtility;
 
 public sealed class DisposableStopWatch(Action<long> onElapsedMilliseconds) : IDisposable

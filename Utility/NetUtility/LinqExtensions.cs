@@ -115,7 +115,7 @@ public static partial class Extension
 
         public IEnumerable<T> Catch(Action<Exception> @catch)
         {
-            ArgumentNullException.ThrowIfNull(enumerable, nameof(enumerable));
+            ArgumentNullException.ThrowIfNull(enumerable);
             using var enumerator = enumerable.GetEnumerator();
             bool success;
             do
@@ -140,7 +140,7 @@ public static partial class Extension
 
         public IEnumerable<T> Catch(ICollection<Exception> exceptions)
         {
-            ArgumentNullException.ThrowIfNull(exceptions, nameof(exceptions));
+            ArgumentNullException.ThrowIfNull(exceptions);
             return enumerable.Catch(exceptions.Add);
         }
     }

@@ -12,7 +12,19 @@
     <Border>
         <DockPanel LastChildFill="True" Background="LightCyan">
             <Panel DockPanel.Dock="Top">
-                <TextBlock Theme="{DynamicResource TitleTextBlock}" Classes="H2" Text="新建任务" TextAlignment="Center" />
+                <TextBlock Name="PART_Title" Theme="{DynamicResource TitleTextBlock}" Classes="H2" Text="新建任务"
+                           TextAlignment="Center"
+                           VerticalAlignment="Stretch" HorizontalAlignment="Center">
+                    <FlyoutBase.AttachedFlyout>
+                        <Flyout ShowMode="Transient" Placement="Bottom" VerticalOffset="20">
+                            <Border>
+                                <TextBlock Name="PART_FlyoutText" FontSize="18" FontWeight="Black"
+                                           TextAlignment="Center"
+                                           VerticalAlignment="Stretch" HorizontalAlignment="Stretch" />
+                            </Border>
+                        </Flyout>
+                    </FlyoutBase.AttachedFlyout>
+                </TextBlock>
             </Panel>
             <Panel DockPanel.Dock="Bottom">
                 <UniformGrid Columns="2" VerticalAlignment="Center">
@@ -28,6 +40,10 @@
                         <StackPanel>
                             <TextBlock Theme="{DynamicResource TitleTextBlock}" Text="任务标题" TextAlignment="Left" />
                             <TextBox Name="TbTitle" Classes="ClearButton" Watermark="新建任务" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Theme="{DynamicResource TitleTextBlock}" Text="任务描述" TextAlignment="Left" />
+                            <TextBox Name="TbDesc" Classes="ClearButton" />
                         </StackPanel>
                         <DockPanel HorizontalSpacing="10">
                             <TextBlock DockPanel.Dock="Top"

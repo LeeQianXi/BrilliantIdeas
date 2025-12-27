@@ -1,8 +1,3 @@
-using Avalonia;
-using Avalonia.Controls.Metadata;
-using Avalonia.Controls.Primitives;
-using Avalonia.Interactivity;
-using PropertyGenerator.Avalonia;
 using TaskStatus = ToDoList.DataBase.Models.TaskStatus;
 
 namespace ToDoList.Core.Abstract.Controls;
@@ -16,10 +11,6 @@ public partial class BackLogViewItem : TemplatedControl
         AvaloniaProperty.RegisterDirect<BackLogViewItem, int>(nameof(GroupId),
             static o => o.GroupId);
 
-    private BackGroup? _group;
-
-    private int _groupId;
-
     [GeneratedStyledProperty("Default")] public partial string Title { get; set; }
 
     [GeneratedStyledProperty("")] public partial string Description { get; set; }
@@ -29,8 +20,8 @@ public partial class BackLogViewItem : TemplatedControl
 
     public int GroupId
     {
-        get => _groupId;
-        set => SetAndRaise(GroupIdProperty, ref _groupId, value);
+        get;
+        set => SetAndRaise(GroupIdProperty, ref field, value);
     }
 
     partial void OnStatusPropertyChanged(TaskStatus newValue)

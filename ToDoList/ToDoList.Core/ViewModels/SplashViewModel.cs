@@ -15,26 +15,22 @@ internal class SplashViewModel(IServiceProvider serviceProvider) : ViewModelBase
         mmv.IsVisible = true;
     }
 
-    public IEnumerator<YieldInstruction?> LoadGroupInfo()
+    public async IAsyncEnumerator<YieldInstruction?> LoadGroupInfo()
     {
-        var tBgs = _backGroupStorage.GetAllGroupsAsync();
-        yield return new WaitForTask(tBgs);
-        var bgs = tBgs.Result;
-        foreach (var bg in bgs)
+        await foreach (var items in _backGroupStorage.SelectDatasAsync(50))
+        foreach (var item in items)
         {
-            _mainMenuViewModel.AddInitWithGroup(bg);
+            _mainMenuViewModel.AddInitWithGroup(item);
             yield return null;
         }
     }
 
-    public IEnumerator<YieldInstruction?> LoadTaskInfo()
+    public async IAsyncEnumerator<YieldInstruction?> LoadTaskInfo()
     {
-        var tBls = _backLogStorage.GetAllBackLogsAsync();
-        yield return new WaitForTask(tBls);
-        var bls = tBls.Result;
-        foreach (var bl in bls)
+        await foreach (var items in _backLogStorage.SelectDatasAsync(50))
+        foreach (var item in items)
         {
-            _mainMenuViewModel.AddInitWithTask(bl);
+            _mainMenuViewModel.AddInitWithTask(item);
             yield return null;
         }
     }

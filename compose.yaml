@@ -1,0 +1,7 @@
+﻿services:
+  multipanelserver:
+    image: multipanelserver
+    build:
+      context: .
+      dockerfile: MultiPanel/MultiPanel.Silo/Dockerfile
+

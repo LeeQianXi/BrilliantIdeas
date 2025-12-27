@@ -44,7 +44,7 @@ public partial class SplashView : ViewModelUserControlBase<ISplashViewModel>, IC
         animation.RunAsync(this).ContinueWith(_ => Dispatcher.UIThread.Post(() => IsVisible = false));
     }
 
-    private IEnumerator<YieldInstruction?> LoadDataAsync()
+    private async IAsyncEnumerator<YieldInstruction?> LoadDataAsync()
     {
         PbPro.ShowProgressText = false;
         PbPro.ProgressTextFormat = "{0:0}/{3:0}";
@@ -54,11 +54,11 @@ public partial class SplashView : ViewModelUserControlBase<ISplashViewModel>, IC
 
         TbInfo.Text = "Loading Groups...";
         var iter = ViewModel!.LoadGroupInfo();
-        while (!iter.MoveNext()) yield return iter.Current;
+        while (await iter.MoveNextAsync()) yield return iter.Current;
 
         TbInfo.Text = "Loading Tasks...";
         iter = ViewModel!.LoadTaskInfo();
-        while (!iter.MoveNext()) yield return iter.Current;
+        while (await iter.MoveNextAsync()) yield return iter.Current;
 
         PbPro.ShowProgressText = false;
         PbPro.Classes.Add("Success");

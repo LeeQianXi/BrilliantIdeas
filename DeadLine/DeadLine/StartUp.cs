@@ -1,5 +1,3 @@
-using DeadLine.DataBase.Core;
-
 namespace DeadLine;
 
 public static class StartUp

@@ -27,9 +27,15 @@ public interface IStorageBasic<TData> where TData : IModelBasic, new()
     Task<TV?> FindDataAsync<TV>(int key, Transform<TData, TV> select);
 
     //根据条件查询
-    IAsyncEnumerable<IEnumerable<TData>> SelectDatasAsync(Predicate<TData> predicate, int limit = 0);
+    IAsyncEnumerable<IEnumerable<TData>> SelectDatasAsync(int limit = 0);
 
-    IAsyncEnumerable<IEnumerable<TV>> SelectDatasAsync<TV>(Predicate<TData> predicate, Transform<TData, TV> select,
+    IAsyncEnumerable<IEnumerable<TV>> SelectDatasAsync<TV>(Transform<TData, TV> select,
+        int limit = 0);
+
+    IAsyncEnumerable<IEnumerable<TData>> SelectDatasAsync(Expression<Func<TData, bool>> predicate, int limit = 0);
+
+    IAsyncEnumerable<IEnumerable<TV>> SelectDatasAsync<TV>(Expression<Func<TData, bool>> predicate,
+        Transform<TData, TV> select,
         int limit = 0);
 
     #region UDAF
@@ -61,7 +67,7 @@ public interface IStorageBasic<TData> where TData : IModelBasic, new()
 
     Task<TData> DeleteDataAsync(int key);
     Task DeleteDataAsync(params IEnumerable<int> keys);
-    Task DeleteDataAsync(Predicate<TData> predicate);
+    Task DeleteDataAsync(Expression<Func<TData, bool>> predicate);
     Task ClearTableAsync();
 
     #endregion

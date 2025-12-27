@@ -1,0 +1,10 @@
+- 项目类型: .NET Standard 2.1 类库
+- 职责: Orleans客户端包装器
+- 引用:
+    - Orleans.Client NuGet包
+    - MyApp.Orleans.Interfaces
+    - MyApp.Orleans.Abstractions
+- 包含:
+    - OrleansClientFactory.cs # 客户端工厂
+    - GrainClient.cs # 客户端包装器
+    - ServiceExtensions.cs # DI扩展
