@@ -4,7 +4,7 @@ using Orleans;
 
 namespace MultiPanel.Grains.GrainImplementations;
 
-public class AccountGrain : Grain, IAccountGrain
+public class AccountGrain(IServiceProvider serviceProvider) : Grain, IAccountGrain
 {
     public async Task<bool> Exist()
     {

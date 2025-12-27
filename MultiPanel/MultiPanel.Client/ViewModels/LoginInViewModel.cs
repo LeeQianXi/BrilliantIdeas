@@ -42,6 +42,15 @@ public partial class LoginInViewModel : ViewModelBase, ILoginInViewModel
 
     public Interaction<string, Unit> WarningInfo { get; } = new();
 
+    public async Task<AccountInfo> TryLoginWithLastedData()
+    {
+        if (!RememberMe) return AccountInfo.Empty;
+        var tg = ServiceProvider.GetRequiredService<ITokenGenerator>();
+        var client = ServiceLocator.Instance.ClientContext.Client;
+        //client.GetGrain<ISessionGrain>();
+        return AccountInfo.Empty;
+    }
+
     [RelayCommand]
     private async Task Login()
     {
@@ -49,9 +58,8 @@ public partial class LoginInViewModel : ViewModelBase, ILoginInViewModel
         var result = await validator.ValidateAsync(this);
         if (!result.IsValid)
         {
-            var errorInfo = result.Errors.First();
-            WarningInfo.Handle(errorInfo.ErrorMessage);
-            Logger.LogWarning("Something went wrong: {ErrorMessage}", errorInfo.ErrorMessage);
+            var validateInfo = result.Errors.First();
+            WarningInfo.Handle(validateInfo.ErrorMessage);
             return;
         }
 
@@ -60,11 +68,19 @@ public partial class LoginInViewModel : ViewModelBase, ILoginInViewModel
         var ag = client.GetGrain<IAccountGrain>(Username);
         var ph = ServiceProvider.GetRequiredService<IPasswordHasher>();
         var acInfo = await ag.TryLogin(ph.Hash(Password));
-        if (acInfo == AccountInfo.Empty) return;
+        if (acInfo == AccountInfo.Empty)
+        {
+            WarningInfo.Handle("Username or Password is invalid");
+            return;
+        }
+
         var sg = client.GetGrain<ISessionGrain>(acInfo.UserId);
     }
 }
 
+/// <summary>
+///     <see cref="LoginInViewModel" />的登陆信息验证器
+/// </summary>
 internal class LoginInValidator : AbstractValidator<LoginInViewModel>
 {
     public LoginInValidator()

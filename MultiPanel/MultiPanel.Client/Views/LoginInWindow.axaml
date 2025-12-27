@@ -27,7 +27,7 @@
                          Text="{Binding Username,Mode=TwoWay}" />
                 <TextBox Name="TbPasswd" Watermark="密码" UseFloatingWatermark="True"
                          Classes="FloatingTextBox FloatingRevealPasswordButton"
-                         Text="{Binding Password,Mode=TwoWay}"
+                         Text="{Binding Password,Mode=OneWayToSource}"
                          PasswordChar="*" RevealPassword="True" />
                 <CheckBox Name="CbRemember" Content="记住我"
                           IsChecked="{Binding RememberMe,Mode=TwoWay}" />
