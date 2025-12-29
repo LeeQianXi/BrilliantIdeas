@@ -19,7 +19,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\MultiPanel.Abstractions\MultiPanel.Abstractions.csproj"/>
         <ProjectReference Include="..\MultiPanel.Interfaces\MultiPanel.Interfaces.csproj"/>
     </ItemGroup>
 

@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using System.Text;
 
 namespace MultiPanel.Shared.Utils;
@@ -58,15 +59,45 @@ public static class Util
     {
         public byte[] ToUtf8Bytes()
         {
-            return Encoding.UTF8.GetBytes(str);
+            return str.ToBytes(Encoding.UTF8);
+        }
+
+        public byte[] ToAsciiBytes()
+        {
+            return str.ToBytes(Encoding.ASCII);
+        }
+
+        public byte[] ToBytes(Encoding encoding)
+        {
+            return encoding.GetBytes(str);
+        }
+
+        public string Hash()
+        {
+            return str.Hash(SHA256.Create(), Encoding.UTF8);
+        }
+
+        public string Hash(HashAlgorithm hashAlgorithm, Encoding encoding)
+        {
+            return encoding.GetString(hashAlgorithm.ComputeHash(encoding.GetBytes(str)));
         }
     }
 
     extension(byte[] bytes)
     {
-        public string ToUtf8String()
+        public string GetUtf8String()
         {
-            return Encoding.UTF8.GetString(bytes);
+            return bytes.GetString(Encoding.UTF8);
+        }
+
+        public string GetAsciiString()
+        {
+            return bytes.GetString(Encoding.ASCII);
+        }
+
+        public string GetString(Encoding encoding)
+        {
+            return encoding.GetString(bytes);
         }
     }
 }

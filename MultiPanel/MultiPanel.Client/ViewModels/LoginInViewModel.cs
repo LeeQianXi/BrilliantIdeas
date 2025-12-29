@@ -12,6 +12,7 @@ using MultiPanel.Client.Abstract.ViewModels;
 using MultiPanel.Client.Abstract.Views;
 using MultiPanel.Interfaces.IGrains;
 using MultiPanel.Shared.Services;
+using MultiPanel.Shared.Utils;
 using ReactiveUI;
 
 namespace MultiPanel.Client.ViewModels;
@@ -94,7 +95,7 @@ public partial class LoginInViewModel : ViewModelBase, ILoginInViewModel
             return;
         }
 
-        var pwdHash = ph.NoSaltHash(Password);
+        var pwdHash = Password.Hash();
         PasswordHash = pwdHash;
         var auth = await ag.LoginAsync(pwdHash);
         if (!auth.IsValid)
@@ -128,7 +129,7 @@ public partial class LoginInViewModel : ViewModelBase, ILoginInViewModel
             return;
         }
 
-        var pwdHash = ph.NoSaltHash(Password);
+        var pwdHash = Password.Hash();
         PasswordHash = pwdHash;
         var auth = await ag.RegisterAsync(pwdHash);
         if (!auth.IsValid)
