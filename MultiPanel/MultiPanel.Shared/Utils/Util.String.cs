@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace MultiPanel.Shared.Utils;
 
 public static class Util
@@ -49,6 +51,22 @@ public static class Util
             }
 
             return new string(password);
+        }
+    }
+
+    extension(string str)
+    {
+        public byte[] ToUtf8Bytes()
+        {
+            return Encoding.UTF8.GetBytes(str);
+        }
+    }
+
+    extension(byte[] bytes)
+    {
+        public string ToUtf8String()
+        {
+            return Encoding.UTF8.GetString(bytes);
         }
     }
 }

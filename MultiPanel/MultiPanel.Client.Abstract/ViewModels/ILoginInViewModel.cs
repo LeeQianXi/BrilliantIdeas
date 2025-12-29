@@ -29,12 +29,14 @@ public interface ILoginInViewModel : IDependencyInjection
     /// </summary>
     IAsyncRelayCommand LoginCommand { get; }
 
+    IAsyncRelayCommand RegisterCommand { get; }
+
     /// <summary>
     ///     用于传递警告信息
     /// </summary>
     Interaction<string, Unit> WarningInfo { get; }
 
-    IRelayCommand<AuthDto> SuccessLoginCommand { get; }
+    IAsyncRelayCommand<AuthDto> SuccessLoginCommand { get; }
     Interaction<IMainMenuView, Unit> SuccessLoginInteraction { get; }
     IRelayCommand SaveConfigCommand { get; }
 

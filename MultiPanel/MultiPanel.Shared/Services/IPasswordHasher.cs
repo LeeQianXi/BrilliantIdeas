@@ -1,4 +1,6 @@
+using System.Security.Cryptography;
 using BCrypt.Net;
+using MultiPanel.Shared.Utils;
 
 namespace MultiPanel.Shared.Services;
 
@@ -11,7 +13,9 @@ public interface IPasswordHasher
     /// <param name="workFactor">可选的工作因子（覆盖默认值）</param>
     /// <returns>哈希后的密码字符串</returns>
     /// <exception cref="ArgumentNullException">密码为空或null</exception>
-    string Hash(string password, int? workFactor = null);
+    string SaltedHash(string password, int? workFactor = null);
+
+    string NoSaltHash(string password, int? workFactor = null);
 
     /// <summary>
     ///     验证密码
@@ -32,12 +36,20 @@ public interface IPasswordHasher
 
 internal class BCryptPasswordHasher(int defaultWorkFactor = 12) : IPasswordHasher
 {
-    public string Hash(string password, int? workFactor = null)
+    public string SaltedHash(string password, int? workFactor = null)
     {
         if (string.IsNullOrWhiteSpace(password))
             throw new ArgumentNullException(nameof(password), "密码不能为空");
         // 自动生成salt并哈希密码
         return BCrypt.Net.BCrypt.EnhancedHashPassword(password, workFactor ?? defaultWorkFactor);
+    }
+
+    public string NoSaltHash(string password, int? workFactor = null)
+    {
+        if (string.IsNullOrWhiteSpace(password))
+            throw new ArgumentNullException(nameof(password), "密码不能为空");
+        // 自动生成salt并哈希密码
+        return SHA3_384.HashData(password.ToUtf8Bytes()).ToUtf8String();
     }
 
     public bool Verify(string password, string hash)

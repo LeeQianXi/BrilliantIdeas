@@ -111,5 +111,5 @@ public interface IAccountRepository
     /// <param name="refreshToken">刷新用Token</param>
     /// <param name="userId">用户Id</param>
     /// <returns>新的访问Token</returns>
-    Task<string> UpdateAccessTokenAsync(string refreshToken, int userId);
+    Task<AuthDto?> UpdateAccessTokenAsync(string refreshToken, int userId);
 }

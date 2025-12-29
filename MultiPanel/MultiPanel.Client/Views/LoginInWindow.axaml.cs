@@ -31,8 +31,8 @@ public partial class LoginInWindow : ViewModelWindowBase<ILoginInViewModel>, ISt
 
     private void SuccessLoginWindow(IInteractionContext<IMainMenuView, Unit> context)
     {
-        Close();
         context.Input.Show();
+        Close();
         context.SetOutput(Unit.Default);
     }
 
@@ -60,11 +60,16 @@ public partial class LoginInWindow : ViewModelWindowBase<ILoginInViewModel>, ISt
         yield return null;
         if (!ViewModel.RememberMe)
             yield break;
-        ViewModel.Logger.LogInformation("Trying to login to server with old token");
+        ViewModel.Logger.LogInformation("Trying to login to server with old data");
         var dto = await ViewModel.LoginWithRememberMeAsync();
-        if (dto is not { IsValid: true }) yield break;
+        if (dto is not { IsValid: true })
+        {
+            ViewModel.Logger.LogWarning("Failed to login to server with old data");
+            yield break;
+        }
+
         ViewModel.Logger.LogInformation("Successfully logged in to server");
-        ViewModel.SuccessLoginCommand.Execute(dto);
+        await ViewModel.SuccessLoginCommand.ExecuteAsync(dto);
         yield break;
     }
 }

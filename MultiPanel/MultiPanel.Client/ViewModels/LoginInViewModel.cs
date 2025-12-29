@@ -16,11 +16,21 @@ using ReactiveUI;
 
 namespace MultiPanel.Client.ViewModels;
 
-public partial class LoginInViewModel(IServiceProvider serviceProvider) : ViewModelBase, ILoginInViewModel
+public partial class LoginInViewModel : ViewModelBase, ILoginInViewModel
 {
-    private readonly IWritableConfigure<LoginWithOptions> _configure = serviceProvider
-        .GetRequiredService<IWritableConfigureFactory>()
-        .GetConfigure<LoginWithOptions>(Path.Combine(ServiceLocator.ApplicationDataFolder, "config.json"));
+    private readonly IWritableConfigure<LoginWithOptions> _configure;
+
+    /// <inheritdoc />
+    public LoginInViewModel(IServiceProvider serviceProvider)
+    {
+        _configure = serviceProvider
+            .GetRequiredService<IWritableConfigureFactory>()
+            .GetConfigure<LoginWithOptions>(Path.Combine(ServiceLocator.ApplicationDataFolder, "config.json"));
+        ServiceProvider = serviceProvider;
+        Logger = serviceProvider.GetRequiredService<ILogger<LoginInViewModel>>();
+        RememberMe = _configure.Value.RememberMe;
+        Username = _configure.Value.Username;
+    }
 
     private string PasswordHash
     {
@@ -28,19 +38,19 @@ public partial class LoginInViewModel(IServiceProvider serviceProvider) : ViewMo
         set => _configure.Value.PasswordHash = value;
     }
 
-    public override IServiceProvider ServiceProvider { get; } = serviceProvider;
-    public override ILogger Logger { get; } = serviceProvider.GetRequiredService<ILogger<LoginInViewModel>>();
+    public override IServiceProvider ServiceProvider { get; }
+    public override ILogger Logger { get; }
 
     public bool RememberMe
     {
-        get => _configure.Value.RememberMe;
-        set => _configure.Value.RememberMe = value;
+        get;
+        set => field = _configure.Value.RememberMe = value;
     }
 
     public string Username
     {
-        get => _configure.Value.Username;
-        set => _configure.Value.Username = value;
+        get;
+        set => field = _configure.Value.Username = value;
     }
 
     public string Password
@@ -84,21 +94,59 @@ public partial class LoginInViewModel(IServiceProvider serviceProvider) : ViewMo
             return;
         }
 
-        var auth = await ag.LoginAsync(ph.Hash(Password));
+        var pwdHash = ph.NoSaltHash(Password);
+        PasswordHash = pwdHash;
+        var auth = await ag.LoginAsync(pwdHash);
         if (!auth.IsValid)
         {
             await WarningInfo.Handle("Username or Password is invalid");
             return;
         }
 
-        SuccessLoginCommand.Execute(auth);
+        await SuccessLoginCommand.ExecuteAsync(auth);
     }
 
     [RelayCommand]
-    private void SuccessLogin(AuthDto auth)
+    private async Task Register()
     {
+        var validator = ServiceProvider.GetRequiredService<IValidator<LoginInViewModel>>();
+        var result = await validator.ValidateAsync(this);
+        if (!result.IsValid)
+        {
+            var validateInfo = result.Errors.First();
+            await WarningInfo.Handle(validateInfo.ErrorMessage);
+            return;
+        }
+
+        Logger.LogInformation("Trying to register a new account");
+        var client = ServiceProvider.GetRequiredService<IClusterClient>();
+        var ag = client.GetGrain<IAccountGrain>(Username);
+        var ph = ServiceProvider.GetRequiredService<IPasswordHasher>();
+        if (await ag.ExistAsync())
+        {
+            await WarningInfo.Handle("Account is already registered");
+            return;
+        }
+
+        var pwdHash = ph.NoSaltHash(Password);
+        PasswordHash = pwdHash;
+        var auth = await ag.RegisterAsync(pwdHash);
+        if (!auth.IsValid)
+        {
+            await WarningInfo.Handle("Failed to register account");
+            return;
+        }
+
+        await SuccessLoginCommand.ExecuteAsync(auth);
+    }
+
+    [RelayCommand]
+    private async Task SuccessLogin(AuthDto auth)
+    {
+        Logger.LogInformation("Successful Verify Account");
         ServiceLocator.Instance.MainMenuViewModel.Auth = auth;
-        SuccessLoginInteraction.Handle(ServiceLocator.Instance.MainMenuView);
+        Logger.LogInformation("Try to Open MainMenu Window");
+        await SuccessLoginInteraction.Handle(ServiceLocator.Instance.MainMenuView);
     }
 
     [RelayCommand]

@@ -4,7 +4,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         d:DesignWidth="800" d:DesignHeight="450"
+        Width="800" Height="450"
+        WindowStartupLocation="CenterScreen"
         x:Class="MultiPanel.Client.Views.MainMenuWindow"
+        DataContext="{Binding MainMenuViewModel,Source={StaticResource ServiceLocator}}"
         Title="MainMenuWindow">
     Welcome to Avalonia!
 </Window>

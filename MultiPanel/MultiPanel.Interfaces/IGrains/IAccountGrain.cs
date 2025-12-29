@@ -35,10 +35,10 @@ public interface IAccountGrain : IGrainWithStringKey
     /// <summary>
     ///     刷新 accessToken
     /// </summary>
-    /// <param name="refreshToken">已有刷新Token</param>
-    /// <returns>刷新后获取Token</returns>
+    /// <param name="dto">已有刷新Token</param>
+    /// <returns>刷新后获取Token,失败为null</returns>
     [Alias("RefreshAsync")]
-    Task<AuthDto> RefreshAsync(AuthDto dto);
+    Task<AuthDto?> RefreshAsync(AuthDto dto);
 
     /// <summary>
     ///     注销账户

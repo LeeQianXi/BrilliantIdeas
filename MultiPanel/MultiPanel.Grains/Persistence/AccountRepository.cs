@@ -66,7 +66,7 @@ internal sealed class AccountRepository(
 
     public async Task<int> InsertUserAsync(string userName, string passwordHash)
     {
-        var saltHash = PasswordHasher.Hash(passwordHash);
+        var saltHash = PasswordHasher.SaltedHash(passwordHash);
         const string sql = """
                            INSERT INTO Users (UserName, SaltPasswordHash)
                            VALUES (@UserName, @SaltPasswordHash);
@@ -122,7 +122,7 @@ internal sealed class AccountRepository(
 
     public async Task<bool> DeleteUserAsync(int userId, string passwordHash)
     {
-        var saltHash = PasswordHasher.Hash(passwordHash);
+        var saltHash = PasswordHasher.SaltedHash(passwordHash);
         const string sql = "DELETE FROM Users WHERE UserId = @UserId AND SaltPasswordHash = @SaltPasswordHash;";
 
         try
@@ -144,7 +144,7 @@ internal sealed class AccountRepository(
 
     public async Task<bool> DeleteUserAsync(string userName, string passwordHash)
     {
-        var saltHash = PasswordHasher.Hash(passwordHash);
+        var saltHash = PasswordHasher.SaltedHash(passwordHash);
         const string sql = "DELETE FROM Users WHERE UserName = @UserName AND SaltPasswordHash = @SaltPasswordHash;";
 
         try
@@ -291,7 +291,7 @@ internal sealed class AccountRepository(
 
     public async Task<bool> UpdatePasswordAsync(int userId, string newPasswordHash)
     {
-        var newFinalHash = PasswordHasher.Hash(newPasswordHash);
+        var newFinalHash = PasswordHasher.SaltedHash(newPasswordHash);
         const string sql = """
                            UPDATE Users 
                            SET SaltPasswordHash = @SaltPasswordHash, 
@@ -623,34 +623,38 @@ internal sealed class AccountRepository(
         }
     }
 
+    //TODO Redis
     public async Task<AuthDto> GenerateTokenAsync(int userId, TimeSpan ttl)
     {
-        var at = TokenGenerator.GeneratorAccessToken(userId);
-        var (rt, df) = TokenGenerator.GeneratorRefreshToken(userId);
-        var entries = new[] { new HashEntry(Keys.AccessToken, at), new HashEntry(Keys.RefreshToken, rt) };
-        await Redis.HashSetAsync(GenerateUserKey(userId), entries);
+        var userKey = GenerateUserKey(userId);
+        var (rt, rdf) = TokenGenerator.GeneratorRefreshToken(userId);
+        var (at, adf) = TokenGenerator.GeneratorAccessToken(userId, (await GetUserByIdAsync(userId))?.UserRoles ?? []);
+        await PutRedisHash(userKey, Keys.RefreshToken, rt, rdf.UtcDateTime);
+        await PutRedisHash(userKey, Keys.AccessToken, at, adf.UtcDateTime);
         return new AuthDto
         {
             UserId = userId,
             AccessToken = at,
             RefreshToken = rt,
-            ExpiresAt = df
+            ExpiresAt = rdf
         };
     }
 
     public async Task<bool> RemoveRefreshTokenAsync(string refreshToken, int userId)
     {
-        var value = await Redis.HashGetAsync(GenerateUserKey(userId), Keys.RefreshToken);
+        var userKey = GenerateUserKey(userId);
+        var value = await Redis.HashGetAsync(userKey, Keys.RefreshToken);
         if (!value.HasValue || value.ToString() != refreshToken) return false;
-        await Redis.HashDeleteAsync(GenerateUserKey(userId), Keys.RefreshToken);
+        await Redis.HashDeleteAsync(userKey, Keys.RefreshToken);
         return true;
     }
 
     public async Task<bool> RemoveAccessTokenAsync(string accessToken, int userId)
     {
-        var value = await Redis.HashGetAsync(GenerateUserKey(userId), Keys.AccessToken);
+        var userKey = GenerateUserKey(userId);
+        var value = await Redis.HashGetAsync(userKey, Keys.AccessToken);
         if (!value.HasValue || value.ToString() != accessToken) return false;
-        await Redis.HashDeleteAsync(GenerateUserKey(userId), Keys.AccessToken);
+        await Redis.HashDeleteAsync(userKey, Keys.AccessToken);
         return true;
     }
 
@@ -665,17 +669,39 @@ internal sealed class AccountRepository(
         return value.HasValue && value.ToString() == accessToken;
     }
 
-    public async Task<string> UpdateAccessTokenAsync(string refreshToken, int userId)
+    public async Task<AuthDto?> UpdateAccessTokenAsync(string refreshToken, int userId)
     {
         var userKey = GenerateUserKey(userId);
         var value = await Redis.HashGetAsync(userKey, Keys.RefreshToken);
-        if (!value.HasValue || value.ToString() != refreshToken) return string.Empty;
-        var at = TokenGenerator.GeneratorAccessToken(userId);
-        await Redis.HashSetAsync(userKey, Keys.AccessToken, at);
-        return at;
+        if (!value.HasValue || value.ToString() != refreshToken) return null;
+        var (rt, rdf) = TokenGenerator.GeneratorRefreshToken(userId);
+        var (at, adf) = TokenGenerator.GeneratorAccessToken(userId, (await GetUserByIdAsync(userId))?.UserRoles ?? []);
+        await PutRedisHash(userKey, Keys.RefreshToken, rt, rdf.UtcDateTime);
+        await PutRedisHash(userKey, Keys.AccessToken, at, adf.UtcDateTime);
+        return new AuthDto
+        {
+            UserId = userId,
+            AccessToken = at,
+            RefreshToken = rt,
+            ExpiresAt = rdf
+        };
     }
 
     //TODO Private Methods
+    private async Task PutRedisHash(RedisKey key, RedisValue field, RedisValue value, DateTime? ttl = null)
+    {
+        await Redis.HashSetAsync(key, field, value);
+        if (ttl is not null)
+            await Redis.HashFieldExpireAsync(key, [field], ttl.Value);
+    }
+
+    private async Task PutRedisHash(RedisKey key, HashEntry[] entries, DateTime? ttl = null)
+    {
+        await Redis.HashSetAsync(key, entries);
+        if (ttl is not null)
+            await Redis.HashFieldExpireAsync(key, entries.GetKeys(), ttl.Value);
+    }
+
     private static RedisKey GenerateUserKey(int userId)
     {
         return new RedisKey($"userinfo/data/u{userId}");
@@ -686,12 +712,7 @@ internal sealed class AccountRepository(
         if (MySqlConnection.State != ConnectionState.Open) await MySqlConnection.OpenAsync(cancellationToken);
     }
 
-    private static partial class Keys
-    {
-    }
-
-    //TODO Redis
-    private static partial class Keys
+    private static class Keys
     {
         public const string RefreshToken = "REFRESH_TOKEN";
         public const string AccessToken = "ACCESS_TOKEN";

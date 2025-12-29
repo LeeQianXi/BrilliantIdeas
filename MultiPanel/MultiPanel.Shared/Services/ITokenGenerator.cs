@@ -28,9 +28,9 @@ public interface ITokenGenerator
     /// <param name="userId">用户Id</param>
     /// <param name="ttl">过期时间</param>
     /// <param name="roles">用户身份组</param>
-    string GeneratorAccessToken(int userId, TimeSpan ttl, params IEnumerable<string> roles);
+    (string, DateTimeOffset) GeneratorAccessToken(int userId, TimeSpan ttl, params IEnumerable<string> roles);
 
-    string GeneratorAccessToken(int userId, params IEnumerable<string> roles);
+    (string, DateTimeOffset) GeneratorAccessToken(int userId, params IEnumerable<string> roles);
 }
 
 internal class JwtTokenGenerator(IOptions<JwtOption> options) : ITokenGenerator
@@ -64,8 +64,9 @@ internal class JwtTokenGenerator(IOptions<JwtOption> options) : ITokenGenerator
         return GeneratorRefreshToken(userId, RefreshTokenLifeTime);
     }
 
-    public string GeneratorAccessToken(int userId, TimeSpan ttl, params IEnumerable<string> roles)
+    public (string, DateTimeOffset) GeneratorAccessToken(int userId, TimeSpan ttl, params IEnumerable<string> roles)
     {
+        var exp = DateTimeOffset.UtcNow.Add(ttl);
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, userId.ToString()),
@@ -80,10 +81,10 @@ internal class JwtTokenGenerator(IOptions<JwtOption> options) : ITokenGenerator
             expires: DateTime.UtcNow.Add(ttl),
             signingCredentials: _cred);
 
-        return _handler.WriteToken(token);
+        return (_handler.WriteToken(token), exp);
     }
 
-    public string GeneratorAccessToken(int userId, params IEnumerable<string> roles)
+    public (string, DateTimeOffset) GeneratorAccessToken(int userId, params IEnumerable<string> roles)
     {
         return GeneratorAccessToken(userId, AccessTokenLifeTime, roles);
     }
