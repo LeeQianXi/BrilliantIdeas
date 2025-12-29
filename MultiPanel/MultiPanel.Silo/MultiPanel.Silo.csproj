@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <LangVersion>preview</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -11,12 +11,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Orleans.Server" Version="9.2.1"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\MultiPanel.Abstractions\MultiPanel.Abstractions.csproj"/>
         <ProjectReference Include="..\MultiPanel.Grains\MultiPanel.Grains.csproj"/>
-        <ProjectReference Include="..\MultiPanel.Interfaces\MultiPanel.Interfaces.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

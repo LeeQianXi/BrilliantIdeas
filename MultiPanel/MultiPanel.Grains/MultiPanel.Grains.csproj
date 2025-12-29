@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <LangVersion>preview</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
@@ -12,14 +12,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\MultiPanel.Abstractions\MultiPanel.Abstractions.csproj"/>
-        <ProjectReference Include="..\MultiPanel.Interfaces\MultiPanel.Interfaces.csproj"/>
+        <PackageReference Include="Microsoft.Orleans.Persistence.AdoNet" Version="9.2.1"/>
+        <PackageReference Include="MySql.Data" Version="9.5.0"/>
+        <PackageReference Include="Microsoft.Orleans.Clustering.Redis" Version="9.2.1"/>
+        <PackageReference Include="Microsoft.Orleans.Persistence.Redis" Version="9.2.1"/>
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="GrainImplementations\"/>
-        <Folder Include="Persistence\"/>
-        <Folder Include="State\"/>
+        <ProjectReference Include="..\MultiPanel.Interfaces\MultiPanel.Interfaces.csproj"/>
     </ItemGroup>
 
 </Project>

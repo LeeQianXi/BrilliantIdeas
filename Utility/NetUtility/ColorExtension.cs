@@ -124,8 +124,8 @@ public static partial class Extension
         public float CalcCiede2000Difference(Rgba32 pixel2)
         {
             // 将RGB转换为Lab颜色空间（需要安装SixLabors.ImageSharp.ColorSpaces）
-            var lab1 = RgbToLab(pixel1);
-            var lab2 = RgbToLab(pixel2);
+            var lab1 = pixel1.RgbToLab();
+            var lab2 = pixel2.RgbToLab();
 
             // 计算Delta E（简化的CIEDE2000）
             var deltaL = lab1.L - lab2.L;

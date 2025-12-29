@@ -10,7 +10,6 @@ public class Program
     [STAThread]
     private static int Main(string[] args)
     {
-        StartUp.ClientHost.StartAsync();
         Console.OutputEncoding = Encoding.UTF8;
         return BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);
@@ -18,7 +17,7 @@ public class Program
 
     public static AppBuilder BuildAvaloniaApp()
     {
-        ServiceLocator.Instance.ClientHost = StartUp.ClientHost;
+        ServiceLocator.Instance.ClientContext = ClientContext.Instance;
         return AppBuilder.Configure<MultiPanelApp>()
             .UsePlatformDetect()
             .WithInterFont()

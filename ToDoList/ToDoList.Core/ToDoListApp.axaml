@@ -14,6 +14,7 @@
         <semi:SemiTheme Locale="zh-CN" />
         <semi:SemiPopupAnimations />
         <StyleInclude Source="avares://AvaloniaUtility/Controls/CustomControls.axaml" />
+        <StyleInclude Source="avares://ToDoList.Core.Abstract/Styles/TitleBox.axaml" />
         <StyleInclude Source="avares://ToDoList.Core.Abstract/Controls/CustomControls.axaml" />
     </Application.Styles>
 </Application>

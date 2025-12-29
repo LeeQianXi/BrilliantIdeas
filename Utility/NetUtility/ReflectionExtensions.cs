@@ -43,35 +43,35 @@ public static partial class Extension
         [Pure]
         public MemberInfo? GetDeclaredMember(string memberName)
         {
-            var members = GetDeclaredMembers(type);
+            var members = type.GetDeclaredMembers();
             return members.FirstOrDefault(t => t.Name == memberName);
         }
 
         [Pure]
         public MemberInfo? GetDeclaredField(string fieldName)
         {
-            var fields = GetDeclaredFields(type);
+            var fields = type.GetDeclaredFields();
             return fields.FirstOrDefault(t => t.Name == fieldName);
         }
 
         [Pure]
         public PropertyInfo? GetDeclaredProperty(string propertyName)
         {
-            var props = GetDeclaredProperties(type);
+            var props = type.GetDeclaredProperties();
             return props.FirstOrDefault(t => t.Name == propertyName);
         }
 
         [Pure]
         public MethodInfo? GetDeclaredMethod(string methodName)
         {
-            var methods = GetDeclaredMethods(type);
+            var methods = type.GetDeclaredMethods();
             return methods.FirstOrDefault(t => t.Name == methodName);
         }
 
         [Pure]
         public ConstructorInfo? GetDeclaredConstructor(Type[] parameters)
         {
-            foreach (var ctor in GetDeclaredConstructors(type))
+            foreach (var ctor in type.GetDeclaredConstructors())
                 if (ExactMatch(ctor))
                     return ctor;
             return null;
@@ -95,7 +95,7 @@ public static partial class Extension
             var cur = type;
             while (cur != null)
             {
-                var members = GetDeclaredMembers(cur);
+                var members = cur.GetDeclaredMembers();
 
                 result.AddRange(members.Where(t => t.Name == memberName));
 
@@ -111,7 +111,7 @@ public static partial class Extension
             var cur = type;
             while (cur != null)
             {
-                var methods = GetDeclaredMethods(cur);
+                var methods = cur.GetDeclaredMethods();
 
                 foreach (var t in methods)
                     if (t.Name == methodName)
@@ -127,7 +127,7 @@ public static partial class Extension
             var cur = type;
             while (cur != null)
             {
-                var methods = GetDeclaredMethods(cur);
+                var methods = cur.GetDeclaredMethods();
                 foreach (var t in methods)
                     if (t.Name == methodName)
                         return t;
@@ -143,7 +143,7 @@ public static partial class Extension
             var cur = type;
             while (cur != null)
             {
-                var properties = GetDeclaredProperties(cur);
+                var properties = cur.GetDeclaredProperties();
                 foreach (var t in properties)
                     if (t.Name == propertyName)
                         return t;
@@ -213,7 +213,7 @@ public static partial class Extension
         [Pure]
         public bool HasAttribute<TAttribute>()
         {
-            return HasAttribute(element, typeof(TAttribute));
+            return element.HasAttribute(typeof(TAttribute));
         }
 
         /// <summary>
@@ -222,7 +222,7 @@ public static partial class Extension
         [Pure]
         public bool HasAttribute<TAttribute>(bool shouldCache)
         {
-            return HasAttribute(element, typeof(TAttribute), shouldCache);
+            return element.HasAttribute(typeof(TAttribute), shouldCache);
         }
 
         /// <summary>
@@ -231,7 +231,7 @@ public static partial class Extension
         [Pure]
         public bool HasAttribute(Type attributeType)
         {
-            return HasAttribute(element, attributeType, true);
+            return element.HasAttribute(attributeType, true);
         }
 
         /// <summary>
@@ -289,14 +289,14 @@ public static partial class Extension
         public TAttribute? GetAttribute<TAttribute>(bool shouldCache)
             where TAttribute : Attribute
         {
-            return (TAttribute?)GetAttribute(element, typeof(TAttribute), shouldCache);
+            return (TAttribute?)element.GetAttribute(typeof(TAttribute), shouldCache);
         }
 
         [Pure]
         public TAttribute? GetAttribute<TAttribute>()
             where TAttribute : Attribute
         {
-            return GetAttribute<TAttribute>(element, true);
+            return element.GetAttribute<TAttribute>(true);
         }
     }
 

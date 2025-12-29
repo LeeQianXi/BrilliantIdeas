@@ -1,19 +1,33 @@
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using MultiPanel.Client.Abstract.ViewModels;
+using MultiPanel.Client.Abstract.Views;
+using MultiPanel.Client.Orleans;
 using NetUtility.Singleton;
 
 namespace MultiPanel.Client;
 
 public class ServiceLocator : StaticSingleton<ServiceLocator>
 {
-    private static IHost _clientHost = null!;
+    private static IClientContext _clientContext = null!;
 
-    public IHost ClientHost
+    public static string ApplicationDataFolder =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "MultiPanel");
+
+    public IServiceProvider ServiceProvider => _clientContext.ServiceProvider;
+
+    public IClientContext ClientContext
     {
-        get => _clientHost;
-        set => _clientHost = value;
+        get => _clientContext;
+        set => _clientContext = value;
     }
 
-    public IClusterClient ClusterClient => _clientHost.Services.GetRequiredService<IClusterClient>();
-    public IServiceProvider ServiceProvider => _clientHost.Services;
+    public ILoginInViewModel LoginInViewModel => ServiceProvider.GetRequiredService<ILoginInViewModel>();
+    public IMainMenuView MainMenuView => ServiceProvider.GetRequiredService<IMainMenuView>();
+    public IMainMenuViewModel MainMenuViewModel => ServiceProvider.GetRequiredService<IMainMenuViewModel>();
+
+    public ILogger<T> GetLogger<T>()
+    {
+        return ServiceProvider.GetRequiredService<ILogger<T>>();
+    }
 }

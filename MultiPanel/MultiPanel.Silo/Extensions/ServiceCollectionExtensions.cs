@@ -1,29 +1,17 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Orleans.Services;
+using MultiPanel.Grains;
 
 namespace MultiPanel.Silo.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    extension(IServiceCollection services)
+    extension(IServiceCollection collection)
     {
-        public IServiceCollection AddApplicationServices()
+        public IServiceCollection UseSiloExtension(IConfiguration configuration)
         {
-            return services;
-        }
-
-        public IServiceCollection AddInfrastructureServices(IConfiguration configuration)
-        {
-            return services;
-        }
-
-        public IServiceCollection AddGrainServices()
-        {
-            // 注册需要注入到Grains中的服务
-            services.AddSingleton<IGrainService, GrainService>();
-
-            return services;
+            return collection
+                .UseSileServices(configuration);
         }
     }
 }
