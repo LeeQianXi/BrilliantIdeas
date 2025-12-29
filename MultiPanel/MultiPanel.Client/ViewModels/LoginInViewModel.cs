@@ -1,38 +1,47 @@
 using System.Reactive;
+using System.Reactive.Linq;
 using CommunityToolkit.Mvvm.Input;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using MultiPanel.Abstractions.DTOs;
 using MultiPanel.Client.Abstract.Bases;
 using MultiPanel.Client.Abstract.Options;
+using MultiPanel.Client.Abstract.Services;
 using MultiPanel.Client.Abstract.ViewModels;
+using MultiPanel.Client.Abstract.Views;
 using MultiPanel.Interfaces.IGrains;
 using MultiPanel.Shared.Services;
 using ReactiveUI;
 
 namespace MultiPanel.Client.ViewModels;
 
-public partial class LoginInViewModel : ViewModelBase, ILoginInViewModel
+public partial class LoginInViewModel(IServiceProvider serviceProvider) : ViewModelBase, ILoginInViewModel
 {
-    public LoginInViewModel(IServiceProvider serviceProvider)
+    private readonly IWritableConfigure<LoginWithOptions> _configure = serviceProvider
+        .GetRequiredService<IWritableConfigureFactory>()
+        .GetConfigure<LoginWithOptions>(Path.Combine(ServiceLocator.ApplicationDataFolder, "config.json"));
+
+    private string PasswordHash
     {
-        ServiceProvider = serviceProvider;
-        Logger = serviceProvider.GetRequiredService<ILogger<LoginInViewModel>>();
-        var options = serviceProvider.GetRequiredService<IOptionsSnapshot<LoginWithOptions>>();
-        RememberMe = options.Value.RememberMe;
-        Username = options.Value.Username;
-        Token = options.Value.Token;
+        get => _configure.Value.PasswordHash;
+        set => _configure.Value.PasswordHash = value;
     }
 
-    private string Token { get; set; }
+    public override IServiceProvider ServiceProvider { get; } = serviceProvider;
+    public override ILogger Logger { get; } = serviceProvider.GetRequiredService<ILogger<LoginInViewModel>>();
 
-    public override IServiceProvider ServiceProvider { get; }
-    public override ILogger Logger { get; }
+    public bool RememberMe
+    {
+        get => _configure.Value.RememberMe;
+        set => _configure.Value.RememberMe = value;
+    }
 
-    public bool RememberMe { get; set; }
-    public string Username { get; set; }
+    public string Username
+    {
+        get => _configure.Value.Username;
+        set => _configure.Value.Username = value;
+    }
 
     public string Password
     {
@@ -42,14 +51,16 @@ public partial class LoginInViewModel : ViewModelBase, ILoginInViewModel
 
     public Interaction<string, Unit> WarningInfo { get; } = new();
 
-    public async Task<AccountInfo> TryLoginWithLastedData()
+    public Interaction<IMainMenuView, Unit> SuccessLoginInteraction { get; } = new();
+
+    public async Task<AuthDto?> LoginWithRememberMeAsync()
     {
-        if (!RememberMe) return AccountInfo.Empty;
-        var tg = ServiceProvider.GetRequiredService<ITokenGenerator>();
-        var client = ServiceLocator.Instance.ClientContext.Client;
-        //client.GetGrain<ISessionGrain>();
-        return AccountInfo.Empty;
+        if (!RememberMe) return null;
+        var client = ServiceProvider.GetRequiredService<IClusterClient>();
+        var ag = client.GetGrain<IAccountGrain>(Username);
+        return await ag.LoginAsync(PasswordHash);
     }
+
 
     [RelayCommand]
     private async Task Login()
@@ -59,22 +70,41 @@ public partial class LoginInViewModel : ViewModelBase, ILoginInViewModel
         if (!result.IsValid)
         {
             var validateInfo = result.Errors.First();
-            WarningInfo.Handle(validateInfo.ErrorMessage);
+            await WarningInfo.Handle(validateInfo.ErrorMessage);
             return;
         }
 
         Logger.LogInformation("Trying to login to server");
-        var client = ServiceLocator.Instance.ClientContext.Client;
+        var client = ServiceProvider.GetRequiredService<IClusterClient>();
         var ag = client.GetGrain<IAccountGrain>(Username);
         var ph = ServiceProvider.GetRequiredService<IPasswordHasher>();
-        var acInfo = await ag.TryLogin(ph.Hash(Password));
-        if (acInfo == AccountInfo.Empty)
+        if (!await ag.ExistAsync())
         {
-            WarningInfo.Handle("Username or Password is invalid");
+            await WarningInfo.Handle("Account not found");
             return;
         }
 
-        var sg = client.GetGrain<ISessionGrain>(acInfo.UserId);
+        var auth = await ag.LoginAsync(ph.Hash(Password));
+        if (!auth.IsValid)
+        {
+            await WarningInfo.Handle("Username or Password is invalid");
+            return;
+        }
+
+        SuccessLoginCommand.Execute(auth);
+    }
+
+    [RelayCommand]
+    private void SuccessLogin(AuthDto auth)
+    {
+        ServiceLocator.Instance.MainMenuViewModel.Auth = auth;
+        SuccessLoginInteraction.Handle(ServiceLocator.Instance.MainMenuView);
+    }
+
+    [RelayCommand]
+    private void SaveConfig()
+    {
+        _configure.SaveToFile();
     }
 }
 

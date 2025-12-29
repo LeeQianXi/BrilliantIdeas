@@ -1,9 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using MultiPanel.Client;
 using MultiPanel.Client.Abstract.Options;
@@ -12,7 +9,6 @@ using MultiPanel.Client.Services;
 using MultiPanel.Client.Views;
 using NetUtility.Singleton;
 using Orleans.Configuration;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace MultiPanel.Avalonia;
 
@@ -62,23 +58,7 @@ public class ClientContext : StaticSingleton<ClientContext>, IClientContext
 
     private static void OnConfigureAppConfiguration(HostBuilderContext context, IConfigurationBuilder cbuilder)
     {
-        var configPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "MultiPanel", "config.json");
-        if (!File.Exists(configPath))
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(configPath)!);
-            File.WriteAllText(configPath,
-                JsonSerializer.Serialize(new LoginWithOptions(), new JsonSerializerOptions { WriteIndented = true }));
-        }
-
         cbuilder
-            .Add(new JsonConfigurationSource
-            {
-                Path = Path.GetFileName(configPath),
-                FileProvider = new PhysicalFileProvider(Path.GetDirectoryName(configPath)!),
-                Optional = false,
-                ReloadOnChange = true
-            })
             .AddJsonFile("appsettings.json", false, true);
     }
 
@@ -88,7 +68,7 @@ public class ClientContext : StaticSingleton<ClientContext>, IClientContext
             .Configure<LoginWithOptions>(context.Configuration)
             .AddSingleton<IClientContext, ClientContext>(_ => Instance)
             .UseAvaloniaCore<LoginInWindow>()
-            .UseMultiPanelClient();
+            .UseMultiPanelClient(context.Configuration);
     }
 
     private static void OnConfigureClient(HostBuilderContext context, IClientBuilder client)

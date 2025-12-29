@@ -8,5 +8,5 @@ public class LoginWithOptions
 
     [Id(1)] public string Username { get; set; } = string.Empty;
 
-    [Id(2)] public string Token { get; set; } = string.Empty;
+    [Id(2)] public string PasswordHash { get; set; } = string.Empty;
 }

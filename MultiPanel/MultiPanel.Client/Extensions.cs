@@ -1,8 +1,12 @@
 using AvaloniaUtility.Services;
 using FluentValidation;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MultiPanel.Client.Abstract;
 using MultiPanel.Client.Abstract.ViewModels;
+using MultiPanel.Client.Abstract.Views;
 using MultiPanel.Client.ViewModels;
+using MultiPanel.Client.Views;
 using MultiPanel.Interfaces;
 
 namespace MultiPanel.Client;
@@ -20,11 +24,14 @@ public static class Extensions
                 .AddSingleton<IStartupWindow, TStartUp>();
         }
 
-        public IServiceCollection UseMultiPanelClient()
+        public IServiceCollection UseMultiPanelClient(IConfiguration configuration)
         {
             return collection
-                    .UseMultiPanelOrleansServices()
+                    .UseClientServices()
+                    .UseMultiPanelOrleansServices(configuration)
                     .AddSingleton<ILoginInViewModel, LoginInViewModel>()
+                    .AddSingleton<IMainMenuView, MainMenuWindow>()
+                    .AddSingleton<IMainMenuViewModel, MainMenuViewModel>()
                 ;
         }
     }

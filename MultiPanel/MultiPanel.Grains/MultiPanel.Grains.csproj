@@ -12,12 +12,15 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\MultiPanel.Abstractions\MultiPanel.Abstractions.csproj"/>
-        <ProjectReference Include="..\MultiPanel.Interfaces\MultiPanel.Interfaces.csproj"/>
+        <PackageReference Include="Microsoft.Orleans.Persistence.AdoNet" Version="9.2.1"/>
+        <PackageReference Include="MySql.Data" Version="9.5.0"/>
+        <PackageReference Include="Microsoft.Orleans.Clustering.Redis" Version="9.2.1"/>
+        <PackageReference Include="Microsoft.Orleans.Persistence.Redis" Version="9.2.1"/>
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Persistence\"/>
+        <ProjectReference Include="..\MultiPanel.Abstractions\MultiPanel.Abstractions.csproj"/>
+        <ProjectReference Include="..\MultiPanel.Interfaces\MultiPanel.Interfaces.csproj"/>
     </ItemGroup>
 
 </Project>

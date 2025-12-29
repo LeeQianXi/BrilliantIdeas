@@ -38,8 +38,4 @@
         <AvaloniaResource Include="Assets\**"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <Folder Include="Views\"/>
-    </ItemGroup>
-
 </Project>

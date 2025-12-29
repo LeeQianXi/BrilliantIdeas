@@ -2,6 +2,7 @@ using System.Reactive;
 using CommunityToolkit.Mvvm.Input;
 using DIAbstract.Services;
 using MultiPanel.Abstractions.DTOs;
+using MultiPanel.Client.Abstract.Views;
 using ReactiveUI;
 
 namespace MultiPanel.Client.Abstract.ViewModels;
@@ -26,12 +27,16 @@ public interface ILoginInViewModel : IDependencyInjection
     /// <summary>
     ///     用于绑定,用于处理登陆事件
     /// </summary>
-    public IAsyncRelayCommand LoginCommand { get; }
+    IAsyncRelayCommand LoginCommand { get; }
 
     /// <summary>
     ///     用于传递警告信息
     /// </summary>
-    public Interaction<string, Unit> WarningInfo { get; }
+    Interaction<string, Unit> WarningInfo { get; }
 
-    public Task<AccountInfo> TryLoginWithLastedData();
+    IRelayCommand<AuthDto> SuccessLoginCommand { get; }
+    Interaction<IMainMenuView, Unit> SuccessLoginInteraction { get; }
+    IRelayCommand SaveConfigCommand { get; }
+
+    Task<AuthDto?> LoginWithRememberMeAsync();
 }

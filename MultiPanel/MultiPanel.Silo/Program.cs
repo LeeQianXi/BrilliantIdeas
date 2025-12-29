@@ -2,8 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using MultiPanel.Interfaces;
+using MultiPanel.Silo.Extensions;
 using Orleans.Configuration;
+using StackExchange.Redis;
 
 namespace MultiPanel.Silo;
 
@@ -26,7 +27,6 @@ public static class Program
         var configuration = context.Configuration;
         var redisConnectionString = configuration.GetConnectionString("Redis");
         var mysqlConnectionString = configuration.GetConnectionString("Mysql");
-
         builder
             .Configure<ClusterOptions>(options =>
             {
@@ -34,6 +34,8 @@ public static class Program
                 options.ServiceId = configuration["Orleans:ServiceId"];
             })
             .UseRedisClustering(redisConnectionString)
+            .AddRedisGrainStorageAsDefault(options =>
+                options.ConfigurationOptions = ConfigurationOptions.Parse(redisConnectionString!))
             .AddAdoNetGrainStorage("MySqlStore", options =>
             {
                 options.Invariant = configuration["Orleans:AdoNetInvariant"];
@@ -52,8 +54,11 @@ public static class Program
 
     private static void ConfigureServices(HostBuilderContext context, IServiceCollection collection)
     {
+        var redisConnectionString = context.Configuration.GetConnectionString("Redis")!;
         collection
-            .UseMultiPanelOrleansServices()
+            .UseSiloExtension(context.Configuration)
+            .AddSingleton<IConnectionMultiplexer, ConnectionMultiplexer>(sp =>
+                ConnectionMultiplexer.Connect(redisConnectionString))
             .AddLogging(logging =>
             {
                 logging.AddConsole()

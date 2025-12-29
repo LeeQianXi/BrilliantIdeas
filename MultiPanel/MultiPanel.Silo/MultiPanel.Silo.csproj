@@ -15,12 +15,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Orleans.Persistence.AdoNet" Version="9.2.1"/>
-        <PackageReference Include="Microsoft.Orleans.Clustering.Redis" Version="9.2.1"/>
-        <PackageReference Include="MySql.Data" Version="9.5.0"/>
-    </ItemGroup>
-
-    <ItemGroup>
         <Content Include="..\..\.dockerignore">
             <Link>.dockerignore</Link>
         </Content>

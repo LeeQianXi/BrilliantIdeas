@@ -32,7 +32,8 @@ CREATE TABLE OrleansGrainDirectory
     PRIMARY KEY (ClusterId, ProviderId, GrainId)
 );
 
-DELIMITER $$
+DELIMITER
+$$
 
 CREATE PROCEDURE RegisterGrainActivation(
     IN _ClusterId NVARCHAR(150),
@@ -43,7 +44,8 @@ CREATE PROCEDURE RegisterGrainActivation(
 )
 BEGIN
 
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    DECLARE
+        EXIT HANDLER FOR SQLEXCEPTION
         BEGIN
             ROLLBACK;
             RESIGNAL;
@@ -64,7 +66,8 @@ BEGIN
             _SiloAddress,
             _ActivationId,
             UTC_TIMESTAMP(3))
-    ON DUPLICATE KEY UPDATE ClusterId = ClusterId;
+    ON DUPLICATE KEY
+        UPDATE ClusterId = ClusterId;
 
 -- Return the current registration
     SELECT ClusterId,
@@ -81,7 +84,8 @@ BEGIN
 END;
 
 
-DELIMITER $$
+DELIMITER
+$$
 
 INSERT INTO OrleansQuery
 (QueryKey,
@@ -89,7 +93,8 @@ INSERT INTO OrleansQuery
 SELECT 'RegisterGrainActivationKey',
        'CALL RegisterGrainActivation(@ClusterId, @ProviderId, @GrainId, @SiloAddress, @ActivationId);';
 
-DELIMITER $$
+DELIMITER
+$$
 
 CREATE PROCEDURE UnregisterGrainActivation(
     IN _ClusterId VARCHAR(150),
@@ -98,7 +103,8 @@ CREATE PROCEDURE UnregisterGrainActivation(
     IN _ActivationId VARCHAR(100)
 )
 BEGIN
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    DECLARE
+        EXIT HANDLER FOR SQLEXCEPTION
         BEGIN
             ROLLBACK;
             RESIGNAL;
@@ -117,7 +123,8 @@ BEGIN
     COMMIT;
 END;
 
-DELIMITER $$
+DELIMITER
+$$
 
 INSERT INTO OrleansQuery
 (QueryKey,
@@ -125,7 +132,8 @@ INSERT INTO OrleansQuery
 SELECT 'UnregisterGrainActivationKey',
        'CALL UnregisterGrainActivation(@ClusterId, @ProviderId, @GrainId, @ActivationId);';
 
-DELIMITER $$
+DELIMITER
+$$
 
 CREATE PROCEDURE LookupGrainActivation(
     IN _ClusterId VARCHAR(150),
@@ -143,7 +151,8 @@ BEGIN
       AND ProviderId = _ProviderId
       AND GrainId = _GrainId;
 END
-DELIMITER $$
+DELIMITER
+$$
 
 INSERT INTO OrleansQuery
 (QueryKey,
@@ -151,7 +160,8 @@ INSERT INTO OrleansQuery
 SELECT 'LookupGrainActivationKey',
        'CALL LookupGrainActivation(@ClusterId, @ProviderId, @GrainId);';
 
-DELIMITER $$
+DELIMITER
+$$
 
 CREATE PROCEDURE UnregisterGrainActivations(
     IN _ClusterId VARCHAR(150),
@@ -159,7 +169,8 @@ CREATE PROCEDURE UnregisterGrainActivations(
     IN _SiloAddresses TEXT
 )
 BEGIN
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    DECLARE
+        EXIT HANDLER FOR SQLEXCEPTION
         BEGIN
             ROLLBACK;
             RESIGNAL;
@@ -168,7 +179,8 @@ BEGIN
     START TRANSACTION;
 
 -- Parse silo addresses into temporary table for batch operation
-    CREATE TEMPORARY TABLE TempSiloAddresses
+    CREATE
+        TEMPORARY TABLE TempSiloAddresses
     (
         SiloAddress VARCHAR(100) NOT NULL,
         Level       INT          NOT NULL
@@ -198,10 +210,12 @@ BEGIN
 
     SELECT ROW_COUNT() AS DeletedRows;
 
-    DROP TEMPORARY TABLE TempSiloAddresses;
+    DROP
+        TEMPORARY TABLE TempSiloAddresses;
     COMMIT;
 END
-DELIMITER $$
+DELIMITER
+$$
 
 INSERT INTO OrleansQuery
 (QueryKey,
@@ -209,4 +223,4 @@ INSERT INTO OrleansQuery
 SELECT 'UnregisterGrainActivationsKey',
        'CALL UnregisterGrainActivations(@ClusterId, @ProviderId, @SiloAddresses);';
 
-DELIMITER ;
+DELIMITER;

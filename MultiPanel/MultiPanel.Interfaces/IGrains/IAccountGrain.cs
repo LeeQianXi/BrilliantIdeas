@@ -3,12 +3,47 @@ using Orleans;
 
 namespace MultiPanel.Interfaces.IGrains;
 
+/// <summary>
+///     用户账户域无状态 Grain，key = userName（字符串）
+/// </summary>
+[Alias("MultiPanel.Interfaces.IGrains.IAccountGrain")]
 public interface IAccountGrain : IGrainWithStringKey
 {
-    Task<bool> Exist();
-    Task<AccountInfo> TryLogin(string passwordHash);
-    Task<AccountInfo> TryRegister(string passwordHash);
-    Task TryDeleteAccount(string token);
-    Task DeactivateAccount();
-    Task ActivateAccount();
+    /// <summary>
+    ///     检测用户名是否存在
+    /// </summary>
+    /// <returns>是否存在用户</returns>
+    [Alias("ExistAsync")]
+    Task<bool> ExistAsync();
+
+    /// <summary>
+    ///     注册用户，返回双令牌
+    /// </summary>
+    /// <param name="passwordHash">密码Hash</param>
+    /// <returns>双令牌</returns>
+    [Alias("RegisterAsync")]
+    Task<AuthDto> RegisterAsync(string passwordHash);
+
+    /// <summary>
+    ///     登录,校验密码，返回双令牌
+    /// </summary>
+    /// <param name="passwordHash">密码Hash</param>
+    /// <returns>双令牌</returns>
+    [Alias("LoginAsync")]
+    Task<AuthDto> LoginAsync(string passwordHash);
+
+    /// <summary>
+    ///     刷新 accessToken
+    /// </summary>
+    /// <param name="refreshToken">已有刷新Token</param>
+    /// <returns>刷新后获取Token</returns>
+    [Alias("RefreshAsync")]
+    Task<AuthDto> RefreshAsync(AuthDto dto);
+
+    /// <summary>
+    ///     注销账户
+    /// </summary>
+    /// <param name="passwordHash">密码Hash</param>
+    [Alias("DeleteAccountAsync")]
+    Task<bool> DeleteAccountAsync(string passwordHash);
 }

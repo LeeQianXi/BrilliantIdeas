@@ -65,7 +65,8 @@ VALUES ('InsertMembershipKey', '
     call InsertMembershipKey(@DeploymentId, @Address, @Port, @Generation,
     @Version, @SiloName, @HostName, @Status, @ProxyPort, @StartTime, @IAmAliveTime);');
 
-DELIMITER $$
+DELIMITER
+$$
 
 CREATE PROCEDURE InsertMembershipKey(
     in _DeploymentId NVARCHAR(150),
@@ -81,7 +82,8 @@ CREATE PROCEDURE InsertMembershipKey(
     in _IAmAliveTime DATETIME
 )
 BEGIN
-    DECLARE _ROWCOUNT INT;
+    DECLARE
+        _ROWCOUNT INT;
     START TRANSACTION;
     INSERT INTO OrleansMembershipTable
     (DeploymentId,
@@ -125,9 +127,11 @@ BEGIN
       AND _Version IS NOT NULL
       AND ROW_COUNT() > 0;
 
-    SET _ROWCOUNT = ROW_COUNT();
+    SET
+        _ROWCOUNT = ROW_COUNT();
 
-    IF _ROWCOUNT = 0
+    IF
+        _ROWCOUNT = 0
     THEN
         ROLLBACK;
     ELSE

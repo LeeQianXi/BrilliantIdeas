@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MultiPanel.Shared;
 
@@ -7,10 +8,10 @@ public static class OrleansShareExtension
 {
     extension(IServiceCollection collection)
     {
-        public IServiceCollection UseMultiPanelOrleansServices()
+        public IServiceCollection UseMultiPanelOrleansServices(IConfiguration configuration)
         {
             return collection
-                .UseSharedServices();
+                .UseSharedServices(configuration);
         }
     }
 }
