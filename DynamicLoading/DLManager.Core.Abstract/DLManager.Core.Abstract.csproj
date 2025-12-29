@@ -1,36 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <LangVersion>preview</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="11.3.7"/>
-        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.7"/>
-        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.7"/>
-        <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-        <PackageReference Include="Avalonia.Diagnostics" Version="11.3.7">
-            <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
-            <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
-        </PackageReference>
-        <PackageReference Include="Semi.Avalonia" Version="11.3.7"/>
-        <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.6"/>
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\..\Utility\DIAbstract\DIAbstract.csproj"/>
         <ProjectReference Include="..\..\Utility\AvaloniaUtility\AvaloniaUtility.csproj"/>
         <ProjectReference Include="..\..\Utility\NetUtility\NetUtility.csproj"/>
         <ProjectReference Include="..\DLManager.Plugin.Abstract\DLManager.Plugin.Abstract.csproj"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Content Include="..\DLManager.Plugin.GadgetPlugin\bin\Debug\net9.0\DLManager.Plugin.GadgetPlugin.dll">
-            <Link>Plugins\DLManager.Plugin.Test.dll</Link>
-        </Content>
     </ItemGroup>
 
 </Project>
