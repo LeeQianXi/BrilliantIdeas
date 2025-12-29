@@ -11,4 +11,5 @@ public class MainMenuViewModel(IServiceProvider serviceProvider) : ViewModelBase
     public override IServiceProvider ServiceProvider { get; } = serviceProvider;
     public override ILogger Logger { get; } = serviceProvider.GetRequiredService<ILogger<MainMenuViewModel>>();
     public AuthDto Auth { get; set; } = null!;
+    public string UserName { get; set; } = string.Empty;
 }

@@ -77,6 +77,16 @@ public static class Util
             return str.Hash(SHA256.Create(), Encoding.UTF8);
         }
 
+        public string Hash(HashAlgorithm hashAlgorithm)
+        {
+            return str.Hash(hashAlgorithm, Encoding.UTF8);
+        }
+
+        public string Hash(Encoding encoding)
+        {
+            return str.Hash(SHA256.Create(), encoding);
+        }
+
         public string Hash(HashAlgorithm hashAlgorithm, Encoding encoding)
         {
             return encoding.GetString(hashAlgorithm.ComputeHash(encoding.GetBytes(str)));

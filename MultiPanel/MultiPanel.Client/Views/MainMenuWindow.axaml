@@ -8,6 +8,13 @@
         WindowStartupLocation="CenterScreen"
         x:Class="MultiPanel.Client.Views.MainMenuWindow"
         DataContext="{Binding MainMenuViewModel,Source={StaticResource ServiceLocator}}"
-        Title="MainMenuWindow">
-    Welcome to Avalonia!
+        Title="{Binding UserName,StringFormat='User:{0}',Mode=OneTime}">
+    <Border>
+        <Grid>
+            <StackPanel>
+                <TextBox Text="{Binding Auth.AccessToken,StringFormat='AccessToken:{0}',Mode=OneTime}" />
+                <TextBox Text="{Binding Auth.RefreshToken,StringFormat='RefreshToken:{0}',Mode=OneTime}" />
+            </StackPanel>
+        </Grid>
+    </Border>
 </Window>
