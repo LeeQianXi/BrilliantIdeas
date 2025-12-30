@@ -25,14 +25,20 @@ public static class Program
     private static void ConfigureOrleans(HostBuilderContext context, ISiloBuilder builder)
     {
         var configuration = context.Configuration;
-        var redisConnectionString = configuration.GetConnectionString("Redis");
-        var mysqlConnectionString = configuration.GetConnectionString("Mysql");
+
+        var redisConnectionString = configuration["REDIS_CONNECTION_STRING"];
+        var mysqlConnectionString = configuration["MYSQL_CONNECTION_STRING"];
         builder
             .Configure<ClusterOptions>(options =>
             {
-                options.ClusterId = configuration["Orleans:ClusterId"];
-                options.ServiceId = configuration["Orleans:ServiceId"];
+                options.ClusterId = configuration["CLUSTER_ID"];
+                options.ServiceId = configuration["SERVICE_ID"];
             })
+            .ConfigureEndpoints(
+                configuration["ADVERTISED_HOST"],
+                configuration.GetValue("SILO_PORT", 11_111),
+                configuration.GetValue("GATEWAY_PORT", 30_000),
+                listenOnAnyHostAddress: true)
             .UseRedisClustering(redisConnectionString)
             .AddRedisGrainStorageAsDefault(options =>
                 options.ConfigurationOptions = ConfigurationOptions.Parse(redisConnectionString!))

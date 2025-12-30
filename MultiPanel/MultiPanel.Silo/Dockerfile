@@ -1,21 +1,29 @@
-﻿FROM mcr.microsoft.com/dotnet/runtime:9.0 AS base
-USER $APP_UID
-WORKDIR /app
-
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+﻿FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["MultiPanel/MultiPanel.Silo/MultiPanel.Silo.csproj", "MultiPanel/MultiPanel.Silo/"]
-RUN dotnet restore "MultiPanel/MultiPanel.Silo/MultiPanel.Silo.csproj"
-COPY . .
-WORKDIR "/src/MultiPanel/MultiPanel.Silo"
-RUN dotnet build "./MultiPanel.Silo.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+# 复制每个项目的 .csproj 文件
+COPY ["MultiPanel/MultiPanel.Abstractions/MultiPanel.Abstractions.csproj", "MultiPanel.Abstractions/"]
+COPY ["MultiPanel/MultiPanel.Grains/MultiPanel.Grains.csproj", "MultiPanel.Grains/"]
+COPY ["MultiPanel/MultiPanel.Interfaces/MultiPanel.Interfaces.csproj", "MultiPanel.Interfaces/"]
+COPY ["MultiPanel/MultiPanel.Shared/MultiPanel.Shared.csproj", "MultiPanel.Shared/"]
+COPY ["MultiPanel/MultiPanel.Silo/MultiPanel.Silo.csproj", "MultiPanel.Silo/"]
+
+# 恢复依赖
+RUN dotnet restore "MultiPanel.Silo/MultiPanel.Silo.csproj"
+
+# 复制所有源代码
+COPY ["MultiPanel", "."]
+
+# 构建
+WORKDIR "/src/MultiPanel.Silo"
+RUN dotnet build "MultiPanel.Silo.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./MultiPanel.Silo.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "MultiPanel.Silo.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-FROM base AS final
+FROM mcr.microsoft.com/dotnet/runtime:10.0 AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "MultiPanel.Silo.dll"]
