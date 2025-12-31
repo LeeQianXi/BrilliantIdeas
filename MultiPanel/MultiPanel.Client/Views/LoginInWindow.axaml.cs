@@ -16,7 +16,7 @@ public partial class LoginInWindow : ViewModelWindowBase<ILoginInViewModel>, ISt
     public LoginInWindow()
     {
         InitializeComponent();
-        ViewModel!.WarningInfo.RegisterHandler(DisplayWarningInfo);
+        ViewModel!.DisplayToScreen.RegisterHandler(DisplayWarningInfo);
         ViewModel.SuccessLoginInteraction.RegisterHandler(SuccessLoginWindow);
         this.StartCoroutine(ConnectionVerify);
     }
@@ -50,9 +50,8 @@ public partial class LoginInWindow : ViewModelWindowBase<ILoginInViewModel>, ISt
         yield return null;
         if (!context.IsConnected)
         {
-            await ViewModel.WarningInfo.Handle("Failed to connect to server");
-            yield return new WaitForSeconds(3000);
-            Close();
+            Logger.LogError("Failed to connect to server");
+            await ViewModel.DisplayToScreen.Handle("无法连接到服务器,请稍候再试");
             yield break;
         }
 
@@ -62,7 +61,7 @@ public partial class LoginInWindow : ViewModelWindowBase<ILoginInViewModel>, ISt
             yield break;
         ViewModel.Logger.LogInformation("Trying to login to server with old data");
         var dto = await ViewModel.LoginWithRememberMeAsync();
-        if (dto is not { IsValid: true })
+        if (dto is null)
         {
             ViewModel.Logger.LogWarning("Failed to login to server with old data");
             yield break;

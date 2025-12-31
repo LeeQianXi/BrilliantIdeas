@@ -12,7 +12,7 @@ using StackExchange.Redis;
 
 namespace MultiPanel.Grains.Persistence;
 
-internal sealed class AccountRepository(
+internal sealed partial class AccountRepository(
     IConfiguration configuration,
     ILogger<AccountRepository> logger,
     IConnectionMultiplexer redisConn,
@@ -46,7 +46,7 @@ internal sealed class AccountRepository(
         const string sql = """
                            SELECT COUNT(1) 
                            FROM Users 
-                           WHERE UserName = @UserName
+                           WHERE IsEnable = TRUE AND UserName = @UserName
                            """;
         try
         {
@@ -59,7 +59,7 @@ internal sealed class AccountRepository(
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error checking if user exists: {UserName}", userName);
+            LogErrorCheckingIfUserExistsUsername(Logger, ex, userName);
             throw;
         }
     }
@@ -84,12 +84,12 @@ internal sealed class AccountRepository(
         }
         catch (MySqlException ex) when (ex.Number == 1062) // Duplicate entry
         {
-            Logger.LogWarning("User already exists: {UserName}", userName);
+            LogUserAlreadyExistsUsername(Logger, userName);
             return -1;
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error inserting user: {UserName}", userName);
+            LogErrorInsertingUserUsername(Logger, ex, userName);
             return -1;
         }
     }
@@ -99,7 +99,7 @@ internal sealed class AccountRepository(
         const string sql = """
                            SELECT UserId, SaltPasswordHash
                            FROM Users 
-                           WHERE UserName = @UserName AND IsActive = TRUE
+                           WHERE IsEnable = TRUE AND IsEnable = TRUE AND UserName = @UserName AND IsActive = TRUE
                            """;
         try
         {
@@ -115,7 +115,7 @@ internal sealed class AccountRepository(
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error checking password for user: {UserName}", userName);
+            LogErrorCheckingPasswordForUserUsername(Logger, ex, userName);
             return -1;
         }
     }
@@ -123,8 +123,11 @@ internal sealed class AccountRepository(
     public async Task<bool> DeleteUserAsync(int userId, string passwordHash)
     {
         var saltHash = PasswordHasher.SaltedHash(passwordHash);
-        const string sql = "DELETE FROM Users WHERE UserId = @UserId AND SaltPasswordHash = @SaltPasswordHash;";
-
+        const string sql = """
+                           UPDATE Users
+                           SET IsEnable=0
+                           WHERE UserId = @UserId AND SaltPasswordHash = @SaltPasswordHash;
+                           """;
         try
         {
             await EnsureConnectionOpenAsync();
@@ -137,7 +140,7 @@ internal sealed class AccountRepository(
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error deleting user: {UserId}", userId);
+            LogErrorDeletingUserUserid(Logger, ex, userId);
             return false;
         }
     }
@@ -145,8 +148,11 @@ internal sealed class AccountRepository(
     public async Task<bool> DeleteUserAsync(string userName, string passwordHash)
     {
         var saltHash = PasswordHasher.SaltedHash(passwordHash);
-        const string sql = "DELETE FROM Users WHERE UserName = @UserName AND SaltPasswordHash = @SaltPasswordHash;";
-
+        const string sql = """
+                           UPDATE Users
+                           SET IsEnable=0
+                           WHERE UserName = @UserName AND SaltPasswordHash = @SaltPasswordHash;
+                           """;
         try
         {
             await EnsureConnectionOpenAsync();
@@ -159,7 +165,7 @@ internal sealed class AccountRepository(
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error deleting user: {UserName}", userName);
+            LogErrorDeletingUserUsername(Logger, ex, userName);
             return false;
         }
     }
@@ -177,7 +183,7 @@ internal sealed class AccountRepository(
                                    FROM Users u
                                    LEFT JOIN UserRoles ur ON ur.UserId = u.UserId
                                    LEFT JOIN Roles     r  ON r.RoleId  = ur.RoleId
-                                   WHERE   u.UserId = @UserId
+                                   WHERE u.IsEnable=TRUE AND u.UserId = @UserId
                                    GROUP BY u.UserId;
                                    """;
         try
@@ -210,7 +216,7 @@ internal sealed class AccountRepository(
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error getting user by ID: {UserId}", userId);
+            LogErrorGettingUserByIdUserid(Logger, ex, userId);
             return null;
         }
     }
@@ -228,7 +234,7 @@ internal sealed class AccountRepository(
                                    FROM Users u
                                    LEFT JOIN UserRoles ur ON ur.UserId = u.UserId
                                    LEFT JOIN Roles     r  ON r.RoleId  = ur.RoleId
-                                   WHERE u.UserName = @UserName
+                                   WHERE u.IsEnable=TRUE AND u.UserName = @UserName
                                    GROUP BY u.UserId;
                                    """;
         try
@@ -259,7 +265,7 @@ internal sealed class AccountRepository(
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error getting user by name: {UserName}", userName);
+            LogErrorGettingUserByNameUsername(Logger, ex, userName);
             return null;
         }
     }
@@ -269,7 +275,7 @@ internal sealed class AccountRepository(
         const string sql = """
                            UPDATE Users 
                            SET IsActive = @IsActive, UpdatedAt = @UpdatedAt
-                           WHERE UserId = @UserId
+                           WHERE IsEnable=TRUE AND UserId = @UserId
                            """;
         try
         {
@@ -284,7 +290,7 @@ internal sealed class AccountRepository(
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error updating user status: {UserId}", userId);
+            LogErrorUpdatingUserStatusUserid(Logger, ex, userId);
             return false;
         }
     }
@@ -296,7 +302,7 @@ internal sealed class AccountRepository(
                            UPDATE Users 
                            SET SaltPasswordHash = @SaltPasswordHash, 
                                UpdatedAt = @UpdatedAt
-                           WHERE UserId = @UserId
+                           WHERE IsEnable=TRUE AND UserId = @UserId
                            """;
 
         try
@@ -312,7 +318,7 @@ internal sealed class AccountRepository(
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error updating password for user: {UserId}", userId);
+            LogErrorUpdatingPasswordForUserUserid(Logger, ex, userId);
             return false;
         }
     }
@@ -320,8 +326,10 @@ internal sealed class AccountRepository(
     public async Task<bool> AssignRoleToUserAsync(int userId, int roleId)
     {
         const string sql = """
-                           INSERT IGNORE INTO UserRoles (UserId, RoleId)
-                           VALUES (@UserId, @RoleId)
+                           INSERT INTO UserRoles (UserId, RoleId)
+                           SELECT @UserId, @RoleId
+                           FROM dual
+                           WHERE EXISTS ( SELECT 1 FROM Users WHERE UserId = @UserId AND IsEnable = TRUE);
                            """;
 
         try
@@ -336,7 +344,7 @@ internal sealed class AccountRepository(
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error assigning role {RoleId} to user {UserId}", roleId, userId);
+            LogErrorAssigningRoleRoleIdToUserUserid(Logger, ex, roleId, userId);
             return false;
         }
     }
@@ -357,7 +365,7 @@ internal sealed class AccountRepository(
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error removing role {RoleId} from user {UserId}", roleId, userId);
+            LogErrorRemovingRoleRoleIdFromUserUserid(Logger, ex, roleId, userId);
             return false;
         }
     }
@@ -394,7 +402,7 @@ internal sealed class AccountRepository(
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error getting roles for user: {UserId}", userId);
+            LogErrorGettingRolesForUserUserid(Logger, ex, userId);
             return [];
         }
     }
@@ -405,7 +413,7 @@ internal sealed class AccountRepository(
                            SELECT u.UserId, u.UserName, u.SaltPasswordHash, u.IsActive, u.CreatedAt, u.UpdatedAt
                            FROM UserRoles ur
                            JOIN Users u ON ur.UserId = u.UserId
-                           WHERE ur.RoleId = @RoleId AND u.IsActive = TRUE
+                           WHERE ur.RoleId = @RoleId AND u.IsEnable = TRUE = u.IsActive = TRUE
                            ORDER BY u.UserId DESC
                            LIMIT @Skip, @Take
                            """;
@@ -438,7 +446,7 @@ internal sealed class AccountRepository(
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error getting users by role: {RoleId}", roleId);
+            LogErrorGettingUsersByRoleRoleId(Logger, ex, roleId);
             return [];
         }
     }
@@ -463,12 +471,12 @@ internal sealed class AccountRepository(
         }
         catch (MySqlException ex) when (ex.Number == 1062) // Duplicate entry
         {
-            Logger.LogWarning("Role already exists: {RoleName}", roleName);
+            LogRoleAlreadyExistsRoleName(Logger, roleName);
             return -1;
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error creating role: {RoleName}", roleName);
+            LogErrorCreatingRoleRoleName(Logger, ex, roleName);
             return -1;
         }
     }
@@ -494,12 +502,12 @@ internal sealed class AccountRepository(
         }
         catch (MySqlException ex) when (ex.Number == 1062) // Duplicate entry
         {
-            Logger.LogWarning("Role name already exists: {RoleName}", roleName);
+            LogRoleNameAlreadyExistsRoleName(Logger, roleName);
             return false;
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error updating role: {RoleId}", roleId);
+            LogErrorUpdatingRoleRoleId(Logger, ex, roleId);
             return false;
         }
     }
@@ -519,7 +527,7 @@ internal sealed class AccountRepository(
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error deleting role: {RoleId}", roleId);
+            LogErrorDeletingRoleRoleId(Logger, ex, roleId);
             return false;
         }
     }
@@ -552,7 +560,7 @@ internal sealed class AccountRepository(
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error getting role by ID: {RoleId}", roleId);
+            LogErrorGettingRoleByIdRoleId(Logger, ex, roleId);
             return null;
         }
     }
@@ -585,7 +593,7 @@ internal sealed class AccountRepository(
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error getting role by name: {RoleName}", roleName);
+            LogErrorGettingRoleByNameRoleName(Logger, ex, roleName);
             return null;
         }
     }
@@ -618,7 +626,7 @@ internal sealed class AccountRepository(
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error getting all roles");
+            LogErrorGettingAllRoles(Logger, ex);
             return [];
         }
     }

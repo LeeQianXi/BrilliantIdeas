@@ -4,6 +4,7 @@ using MultiPanel.Interfaces.IGrains;
 
 namespace MultiPanel.Grains.GrainImplementations;
 
+[CollectionAgeLimit(Minutes = 15)]
 public class AccountGrain(IAccountRepository accountRepository) : Grain, IAccountGrain
 {
     private string Username => this.GetPrimaryKeyString();
@@ -13,39 +14,39 @@ public class AccountGrain(IAccountRepository accountRepository) : Grain, IAccoun
         return await accountRepository.ExistUserAsync(Username);
     }
 
-    public async Task<AuthDto> RegisterAsync(string passwordHash)
+    public async Task<AuthDto> RegisterAsync(string password)
     {
         if (await accountRepository.ExistUserAsync(Username))
-            throw new InvalidOperationException("User already exists");
+            throw new InvalidOperationException("UserName already exists");
 
-        var uid = await accountRepository.InsertUserAsync(Username, passwordHash);
+        var uid = await accountRepository.InsertUserAsync(Username, password);
         var rid = await accountRepository.GetRoleByNameAsync("User");
         if (rid is not null) await accountRepository.AssignRoleToUserAsync(uid, rid.RoleId);
         return await accountRepository.GenerateTokenAsync(uid);
     }
 
-    public async Task<AuthDto> LoginAsync(string passwordHash)
+    public async Task<AuthDto> LoginAsync(string password)
     {
         if (!await accountRepository.ExistUserAsync(Username))
             throw new InvalidOperationException("User does not exist");
 
-        var uid = await accountRepository.CheckPasswordAsync(Username, passwordHash);
+        var uid = await accountRepository.CheckPasswordAsync(Username, password);
         if (uid is -1) throw new InvalidOperationException("Invalid password");
 
         return await accountRepository.GenerateTokenAsync(uid);
     }
 
-    public async Task<AuthDto?> RefreshAsync(AuthDto dto)
+    public async Task<AuthDto> RefreshAsync(AuthDto dto)
     {
-        if (!dto.IsValid) throw new InvalidOperationException("Invalid dto");
-        return await accountRepository.UpdateAccessTokenAsync(dto.RefreshToken, dto.UserId);
+        var newDto = await accountRepository.UpdateAccessTokenAsync(dto.RefreshToken, dto.UserId);
+        if (newDto is null) throw new InvalidOperationException("Invalid Token");
+        return newDto;
     }
 
-    public async Task<bool> DeleteAccountAsync(string passwordHash)
+    public async Task<bool> DeleteAccountAsync(string password)
     {
         if (!await accountRepository.ExistUserAsync(Username))
-            throw new InvalidOperationException("User does not exist");
-
-        return await accountRepository.DeleteUserAsync(Username, passwordHash);
+            return false;
+        return await accountRepository.DeleteUserAsync(Username, password);
     }
 }

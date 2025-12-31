@@ -27,6 +27,7 @@ public static class Program
         var configuration = context.Configuration;
 
         var redisConnectionString = configuration["REDIS_CONNECTION_STRING"];
+        var redisConfig = ConfigurationOptions.Parse(redisConnectionString!);
         var mysqlConnectionString = configuration["MYSQL_CONNECTION_STRING"];
         builder
             .Configure<ClusterOptions>(options =>
@@ -39,9 +40,8 @@ public static class Program
                 configuration.GetValue("SILO_PORT", 11_111),
                 configuration.GetValue("GATEWAY_PORT", 30_000),
                 listenOnAnyHostAddress: true)
-            .UseRedisClustering(redisConnectionString)
-            .AddRedisGrainStorageAsDefault(options =>
-                options.ConfigurationOptions = ConfigurationOptions.Parse(redisConnectionString!))
+            .UseRedisClustering(options => options.ConfigurationOptions = redisConfig)
+            .AddRedisGrainStorageAsDefault(options => options.ConfigurationOptions = redisConfig)
             .AddAdoNetGrainStorage("MySqlStore", options =>
             {
                 options.Invariant = configuration["Orleans:AdoNetInvariant"];

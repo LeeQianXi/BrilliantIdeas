@@ -33,9 +33,9 @@
                           IsChecked="{Binding RememberMe,Mode=TwoWay}" />
                 <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Center">
                     <Button Theme="{DynamicResource SolidButton}" Classes="Secondary"
-                            Content="登陆" Command="{Binding LoginCommand}" />
+                            Content="登陆" Command="{Binding LoginClickCommand}" />
                     <Button Theme="{DynamicResource SolidButton}" Classes="Tertiary"
-                            Content="注册" Command="{Binding RegisterCommand}" />
+                            Content="注册" Command="{Binding RegisterClickCommand}" />
                 </StackPanel>
             </StackPanel>
         </Border>
