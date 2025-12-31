@@ -20,7 +20,10 @@ internal sealed partial class AccountRepository(
     IPasswordHasher passwordHasher)
     : IAccountRepository
 {
-    private readonly string _mysqlConnectionString = configuration.GetConnectionString("Mysql")!;
+    private readonly string _mysqlConnectionString = configuration["MYSQL_CONNECTION_STRING"] ??
+                                                     throw new KeyNotFoundException(
+                                                         "\"MYSQL_CONNECTION_STRING\" is a required configure key");
+
     private ILogger<AccountRepository> Logger { get; } = logger;
     private ITokenGenerator TokenGenerator { get; } = tokenGenerator;
     private IPasswordHasher PasswordHasher { get; } = passwordHasher;

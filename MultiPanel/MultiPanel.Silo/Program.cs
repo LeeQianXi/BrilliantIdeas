@@ -26,25 +26,25 @@ public static class Program
     {
         var configuration = context.Configuration;
 
-        var redisConnectionString = configuration["REDIS_CONNECTION_STRING"];
-        var redisConfig = ConfigurationOptions.Parse(redisConnectionString!);
-        var mysqlConnectionString = configuration["MYSQL_CONNECTION_STRING"];
+        var redisConnectionString = SafeGetConfigureValue<string>(configuration, "REDIS_CONNECTION_STRING");
+        var redisConfig = ConfigurationOptions.Parse(redisConnectionString);
+        var mysqlConnectionString = SafeGetConfigureValue<string>(configuration, "MYSQL_CONNECTION_STRING");
         builder
             .Configure<ClusterOptions>(options =>
             {
-                options.ClusterId = configuration["CLUSTER_ID"];
-                options.ServiceId = configuration["SERVICE_ID"];
+                options.ClusterId = SafeGetConfigureValue<string>(configuration, "CLUSTER_ID");
+                options.ServiceId = SafeGetConfigureValue<string>(configuration, "SERVICE_ID");
             })
             .ConfigureEndpoints(
-                configuration["ADVERTISED_HOST"],
-                configuration.GetValue("SILO_PORT", 11_111),
-                configuration.GetValue("GATEWAY_PORT", 30_000),
+                SafeGetConfigureValue<string>(configuration, "ADVERTISED_HOST"),
+                SafeGetConfigureValue(configuration, "SILO_PORT", 11_111),
+                SafeGetConfigureValue(configuration, "GATEWAY_PORT", 30_000),
                 listenOnAnyHostAddress: true)
             .UseRedisClustering(options => options.ConfigurationOptions = redisConfig)
             .AddRedisGrainStorageAsDefault(options => options.ConfigurationOptions = redisConfig)
-            .AddAdoNetGrainStorage("MySqlStore", options =>
+            .AddAdoNetGrainStorage("MySqlStorage", options =>
             {
-                options.Invariant = configuration["Orleans:AdoNetInvariant"];
+                options.Invariant = SafeGetConfigureValue<string>(configuration, "Orleans:AdoNetInvariant");
                 options.ConnectionString = mysqlConnectionString;
             })
             .Configure<GrainCollectionOptions>(options =>
@@ -60,7 +60,7 @@ public static class Program
 
     private static void ConfigureServices(HostBuilderContext context, IServiceCollection collection)
     {
-        var redisConnectionString = context.Configuration.GetConnectionString("Redis")!;
+        var redisConnectionString = SafeGetConfigureValue<string>(context.Configuration, "REDIS_CONNECTION_STRING");
         collection
             .UseSiloExtension(context.Configuration)
             .AddSingleton<IConnectionMultiplexer, ConnectionMultiplexer>(sp =>
@@ -71,5 +71,16 @@ public static class Program
                     .AddDebug()
                     .SetMinimumLevel(LogLevel.Information);
             });
+    }
+
+    private static T SafeGetConfigureValue<T>(IConfiguration configuration, string key)
+    {
+        return configuration.GetValue<T>(key) ??
+               throw new KeyNotFoundException($"\"{key}\" is a required configure key");
+    }
+
+    private static T SafeGetConfigureValue<T>(IConfiguration configuration, string key, T defaultValue)
+    {
+        return configuration.GetValue<T>(key) ?? defaultValue;
     }
 }
