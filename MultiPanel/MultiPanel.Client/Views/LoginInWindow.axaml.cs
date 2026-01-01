@@ -1,6 +1,9 @@
 using System.Reactive;
 using System.Reactive.Linq;
+using Avalonia.Animation;
+using Avalonia.Animation.Easings;
 using Avalonia.Controls;
+using Avalonia.Styling;
 using AvaloniaUtility;
 using AvaloniaUtility.Services;
 using AvaloniaUtility.Views;
@@ -13,6 +16,9 @@ namespace MultiPanel.Client.Views;
 
 public partial class LoginInWindow : ViewModelWindowBase<ILoginInViewModel>, IStartupWindow, ICoroutinator
 {
+    private Animation? _displayWarningAnimation;
+    private CancellationTokenSource? _displayWarningAnimationTokenSource;
+
     public LoginInWindow()
     {
         InitializeComponent();
@@ -25,8 +31,49 @@ public partial class LoginInWindow : ViewModelWindowBase<ILoginInViewModel>, ISt
 
     private void DisplayWarningInfo(IInteractionContext<string, Unit> context)
     {
-        ViewModel!.Logger.LogWarning("{WarningInfo}", context.Input);
+        _displayWarningAnimationTokenSource?.Cancel();
+        _displayWarningAnimationTokenSource = new CancellationTokenSource();
+        PART_WainingText.Text = context.Input;
+        _displayWarningAnimation ??= InitAnimation();
+        _displayWarningAnimation.RunAsync(PART_WainingContainer, _displayWarningAnimationTokenSource.Token);
         context.SetOutput(Unit.Default);
+        return;
+
+        Animation InitAnimation()
+        {
+            return new Animation
+            {
+                Easing = new QuarticEaseInOut(),
+                Duration = TimeSpan.FromSeconds(3.5),
+                Children =
+                {
+                    new KeyFrame
+                    {
+                        Cue = new Cue(0),
+                        Setters =
+                        {
+                            new Setter(OpacityProperty, 1.0)
+                        }
+                    },
+                    new KeyFrame
+                    {
+                        Cue = new Cue(0.6),
+                        Setters =
+                        {
+                            new Setter(OpacityProperty, 1.0)
+                        }
+                    },
+                    new KeyFrame
+                    {
+                        Cue = new Cue(1),
+                        Setters =
+                        {
+                            new Setter(OpacityProperty, 0.0)
+                        }
+                    }
+                }
+            };
+        }
     }
 
     private void SuccessLoginWindow(IInteractionContext<IMainMenuView, Unit> context)

@@ -3,7 +3,7 @@ using System.Text;
 
 namespace MultiPanel.Shared.Utils;
 
-public static class Util
+public static partial class Util
 {
     public static class String
     {

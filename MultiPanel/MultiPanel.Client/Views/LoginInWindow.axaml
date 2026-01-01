@@ -15,6 +15,7 @@
         <ImageBrush x:Key="BackgroundBrush" Source="avares://MultiPanel.Client/Assets/login_bg.jpg"
                     Stretch="UniformToFill" />
         <SolidColorBrush x:Key="HoverBackgroundBrush" Color="#88ffffff" />
+        <SolidColorBrush x:Key="WainingInfoBackgroundBrush" Color="#ccff0000" />
     </Window.Resources>
     <Grid RowDefinitions="*,Auto,*" ColumnDefinitions="*,Auto,*" Margin="40,25">
         <Border Grid.Row="1" Grid.Column="1"
@@ -39,5 +40,15 @@
                 </StackPanel>
             </StackPanel>
         </Border>
+        <Panel Grid.Column="1" Grid.Row="0" Grid.RowSpan="3" VerticalAlignment="Top" HorizontalAlignment="Center">
+            <Border Name="PART_WainingContainer" MinWidth="100" MaxWidth="250" Opacity="0" Transitions=""
+                    Background="{DynamicResource WainingInfoBackgroundBrush}" CornerRadius="15" Padding="15">
+                <Border.RenderTransform>
+                    <ScaleTransform />
+                </Border.RenderTransform>
+                <TextBlock Name="PART_WainingText" Foreground="White"
+                           TextAlignment="Center" TextWrapping="WrapWithOverflow" />
+            </Border>
+        </Panel>
     </Grid>
 </Window>

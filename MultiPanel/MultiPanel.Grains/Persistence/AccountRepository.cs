@@ -7,6 +7,7 @@ using MultiPanel.Abstractions.DTOs;
 using MultiPanel.Abstractions.Entities;
 using MultiPanel.Abstractions.IRepository;
 using MultiPanel.Shared.Services;
+using MultiPanel.Shared.Utils;
 using MySql.Data.MySqlClient;
 using StackExchange.Redis;
 
@@ -20,9 +21,8 @@ internal sealed partial class AccountRepository(
     IPasswordHasher passwordHasher)
     : IAccountRepository
 {
-    private readonly string _mysqlConnectionString = configuration["MYSQL_CONNECTION_STRING"] ??
-                                                     throw new KeyNotFoundException(
-                                                         "\"MYSQL_CONNECTION_STRING\" is a required configure key");
+    private readonly string _mysqlConnectionString =
+        configuration.SafeGetConfigureValue<string>("MYSQL_CONNECTION_STRING");
 
     private ILogger<AccountRepository> Logger { get; } = logger;
     private ITokenGenerator TokenGenerator { get; } = tokenGenerator;

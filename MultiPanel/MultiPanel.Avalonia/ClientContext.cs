@@ -7,6 +7,7 @@ using MultiPanel.Client.Abstract.Options;
 using MultiPanel.Client.Orleans;
 using MultiPanel.Client.Services;
 using MultiPanel.Client.Views;
+using MultiPanel.Shared.Utils;
 using NetUtility.Singleton;
 using Orleans.Configuration;
 
@@ -74,12 +75,12 @@ public class ClientContext : StaticSingleton<ClientContext>, IClientContext
     private static void OnConfigureClient(HostBuilderContext context, IClientBuilder client)
     {
         var configuration = context.Configuration;
-        var redisConnectionString = configuration.GetConnectionString("Redis");
+        var redisConnectionString = configuration.SafeGetConfigureValue<string>("ConnectionStrings:Redis");
         client
             .Configure<ClusterOptions>(options =>
             {
-                options.ClusterId = configuration["Orleans:ClusterId"] ?? "dev";
-                options.ServiceId = configuration["Orleans:ServiceId"] ?? "OrleansAuthentication";
+                options.ClusterId = configuration.SafeGetConfigureValue("Orleans:ClusterId", "dev");
+                options.ServiceId = configuration.SafeGetConfigureValue("Orleans:ServiceId", "OrleansAuthentication");
             })
             .UseRedisClustering(redisConnectionString)
             .UseConnectionRetryFilter<CustomClientConnectionRetryFilter>();
