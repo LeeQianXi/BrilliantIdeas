@@ -15,6 +15,7 @@
         <ImageBrush x:Key="BackgroundBrush" Source="avares://MultiPanel.Client/Assets/login_bg.jpg"
                     Stretch="UniformToFill" />
         <SolidColorBrush x:Key="HoverBackgroundBrush" Color="#88ffffff" />
+        <SolidColorBrush x:Key="WainingInfoBackgroundBrush" Color="#ccff0000" />
     </Window.Resources>
     <Grid RowDefinitions="*,Auto,*" ColumnDefinitions="*,Auto,*" Margin="40,25">
         <Border Grid.Row="1" Grid.Column="1"
@@ -23,21 +24,31 @@
                 <TextBlock Text="登陆" Classes="H2" VerticalAlignment="Stretch"
                            HorizontalAlignment="Center" />
                 <TextBox Watermark="账号" UseFloatingWatermark="True"
-                         Classes="FloatingTextBox FloatingClearButton"
+                         Classes="FloatingTextBox FloatingClearButton" TabIndex="0"
                          Text="{Binding Username,Mode=TwoWay}" />
                 <TextBox Watermark="密码" UseFloatingWatermark="True"
-                         Classes="FloatingTextBox FloatingRevealPasswordButton"
+                         Classes="FloatingTextBox FloatingRevealPasswordButton" TabIndex="1"
                          Text="{Binding Password,Mode=OneWayToSource}"
                          PasswordChar="*" RevealPassword="True" />
-                <CheckBox Content="记住我"
+                <CheckBox Content="记住我" TabIndex="2"
                           IsChecked="{Binding RememberMe,Mode=TwoWay}" />
                 <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Center">
-                    <Button Theme="{DynamicResource SolidButton}" Classes="Secondary"
-                            Content="登陆" Command="{Binding LoginCommand}" />
-                    <Button Theme="{DynamicResource SolidButton}" Classes="Tertiary"
-                            Content="注册" Command="{Binding RegisterCommand}" />
+                    <Button Theme="{DynamicResource SolidButton}" Classes="Secondary" TabIndex="3"
+                            Content="登陆" Command="{Binding LoginClickCommand}" />
+                    <Button Theme="{DynamicResource SolidButton}" Classes="Tertiary" TabIndex="4"
+                            Content="注册" Command="{Binding RegisterClickCommand}" />
                 </StackPanel>
             </StackPanel>
         </Border>
+        <Panel Grid.Column="1" Grid.Row="0" Grid.RowSpan="3" VerticalAlignment="Top" HorizontalAlignment="Center">
+            <Border Name="PART_WainingContainer" MinWidth="100" MaxWidth="250" Opacity="0" Transitions=""
+                    Background="{DynamicResource WainingInfoBackgroundBrush}" CornerRadius="15" Padding="15">
+                <Border.RenderTransform>
+                    <ScaleTransform />
+                </Border.RenderTransform>
+                <TextBlock Name="PART_WainingText" Foreground="White"
+                           TextAlignment="Center" TextWrapping="WrapWithOverflow" />
+            </Border>
+        </Panel>
     </Grid>
 </Window>

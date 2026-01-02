@@ -15,17 +15,14 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="..\..\.dockerignore">
-            <Link>.dockerignore</Link>
-        </Content>
-        <None Update="appsettings.json">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
+        <Folder Include="Configuration\"/>
+        <Folder Include="HostedServices\"/>
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Configuration\"/>
-        <Folder Include="HostedServices\"/>
+        <None Update="appsettings.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>

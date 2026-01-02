@@ -1,5 +1,6 @@
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Security.Cryptography;
 using CommunityToolkit.Mvvm.Input;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,8 +11,8 @@ using MultiPanel.Client.Abstract.Options;
 using MultiPanel.Client.Abstract.Services;
 using MultiPanel.Client.Abstract.ViewModels;
 using MultiPanel.Client.Abstract.Views;
+using MultiPanel.Client.Orleans;
 using MultiPanel.Interfaces.IGrains;
-using MultiPanel.Shared.Services;
 using MultiPanel.Shared.Utils;
 using ReactiveUI;
 
@@ -60,7 +61,7 @@ public partial class LoginInViewModel : ViewModelBase, ILoginInViewModel
         set;
     }
 
-    public Interaction<string, Unit> WarningInfo { get; } = new();
+    public Interaction<string, Unit> DisplayToScreen { get; } = new();
 
     public Interaction<IMainMenuView, Unit> SuccessLoginInteraction { get; } = new();
 
@@ -69,38 +70,59 @@ public partial class LoginInViewModel : ViewModelBase, ILoginInViewModel
         if (!RememberMe) return null;
         var client = ServiceProvider.GetRequiredService<IClusterClient>();
         var ag = client.GetGrain<IAccountGrain>(Username);
-        return await ag.LoginAsync(PasswordHash);
+        try
+        {
+            return await ag.LoginAsync(PasswordHash);
+        }
+        catch (Exception ex)
+        {
+            LogFailedToLoginToServer(Logger, ex);
+            return null;
+        }
     }
 
 
     [RelayCommand]
-    private async Task Login()
+    private async Task LoginClick()
     {
         var validator = ServiceProvider.GetRequiredService<IValidator<LoginInViewModel>>();
         var result = await validator.ValidateAsync(this);
         if (!result.IsValid)
         {
             var validateInfo = result.Errors.First();
-            await WarningInfo.Handle(validateInfo.ErrorMessage);
+            await DisplayToScreen.Handle(validateInfo.ErrorMessage);
+            LogValidateFormDataErrorErrormessage(Logger, validateInfo.ErrorMessage);
             return;
         }
 
         Logger.LogInformation("Trying to login to server");
-        var client = ServiceProvider.GetRequiredService<IClusterClient>();
-        var ag = client.GetGrain<IAccountGrain>(Username);
-        var ph = ServiceProvider.GetRequiredService<IPasswordHasher>();
-        if (!await ag.ExistAsync())
+        var clientContext = ServiceProvider.GetRequiredService<IClientContext>();
+        if (!clientContext.IsConnected)
         {
-            await WarningInfo.Handle("Account not found");
+            Logger.LogError("Failed Connect to server");
+            await DisplayToScreen.Handle("无法服务器,请稍候再试");
             return;
         }
 
-        var pwdHash = Password.Hash();
-        PasswordHash = pwdHash;
-        var auth = await ag.LoginAsync(pwdHash);
-        if (!auth.IsValid)
+        var ag = clientContext.Client.GetGrain<IAccountGrain>(Username);
+        if (!await ag.ExistAsync())
         {
-            await WarningInfo.Handle("Username or Password is invalid");
+            await DisplayToScreen.Handle("用户名不存在");
+            Logger.LogWarning("Try to login with a non-exist account");
+            return;
+        }
+
+        var pwdHash = Password.Hash(SHA384.Create());
+        PasswordHash = pwdHash;
+        AuthDto auth;
+        try
+        {
+            auth = await ag.LoginAsync(pwdHash);
+        }
+        catch (Exception ex)
+        {
+            await DisplayToScreen.Handle("用户名或密码错误");
+            LogFailedToLoginToServer(Logger, ex);
             return;
         }
 
@@ -108,33 +130,46 @@ public partial class LoginInViewModel : ViewModelBase, ILoginInViewModel
     }
 
     [RelayCommand]
-    private async Task Register()
+    private async Task RegisterClick()
     {
         var validator = ServiceProvider.GetRequiredService<IValidator<LoginInViewModel>>();
         var result = await validator.ValidateAsync(this);
         if (!result.IsValid)
         {
             var validateInfo = result.Errors.First();
-            await WarningInfo.Handle(validateInfo.ErrorMessage);
+            await DisplayToScreen.Handle(validateInfo.ErrorMessage);
+            LogValidateFormDataErrorErrormessage(Logger, validateInfo.ErrorMessage);
             return;
         }
 
         Logger.LogInformation("Trying to register a new account");
-        var client = ServiceProvider.GetRequiredService<IClusterClient>();
-        var ag = client.GetGrain<IAccountGrain>(Username);
-        var ph = ServiceProvider.GetRequiredService<IPasswordHasher>();
-        if (await ag.ExistAsync())
+        var clientContext = ServiceProvider.GetRequiredService<IClientContext>();
+        if (!clientContext.IsConnected)
         {
-            await WarningInfo.Handle("Account is already registered");
+            Logger.LogError("Failed Connect to server");
+            await DisplayToScreen.Handle("无法服务器,请稍候再试");
             return;
         }
 
-        var pwdHash = Password.Hash();
-        PasswordHash = pwdHash;
-        var auth = await ag.RegisterAsync(pwdHash);
-        if (!auth.IsValid)
+        var ag = clientContext.Client.GetGrain<IAccountGrain>(Username);
+        if (!await ag.ExistAsync())
         {
-            await WarningInfo.Handle("Failed to register account");
+            await DisplayToScreen.Handle("用户名已被使用");
+            Logger.LogWarning("Try to register with a existed account");
+            return;
+        }
+
+        var pwdHash = Password.Hash(SHA384.Create());
+        PasswordHash = pwdHash;
+        AuthDto auth;
+        try
+        {
+            auth = await ag.RegisterAsync(pwdHash);
+        }
+        catch (Exception ex)
+        {
+            await DisplayToScreen.Handle("注册失败,请稍候再试");
+            Logger.LogError(ex, "Failed to register new account");
             return;
         }
 
@@ -145,7 +180,9 @@ public partial class LoginInViewModel : ViewModelBase, ILoginInViewModel
     private async Task SuccessLogin(AuthDto auth)
     {
         Logger.LogInformation("Successful Verify Account");
-        ServiceLocator.Instance.MainMenuViewModel.Auth = auth;
+        var vm = ServiceLocator.Instance.MainMenuViewModel;
+        vm.Auth = auth;
+        vm.UserName = Username;
         Logger.LogInformation("Try to Open MainMenu Window");
         await SuccessLoginInteraction.Handle(ServiceLocator.Instance.MainMenuView);
     }
@@ -155,6 +192,12 @@ public partial class LoginInViewModel : ViewModelBase, ILoginInViewModel
     {
         _configure.SaveToFile();
     }
+
+    [LoggerMessage(LogLevel.Warning, "Validate Form data Error:{ErrorMessage}")]
+    static partial void LogValidateFormDataErrorErrormessage(ILogger logger, string errorMessage);
+
+    [LoggerMessage(LogLevel.Error, "Failed to login to server")]
+    static partial void LogFailedToLoginToServer(ILogger logger, Exception ex);
 }
 
 /// <summary>
@@ -164,8 +207,11 @@ internal class LoginInValidator : AbstractValidator<LoginInViewModel>
 {
     public LoginInValidator()
     {
-        RuleFor(vm => vm.Username).NotEmpty().WithMessage("Username is required");
-        RuleFor(vm => vm.Password).NotEmpty().WithMessage("Password is required")
-            .MinimumLength(8).WithMessage("Password must have at least 8 characters");
+        RuleFor(vm => vm.Username)
+            .NotEmpty().WithMessage("用户名不能为空")
+            .Matches("^[a-zA-Z0-9_]+$").WithMessage("用户名只能包含字母、数字、下划线");
+        RuleFor(vm => vm.Password)
+            .NotEmpty().WithMessage("密码不能为空")
+            .MinimumLength(8).WithMessage("密码长度不能少于8位");
     }
 }

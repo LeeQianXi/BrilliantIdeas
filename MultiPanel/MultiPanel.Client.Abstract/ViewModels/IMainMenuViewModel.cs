@@ -6,4 +6,5 @@ namespace MultiPanel.Client.Abstract.ViewModels;
 public interface IMainMenuViewModel : IDependencyInjection
 {
     AuthDto Auth { get; set; }
+    string UserName { get; set; }
 }

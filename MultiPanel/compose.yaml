@@ -1,0 +1,84 @@
+﻿name: multipanel-orleans
+services:
+  multipanel-silo-1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: final
+      args:
+        BUILD_CONFIGURATION: ${BUILD_CONFIGURATION:-Release}
+    image: multipanel-silo-final:${TAG:-latest}
+    container_name: multipanel-silo-final-1
+    hostname: multipanel-silo-1
+    networks:
+      orleans-cluster-net:
+        ipv4_address: 172.24.0.2
+    environment:
+      CLUSTER_ID: multi-panel-cluster
+      SERVICE_ID: multi-panel-service
+      MYSQL_CONNECTION_STRING: Server=172.22.0.1;Port=3501;Database=MultiPanelOrleans;Uid=multipanel;Pwd=123123;AllowUserVariables=true
+      REDIS_CONNECTION_STRING: 172.20.0.1:7001,172.20.0.1:7002,172.20.0.1:7003,allowAdmin=true
+      ADVERTISED_HOST: 172.24.0.1
+      SILO_PORT: 11201
+      GATEWAY_PORT: 30001
+    ports:
+      - "11201:11201"
+      - "30001:30001"
+
+  multipanel-silo-2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: final
+      args:
+        BUILD_CONFIGURATION: ${BUILD_CONFIGURATION:-Release}
+    image: multipanel-silo-final:${TAG:-latest}
+    container_name: multipanel-silo-final-2
+    hostname: multipanel-silo-2
+    networks:
+      orleans-cluster-net:
+        ipv4_address: 172.24.0.3
+    environment:
+      CLUSTER_ID: multi-panel-cluster
+      SERVICE_ID: multi-panel-service
+      MYSQL_CONNECTION_STRING: Server=172.22.0.1;Port=3501;Database=MultiPanelOrleans;Uid=multipanel;Pwd=123123;AllowUserVariables=true
+      REDIS_CONNECTION_STRING: 172.20.0.1:7001,172.20.0.1:7002,172.20.0.1:7003,allowAdmin=true
+      ADVERTISED_HOST: 172.24.0.1
+      SILO_PORT: 11202
+      GATEWAY_PORT: 30002
+    ports:
+      - "11202:11202"
+      - "30002:30002"
+
+  multipanel-silo-3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: final
+      args:
+        BUILD_CONFIGURATION: ${BUILD_CONFIGURATION:-Release}
+    image: multipanel-silo-final:${TAG:-latest}
+    container_name: multipanel-silo-final-3
+    hostname: multipanel-silo-3
+    networks:
+      orleans-cluster-net:
+        ipv4_address: 172.24.0.4
+    environment:
+      CLUSTER_ID: multi-panel-cluster
+      SERVICE_ID: multi-panel-service
+      MYSQL_CONNECTION_STRING: Server=172.22.0.1;Port=3501;Database=MultiPanelOrleans;Uid=multipanel;Pwd=123123;AllowUserVariables=true
+      REDIS_CONNECTION_STRING: 172.20.0.1:7001,172.20.0.1:7002,172.20.0.1:7003,allowAdmin=true
+      ADVERTISED_HOST: 172.24.0.1
+      SILO_PORT: 11203
+      GATEWAY_PORT: 30003
+    ports:
+      - "11203:11203"
+      - "30003:30003"
+
+networks:
+  orleans-cluster-net:
+    external: true
+  redis-cluster-net:
+    external: true
+  mysql-cluster-net:
+    external: true

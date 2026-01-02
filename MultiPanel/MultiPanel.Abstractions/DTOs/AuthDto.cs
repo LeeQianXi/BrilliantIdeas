@@ -13,5 +13,4 @@ public sealed class AuthDto
     [Id(1)] public string AccessToken { get; set; } = default!;
     [Id(2)] public string RefreshToken { get; init; } = default!;
     [Id(3)] public DateTimeOffset ExpiresAt { get; init; }
-    public bool IsValid => !(string.IsNullOrWhiteSpace(AccessToken) || string.IsNullOrWhiteSpace(RefreshToken));
 }

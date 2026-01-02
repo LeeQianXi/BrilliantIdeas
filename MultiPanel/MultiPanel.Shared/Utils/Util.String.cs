@@ -3,7 +3,7 @@ using System.Text;
 
 namespace MultiPanel.Shared.Utils;
 
-public static class Util
+public static partial class Util
 {
     public static class String
     {
@@ -75,6 +75,16 @@ public static class Util
         public string Hash()
         {
             return str.Hash(SHA256.Create(), Encoding.UTF8);
+        }
+
+        public string Hash(HashAlgorithm hashAlgorithm)
+        {
+            return str.Hash(hashAlgorithm, Encoding.UTF8);
+        }
+
+        public string Hash(Encoding encoding)
+        {
+            return str.Hash(SHA256.Create(), encoding);
         }
 
         public string Hash(HashAlgorithm hashAlgorithm, Encoding encoding)

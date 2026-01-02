@@ -27,14 +27,14 @@ public interface ILoginInViewModel : IDependencyInjection
     /// <summary>
     ///     用于绑定,用于处理登陆事件
     /// </summary>
-    IAsyncRelayCommand LoginCommand { get; }
+    IAsyncRelayCommand LoginClickCommand { get; }
 
-    IAsyncRelayCommand RegisterCommand { get; }
+    IAsyncRelayCommand RegisterClickCommand { get; }
 
     /// <summary>
     ///     用于传递警告信息
     /// </summary>
-    Interaction<string, Unit> WarningInfo { get; }
+    Interaction<string, Unit> DisplayToScreen { get; }
 
     IAsyncRelayCommand<AuthDto> SuccessLoginCommand { get; }
     Interaction<IMainMenuView, Unit> SuccessLoginInteraction { get; }
