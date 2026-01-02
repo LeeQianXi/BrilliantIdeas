@@ -3,17 +3,17 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
 # 复制每个项目的 .csproj 文件
-COPY ["MultiPanel/MultiPanel.Abstractions/MultiPanel.Abstractions.csproj", "MultiPanel.Abstractions/"]
-COPY ["MultiPanel/MultiPanel.Grains/MultiPanel.Grains.csproj", "MultiPanel.Grains/"]
-COPY ["MultiPanel/MultiPanel.Interfaces/MultiPanel.Interfaces.csproj", "MultiPanel.Interfaces/"]
-COPY ["MultiPanel/MultiPanel.Shared/MultiPanel.Shared.csproj", "MultiPanel.Shared/"]
-COPY ["MultiPanel/MultiPanel.Silo/MultiPanel.Silo.csproj", "MultiPanel.Silo/"]
+COPY ["MultiPanel.Abstractions/MultiPanel.Abstractions.csproj", "MultiPanel.Abstractions/"]
+COPY ["MultiPanel.Grains/MultiPanel.Grains.csproj", "MultiPanel.Grains/"]
+COPY ["MultiPanel.Interfaces/MultiPanel.Interfaces.csproj", "MultiPanel.Interfaces/"]
+COPY ["MultiPanel.Shared/MultiPanel.Shared.csproj", "MultiPanel.Shared/"]
+COPY ["MultiPanel.Silo/MultiPanel.Silo.csproj", "MultiPanel.Silo/"]
 
 # 恢复依赖
 RUN dotnet restore "MultiPanel.Silo/MultiPanel.Silo.csproj"
 
 # 复制所有源代码
-COPY ["MultiPanel", "."]
+COPY [".", "."]
 
 # 构建
 WORKDIR "/src/MultiPanel.Silo"

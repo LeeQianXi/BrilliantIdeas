@@ -1,8 +1,9 @@
-﻿services:
+﻿name: multipanel-orleans
+services:
   multipanel-silo-1:
     build:
       context: .
-      dockerfile: MultiPanel/MultiPanel.Silo/Dockerfile
+      dockerfile: Dockerfile
       target: final
       args:
         BUILD_CONFIGURATION: ${BUILD_CONFIGURATION:-Release}
@@ -27,7 +28,7 @@
   multipanel-silo-2:
     build:
       context: .
-      dockerfile: MultiPanel/MultiPanel.Silo/Dockerfile
+      dockerfile: Dockerfile
       target: final
       args:
         BUILD_CONFIGURATION: ${BUILD_CONFIGURATION:-Release}
@@ -52,7 +53,7 @@
   multipanel-silo-3:
     build:
       context: .
-      dockerfile: MultiPanel/MultiPanel.Silo/Dockerfile
+      dockerfile: Dockerfile
       target: final
       args:
         BUILD_CONFIGURATION: ${BUILD_CONFIGURATION:-Release}

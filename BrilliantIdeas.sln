@@ -25,9 +25,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TagImage.Core", "TagImage\TagImage.Core\TagImage.Core.csproj", "{54D3C4E3-DF7E-430B-BA30-F952B4F11708}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TagImage.Core.Abstract", "TagImage\TagImage.Core.Abstract\TagImage.Core.Abstract.csproj", "{A585EADB-D79B-4704-BFE9-E829D096CCED}"
-	ProjectSection(ProjectDependencies) = postProject
-		{0DC594BB-8409-49CA-BCFB-DBF130E3E75C} = {0DC594BB-8409-49CA-BCFB-DBF130E3E75C}
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TagImage.Database", "TagImage\TagImage.Database\TagImage.Database.csproj", "{910AB8A8-BCD0-4BE8-A224-518F5E6E6A8E}"
 EndProject
@@ -55,8 +52,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "M3u8ToMp4", "Tools\M3u8ToMp
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utilities", "Utilities", "{183DD576-EC12-42D5-B786-5E127C8299A7}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "QianXi", "QianXi", "{F2C819DD-7952-46B9-BC05-808B466EFE20}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DeadLine", "DeadLine", "{51F0602F-5C3E-4BED-86FE-E01DCF7C5040}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeadLine", "DeadLine\DeadLine\DeadLine.csproj", "{7545EB96-7D19-4EE4-8FDC-8CE4B03DEA38}"
@@ -79,7 +74,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiPanel.Silo", "MultiPan
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CDEA1C1F-2F5D-41D4-BF9F-E4F6DFE657DD}"
 	ProjectSection(SolutionItems) = preProject
-		compose.yaml = compose.yaml
 		.gitignore = .gitignore
 	EndProjectSection
 EndProject
@@ -98,6 +92,23 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MultiPanel.Client.Abstract", "MultiPanel\MultiPanel.Client.Abstract\MultiPanel.Client.Abstract.csproj", "{9EA00159-06D6-4A3E-A3D0-CFD6F0CBD70D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BreaTest", "BreaTest\BreaTest.csproj", "{8D8F1C69-B8EC-42A6-B7A2-EB3307D36021}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution", "Solution", "{2FBD2D81-69C5-4032-A02A-8B0B6BF1C87B}"
+	ProjectSection(SolutionItems) = preProject
+		MultiPanel\compose.yaml = MultiPanel\compose.yaml
+		MultiPanel\.dockerignore = MultiPanel\.dockerignore
+		MultiPanel\Dockerfile = MultiPanel\Dockerfile
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sql", "Sql", "{1A39D0F2-64B3-4811-845F-A4604A12BCA6}"
+	ProjectSection(SolutionItems) = preProject
+		MultiPanel\Sql\MySQL-Clustering.sql = MultiPanel\Sql\MySQL-Clustering.sql
+		MultiPanel\Sql\MySQL-GrainDirectory.sql = MultiPanel\Sql\MySQL-GrainDirectory.sql
+		MultiPanel\Sql\MySQL-Persistence.sql = MultiPanel\Sql\MySQL-Persistence.sql
+		MultiPanel\Sql\MySQL-Reminders.sql = MultiPanel\Sql\MySQL-Reminders.sql
+		MultiPanel\Sql\Mysql_Database_schema.sql = MultiPanel\Sql\Mysql_Database_schema.sql
+		MultiPanel\Sql\Mysql_Main.sql = MultiPanel\Sql\Mysql_Main.sql
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -273,5 +284,7 @@ Global
 		{F215856B-13B3-4030-8176-6B17C0868E8D} = {0717B24A-4F30-442F-8F93-84D3E97F282D}
 		{8356A35B-1F3C-4852-B992-22498814933F} = {C35D3B9E-F633-432D-AC2A-2833936EDA37}
 		{9EA00159-06D6-4A3E-A3D0-CFD6F0CBD70D} = {C35D3B9E-F633-432D-AC2A-2833936EDA37}
+		{2FBD2D81-69C5-4032-A02A-8B0B6BF1C87B} = {95B7E925-1DCE-4358-B6DD-29916154596A}
+		{1A39D0F2-64B3-4811-845F-A4604A12BCA6} = {2FBD2D81-69C5-4032-A02A-8B0B6BF1C87B}
 	EndGlobalSection
 EndGlobal
