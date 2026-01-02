@@ -8,13 +8,21 @@
         WindowStartupLocation="CenterScreen"
         x:Class="MultiPanel.Client.Views.MainMenuWindow"
         DataContext="{Binding MainMenuViewModel,Source={StaticResource ServiceLocator}}"
-        Title="{Binding UserName,StringFormat='User:{0}',Mode=OneTime}">
-    <Border>
-        <Grid>
-            <StackPanel>
-                <TextBox Text="{Binding Auth.AccessToken,StringFormat='AccessToken:{0}',Mode=OneTime}" />
-                <TextBox Text="{Binding Auth.RefreshToken,StringFormat='RefreshToken:{0}',Mode=OneTime}" />
-            </StackPanel>
-        </Grid>
-    </Border>
+        Title="{Binding UserName,StringFormat='MainMenu:{0}',Mode=OneWay}">
+    <Grid RowDefinitions="40,*,25">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="200" MinWidth="150" MaxWidth="250" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Panel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5" Background="Cyan" />
+        <Panel Grid.Row="1" Grid.Column="0" Grid.RowSpan="2" Background="DarkOrange" />
+        <Panel Grid.Row="1" Grid.Column="1" Background="LightGreen" />
+        <GridSplitter Grid.Row="1" Grid.Column="2" ResizeDirection="Columns" />
+        <Panel Grid.Row="1" Grid.Column="3" Background="DeepSkyBlue" />
+        <Panel Grid.Row="1" Grid.Column="4" Grid.RowSpan="2" Background="Crimson" />
+        <Panel Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Background="Gainsboro" />
+    </Grid>
 </Window>

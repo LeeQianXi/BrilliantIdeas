@@ -24,18 +24,18 @@
                 <TextBlock Text="登陆" Classes="H2" VerticalAlignment="Stretch"
                            HorizontalAlignment="Center" />
                 <TextBox Watermark="账号" UseFloatingWatermark="True"
-                         Classes="FloatingTextBox FloatingClearButton"
+                         Classes="FloatingTextBox FloatingClearButton" TabIndex="0"
                          Text="{Binding Username,Mode=TwoWay}" />
                 <TextBox Watermark="密码" UseFloatingWatermark="True"
-                         Classes="FloatingTextBox FloatingRevealPasswordButton"
+                         Classes="FloatingTextBox FloatingRevealPasswordButton" TabIndex="1"
                          Text="{Binding Password,Mode=OneWayToSource}"
                          PasswordChar="*" RevealPassword="True" />
-                <CheckBox Content="记住我"
+                <CheckBox Content="记住我" TabIndex="2"
                           IsChecked="{Binding RememberMe,Mode=TwoWay}" />
                 <StackPanel Orientation="Horizontal" Spacing="20" HorizontalAlignment="Center">
-                    <Button Theme="{DynamicResource SolidButton}" Classes="Secondary"
+                    <Button Theme="{DynamicResource SolidButton}" Classes="Secondary" TabIndex="3"
                             Content="登陆" Command="{Binding LoginClickCommand}" />
-                    <Button Theme="{DynamicResource SolidButton}" Classes="Tertiary"
+                    <Button Theme="{DynamicResource SolidButton}" Classes="Tertiary" TabIndex="4"
                             Content="注册" Command="{Binding RegisterClickCommand}" />
                 </StackPanel>
             </StackPanel>
