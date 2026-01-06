@@ -42,17 +42,26 @@
                             <Label x:Name="PART_Tag" DockPanel.Dock="Left" Content="{TemplateBinding Status}"
                                    Theme="{DynamicResource TagLabel}"
                                    VerticalAlignment="Bottom" HorizontalAlignment="Left" />
+                            <DockPanel.Styles>
+                                <Style Selector="Button">
+                                    <Setter Property="ContentTemplate">
+                                        <DataTemplate>
+                                            <ContentPresenter Content="{Binding}" />
+                                        </DataTemplate>
+                                    </Setter>
+                                </Style>
+                            </DockPanel.Styles>
+                            <Button x:Name="PART_Edit" DockPanel.Dock="Right"
+                                    Padding="-2,-5" Width="20" Height="20" MinHeight="0"
+                                    Theme="{DynamicResource BorderlessButton}">
+                                <Image Source="avares://DeadLine.Core.Abstract/Assets/edit.ico" Width="16" Height="16" />
+                            </Button>
+                            <Button x:Name="PART_Remove" DockPanel.Dock="Right"
+                                    Padding="-2,-5" Width="20" Height="20" MinHeight="0"
+                                    Theme="{DynamicResource BorderlessButton}">
+                                <Image Source="avares://DeadLine.Core.Abstract/Assets/trash.ico" Width="16" Height="16" />
+                            </Button>
                         </DockPanel>
-                        <Button x:Name="PART_Remove" Grid.Row="0" Grid.Column="2" DockPanel.Dock="Right"
-                                Padding="-2,-5" Width="20" Height="20" MinHeight="0"
-                                Theme="{DynamicResource BorderlessButton}">
-                            <Button.ContentTemplate>
-                                <DataTemplate>
-                                    <ContentPresenter Content="{Binding}" />
-                                </DataTemplate>
-                            </Button.ContentTemplate>
-                            <Image Source="avares://DeadLine.Core.Abstract/Assets/trash.ico" Width="16" Height="16" />
-                        </Button>
                         <TextBlock Grid.Row="1" Grid.Column="0"
                                    Text="{TemplateBinding RemainingTime,Converter={StaticResource TimeToStringConverter}}" />
                         <Panel Grid.Row="1" Grid.Column="1" VerticalAlignment="Stretch">

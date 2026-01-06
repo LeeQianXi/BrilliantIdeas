@@ -35,6 +35,6 @@ public static class StartUp
     private static IConfigurationBuilder UseDlManagerOptions(this IConfigurationBuilder builder)
     {
         return builder
-            .AddJsonFile("appsettings.json", false, true);
+            .AddJsonFile(Path.GetFullPath("appsettings.json"), false, true);
     }
 }

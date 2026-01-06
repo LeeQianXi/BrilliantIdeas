@@ -1,3 +1,5 @@
+using FluentValidation;
+
 namespace DeadLine.Core;
 
 public static class Extensions
@@ -15,9 +17,12 @@ public static class Extensions
         public IServiceCollection UseDeadLineCore()
         {
             return collection
+                .AddValidatorsFromAssemblyContaining<NewDeadLineItemValidator>(includeInternalTypes: true)
                 .AddSingleton<IDeadLineView, DeadLineWindow>()
                 .AddSingleton<IDeadLineViewModel, DeadLineViewModel>()
-                .AddTransient<INewDeadLineItemView, NewDeadLineItemWindow>();
+                .AddTransient<INewDeadLineItemView, NewDeadLineItemWindow>()
+                .AddTransient<INewDeadLineItemViewModel, NewDeadLineItemViewModel>()
+                .AddTransient<IEditItemInfoWindow, EditItemInfoWindow>();
         }
     }
 }

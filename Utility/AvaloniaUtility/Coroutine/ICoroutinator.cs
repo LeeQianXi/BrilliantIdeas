@@ -27,5 +27,25 @@ public static partial class Extensions
             ArgumentNullException.ThrowIfNull(routine);
             return new Coroutine(routine.Invoke(), createRunning, cor.CoroutinatorCancelTokenSource.Token);
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Coroutine StartCoroutine(Func<CancellationToken, IEnumerator<YieldInstruction?>> routine,
+            bool createRunning = true)
+        {
+            ArgumentNullException.ThrowIfNull(cor);
+            ArgumentNullException.ThrowIfNull(routine);
+            return new Coroutine(routine.Invoke(cor.CoroutinatorCancelTokenSource.Token), createRunning,
+                cor.CoroutinatorCancelTokenSource.Token);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Coroutine StartCoroutine(Func<CancellationToken, IAsyncEnumerator<YieldInstruction?>> routine,
+            bool createRunning = true)
+        {
+            ArgumentNullException.ThrowIfNull(cor);
+            ArgumentNullException.ThrowIfNull(routine);
+            return new Coroutine(routine.Invoke(cor.CoroutinatorCancelTokenSource.Token), createRunning,
+                cor.CoroutinatorCancelTokenSource.Token);
+        }
     }
 }

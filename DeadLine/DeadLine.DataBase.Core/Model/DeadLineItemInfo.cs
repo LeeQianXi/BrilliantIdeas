@@ -3,11 +3,13 @@ namespace DeadLine.DataBase.Core.Model;
 [Table(nameof(DeadLineItemInfo))]
 public class DeadLineItemInfo(string title, DateTime startTime, DateTime endTime) : IModelBasic, INotifyPropertyChanged
 {
-    public Action<DeadLineItemInfo>? RemoveClickEvent;
-
     public DeadLineItemInfo() : this("Default", DateTime.MinValue, DateTime.MaxValue)
     {
     }
+
+    [Ignore] public Action<DeadLineItemInfo>? RemoveClickEventHandler { get; set; }
+
+    [Ignore] public Action<DeadLineItemInfo>? EditClickEventHandler { get; set; }
 
     public DeadLineStatus Status
     {
@@ -23,6 +25,18 @@ public class DeadLineItemInfo(string title, DateTime startTime, DateTime endTime
     [PrimaryKey] [AutoIncrement] public int PrimaryKey { get; set; } = -1;
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public event Action<DeadLineItemInfo> RemoveClickEvent
+    {
+        add => RemoveClickEventHandler += value;
+        remove => RemoveClickEventHandler -= value;
+    }
+
+    public event Action<DeadLineItemInfo> EditClickEvent
+    {
+        add => EditClickEventHandler += value;
+        remove => EditClickEventHandler -= value;
+    }
 
     private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {

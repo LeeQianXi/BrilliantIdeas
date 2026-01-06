@@ -5,27 +5,29 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
 {
     private static readonly FilterComboBoxItem[] FilterComboBoxItems =
     [
-        new(DeadLineFilterType.All, "所有"),
-        new(DeadLineFilterType.ToDo, "未开始"),
-        new(DeadLineFilterType.Doing, "进行中"),
-        new(DeadLineFilterType.Done, "已完成"),
-        new(DeadLineFilterType.TimedOut, "已超时")
+        new(-1, "所有"),
+        new((int)DeadLineStatus.ToDo, "未开始"),
+        new((int)DeadLineStatus.Doing, "进行中"),
+        new((int)DeadLineStatus.Done, "已完成"),
+        new((int)DeadLineStatus.TimedOut, "已超时")
     ];
 
     private readonly Coroutine? _loadingCoroutine;
     private readonly Coroutine? _saveCoroutine;
 
-    private bool _isClosed;
-
     public DeadLineWindow()
     {
         InitializeComponent();
+        //初始化过滤选项
         FilterComboBox.ItemsSource = FilterComboBoxItems;
-        FilterComboBox.SelectedItem = FilterComboBoxItems.First();
+        FilterComboBox.SelectedIndex = 0;
+        //注册交互
         ViewModel!.ShowDialogInteraction.RegisterHandler(ShowDialogInteraction);
+        ViewModel!.EditItemInfoInteraction.RegisterHandler(EditItemInfoInteraction);
+        //链接过滤项
         var filterObservable = this
             .WhenAnyValue(x => x.FilterComboBox.SelectedItem)
-            .Select(item => item is FilterComboBoxItem filter ? filter.FilterType : DeadLineFilterType.All)
+            .Select(item => item is FilterComboBoxItem filter ? filter.DeadLineStatus : -1)
             .Throttle(TimeSpan.FromMilliseconds(250))
             .Select(FilterFlagInteraction);
         var filterTextObservable = this
@@ -45,21 +47,29 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
             .Subscribe();
         DeadLineListBox.ItemsSource = displayedDeadLineItems;
         FilterTextBox.ItemsSource = filtercomboboxitems;
-
+        //启动协程加载
         _loadingCoroutine = this.StartCoroutine(LoadExistedDeadLineItems);
         _saveCoroutine = this.StartCoroutine(TimeSpanSave);
     }
 
     public CancellationTokenSource CoroutinatorCancelTokenSource { get; } = new();
 
-    private async Task ShowDialogInteraction(IInteractionContext<INewDeadLineItemView, DeadLineItemInfo?> arg)
+    private async Task ShowDialogInteraction(IInteractionContext<INewDeadLineItemView, DeadLineItemInfo?> context)
     {
-        arg.SetOutput(await arg.Input.ShowDialog<DeadLineItemInfo>(this));
+        var deadLineItemInfo = await context.Input.ShowDialog<DeadLineItemInfo>(this);
+        context.SetOutput(deadLineItemInfo);
     }
 
-    private static Func<DeadLineItemInfo, bool> FilterFlagInteraction(DeadLineFilterType filter)
+    private async Task EditItemInfoInteraction(
+        IInteractionContext<IEditItemInfoWindow, ConsumeFactory<DeadLineItemInfo>?> context)
     {
-        return info => filter is DeadLineFilterType.All || (int)info.Status == (int)filter;
+        var consume = await context.Input.ShowDialog<ConsumeFactory<DeadLineItemInfo>>(this);
+        context.SetOutput(consume);
+    }
+
+    private static Func<DeadLineItemInfo, bool> FilterFlagInteraction(int status)
+    {
+        return info => status is -1 || (int)info.Status == status;
     }
 
     private static Func<DeadLineItemInfo, bool> FilterTextInteraction(string filter)
@@ -70,38 +80,40 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
 
     private async IAsyncEnumerator<YieldInstruction?> LoadExistedDeadLineItems()
     {
-        await foreach (var item in ViewModel!.LoadDeadLineItems())
+        await foreach (var item in ViewModel!.LoadDatabase())
         {
-            ViewModel!.AddDeadLineItemCommand.Execute(item);
+            ViewModel!.DisplayDeadLineItemCommand.Execute(item);
             yield return null;
         }
     }
 
-    private IEnumerator<YieldInstruction?> TimeSpanSave()
+    private IEnumerator<YieldInstruction?> TimeSpanSave(CancellationToken token)
     {
         yield return new WaitForSeconds(TimeSpan.FromMinutes(5));
-        while (!_isClosed)
+        while (!token.IsCancellationRequested)
         {
-            ViewModel!.SaveDeadLineItemsCommand.Execute(null);
+            ViewModel!.SaveToDatabaseCommand.Execute(null);
             yield return new WaitForSeconds(TimeSpan.FromMinutes(5));
         }
     }
 
-    private void Window_OnUnloaded(object? sender, RoutedEventArgs e)
+    protected override void OnClosing(WindowClosingEventArgs e)
     {
-        _isClosed = true;
-        _saveCoroutine?.Close();
-        ViewModel!.SaveDeadLineItemsCommand.Execute(null);
+        base.OnClosing(e);
+        CoroutinatorCancelTokenSource.Cancel();
+        ViewModel!.SaveToDatabaseCommand.Execute(null);
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        base.OnClosed(e);
     }
 }
 
-internal enum DeadLineFilterType
+internal record FilterComboBoxItem(int DeadLineStatus, string Text)
 {
-    All = -1,
-    ToDo = DeadLineStatus.ToDo,
-    Doing = DeadLineStatus.Doing,
-    Done = DeadLineStatus.Done,
-    TimedOut = DeadLineStatus.TimedOut
+    public override string ToString()
+    {
+        return Text;
+    }
 }
-
-internal record FilterComboBoxItem(DeadLineFilterType FilterType, string Text);

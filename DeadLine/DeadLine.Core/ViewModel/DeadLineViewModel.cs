@@ -1,37 +1,59 @@
+using System.ComponentModel;
+
 namespace DeadLine.Core.ViewModel;
 
-public partial class DeadLineViewModel(IServiceProvider serviceProvider) : ViewModelBase, IDeadLineViewModel, IDebouncer
+/// <summary>
+///     DeadLineWindow的ViewModel,负责数据相关处理和数据库操作
+/// </summary>
+public partial class DeadLineViewModel : ViewModelBase, IDeadLineViewModel
 {
     private readonly SourceList<DeadLineItemInfo> _deadLineItems = new();
-    private readonly IDeadLineInfoStorage _storage = serviceProvider.GetRequiredService<IDeadLineInfoStorage>();
-    private bool _isLoaded;
-    private bool _isLoading;
-    public override IServiceProvider ServiceProvider { get; } = serviceProvider;
-    public override ILogger Logger { get; } = serviceProvider.GetRequiredService<ILogger<DeadLineViewModel>>();
-    public Interaction<INewDeadLineItemView, DeadLineItemInfo?> ShowDialogInteraction { get; } = new();
 
-    public async IAsyncEnumerable<DeadLineItemInfo> LoadDeadLineItems()
+    private readonly Subject<DeadLineItemInfo> _deleteDataBaseSubject = new();
+    private readonly Subject<Unit> _manual = new();
+    private readonly IDeadLineInfoStorage _storage;
+    private readonly SemaphoreSlim _storageSemaphore = new(1, 1);
+    private readonly Subject<DeadLineItemInfo> _updateOrAddDataBaseSubject = new();
+
+    /// <inheritdoc />
+    public DeadLineViewModel(IServiceProvider serviceProvider)
     {
-        if (_isLoading || _isLoaded)
-        {
-            Logger.LogInformation("Deadline items have already been loaded");
-            yield break;
-        }
+        ServiceProvider = serviceProvider;
+        Logger = serviceProvider.GetRequiredService<ILogger<DeadLineViewModel>>();
+        _storage = serviceProvider.GetRequiredService<IDeadLineInfoStorage>();
+        const int threshold = 100;
+        var circle = new TimeSpan(0, 5, 0);
+        var dMerge = _deleteDataBaseSubject
+            .Where(i => i.PrimaryKey is not -1)
+            .Select(item => (item, true));
+        var newMerge = _updateOrAddDataBaseSubject
+            .Where(i => i.PrimaryKey is -1)
+            .Select(item => (item, false));
+        var uMerge = _updateOrAddDataBaseSubject
+            .Where(i => i.PrimaryKey is not -1)
+            .Select(item => (item, false));
 
-        _isLoading = true;
-        try
-        {
-            await foreach (var items in _storage.SelectDatasAsync(50))
-            foreach (var item in items)
-                yield return item;
+        var merge = dMerge
+            .Merge(uMerge)
+            .Distinct(p => p.item.PrimaryKey)
+            .Merge(newMerge);
 
-            Logger.LogInformation("Loading deadline items To UIForm");
-        }
-        finally
-        {
-            _isLoading = false;
-            _isLoaded = true;
-        }
+        var countBound = _updateOrAddDataBaseSubject
+            .Scan(0, (acc, a) => acc + 1)
+            .Where(cnt => cnt % threshold is 0)
+            .Select(_ => Unit.Default);
+        var timeBound = Observable
+            .Interval(circle)
+            .Select(_ => Unit.Default);
+        var bound = _manual
+            .Merge(countBound)
+            .Merge(timeBound);
+
+        merge.Buffer(bound)
+            .Where(b => b.Count > 0)
+            .Select(l => Observable.FromAsync(() => OnUpdateToDatabaseAsync(l)))
+            .Concat()
+            .Subscribe();
     }
 
     public IObservable<IChangeSet<DeadLineItemInfo>> DeadLineItemsConnect()
@@ -39,6 +61,33 @@ public partial class DeadLineViewModel(IServiceProvider serviceProvider) : ViewM
         return _deadLineItems.Connect();
     }
 
+    public override IServiceProvider ServiceProvider { get; }
+    public override ILogger Logger { get; }
+    public Interaction<INewDeadLineItemView, DeadLineItemInfo?> ShowDialogInteraction { get; } = new();
+    public Interaction<IEditItemInfoWindow, ConsumeFactory<DeadLineItemInfo>?> EditItemInfoInteraction { get; } = new();
+
+    public async IAsyncEnumerable<DeadLineItemInfo> LoadDatabase()
+    {
+        if (!await _storageSemaphore.WaitAsync(0))
+        {
+            Logger.LogInformation("Deadline items are already being loaded");
+            yield break;
+        }
+
+        try
+        {
+            await foreach (var items in _storage.SelectDatasAsync(50))
+            {
+                Logger.LogInformation("Load Next Range of DeadLineItems");
+                foreach (var item in items)
+                    yield return item;
+            }
+        }
+        finally
+        {
+            _storageSemaphore.Release();
+        }
+    }
 
     [RelayCommand]
     private async Task NewDeadLineItem()
@@ -52,60 +101,85 @@ public partial class DeadLineViewModel(IServiceProvider serviceProvider) : ViewM
             return;
         }
 
-        Logger.LogInformation("Success Get new deadline item {deadlineItem}", lii);
-        await AddDeadLineItemCommand.ExecuteAsync(lii);
+        LogSuccessGetNewDeadlineItemDeadLineItem(Logger, lii);
+        DisplayDeadLineItemCommand.Execute(lii);
+        _updateOrAddDataBaseSubject.OnNext(lii);
     }
 
     [RelayCommand]
-    private async Task AddDeadLineItem(DeadLineItemInfo lii)
+    private void DisplayDeadLineItem(DeadLineItemInfo lii)
     {
         Logger.LogInformation("Add New DeadLineItem To Display");
         _deadLineItems.Add(lii);
-        lii.PropertyChanged += (sender, e) =>
+        lii.PropertyChanged += DealItemPropertyChanged;
+        lii.RemoveClickEvent += DealRemoveItem;
+        lii.EditClickEvent += DealEditItem;
+        return;
+
+        void DealItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName != nameof(DeadLineItemInfo.Status)) return;
-            Logger.LogInformation("Status Changed {lii} ,Try to Save to DataBase", lii);
-            _storage.UpdateDataAsync((DeadLineItemInfo)sender!);
-        };
-        lii.RemoveClickEvent += removal =>
-        {
-            Logger.LogInformation("Remove DeadLineItem {lii} From Display", lii);
-            RemoveDeadLineItemCommand.Execute(removal);
-        };
-        if (!_isLoaded)
-        {
-            Logger.LogInformation("DeadlineItem {deadlineItem} is from DataBase", lii);
-            return;
+            if (sender is not DeadLineItemInfo info) return;
+            if (!(e.PropertyName switch
+                {
+                    nameof(DeadLineItemInfo.Status) => true,
+                    nameof(DeadLineItemInfo.Title) => true,
+                    nameof(DeadLineItemInfo.Description) => true,
+                    _ => false
+                })) return;
+            LogReasonUpdateToDatabase(Logger, $"Property ${e.PropertyName} of Key:${info.PrimaryKey} Changed");
+            _updateOrAddDataBaseSubject.OnNext(lii);
         }
 
-        Logger.LogInformation("Save DeadLineItem {deadlineItem} To DataBase", lii);
-        if (lii.PrimaryKey is -1 || await _storage.FindDataAsync(lii.PrimaryKey) is null)
-            await _storage.InsertDataAsync(lii);
-        else
-            await _storage.UpdateDataAsync(lii);
+        void DealRemoveItem(DeadLineItemInfo removal)
+        {
+            _deadLineItems.Remove(removal);
+            LogReasonDeleteFromDatabase(Logger, $"Key:{removal.PrimaryKey} will be removed");
+            _deleteDataBaseSubject.OnNext(removal);
+        }
+
+        void DealEditItem(DeadLineItemInfo source)
+        {
+            Logger.LogInformation("Try Edit DeadLineItem Info");
+            var editor = ServiceProvider.GetRequiredService<IEditItemInfoWindow>();
+            editor.SourceItem = source;
+            EditItemInfoInteraction.Handle(editor).Subscribe(consume =>
+            {
+                if (consume is null)
+                {
+                    Logger.LogInformation("No Edit Occured on DeadLineItem Info");
+                    return;
+                }
+
+                consume.Invoke(source);
+                Logger.LogInformation("Success Edit DeadLineItem Info");
+                _updateOrAddDataBaseSubject.OnNext(source);
+            });
+        }
     }
 
     [RelayCommand]
-    private async Task RemoveDeadLineItem(DeadLineItemInfo lii)
+    private void SaveToDatabase()
     {
-        _deadLineItems.Remove(lii);
-        Logger.LogInformation("Try Remove DeadLineItem {deadlineItem} From Display", lii);
-        var info = await _storage.FindDataAsync(lii.PrimaryKey);
-        if (info is null)
-        {
-            Logger.LogInformation("DeadLineItem Id:{key} not found in DataBase", lii.PrimaryKey);
-            return;
-        }
-
-        await _storage.DeleteDataAsync(lii.PrimaryKey);
-        Logger.LogInformation("Success Remove DeadLineItem From Display");
-        SaveDeadLineItemsCommand.Execute(null);
+        foreach (var deadLineItemInfo in _deadLineItems.Items) _updateOrAddDataBaseSubject.OnNext(deadLineItemInfo);
+        _manual.OnNext(Unit.Default);
+        Logger.LogInformation("Call Update To Database Now");
     }
 
-    [RelayCommand]
-    private async Task SaveDeadLineItems()
+    private async Task OnUpdateToDatabaseAsync(IList<(DeadLineItemInfo, bool)> batch)
     {
-        await _storage.UpdateDataAsync(_deadLineItems.Items);
-        Logger.LogInformation("Save All DeadLineItems");
+        LogUpdateDeadlineitemsOfCountCount(Logger, batch.Count);
+        await _storage.BeginTransactionAsync(con =>
+        {
+            foreach (var (item, flag) in batch)
+            {
+                //true为删除,false为更新
+                if (flag)
+                    con.Delete<DeadLineItemInfo>(item.PrimaryKey);
+                if (item.PrimaryKey is -1)
+                    con.Insert(item);
+                con.Update(item);
+            }
+        });
+        Logger.LogInformation("Success Update DeadLineItems");
     }
 }

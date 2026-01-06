@@ -72,22 +72,30 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
     public async IAsyncEnumerable<IEnumerable<TData>> SelectDatasAsync(int limit = 0)
     {
         if (limit < 0) throw new ArgumentException("limit cannot be less than zero", nameof(limit));
+        var table = Connection.Table<TData>();
+        if (table is null) yield break;
+        if (limit is 0)
+        {
+            Lock.EnterReadLock();
+            try
+            {
+                yield return await table.ToListAsync();
+                yield break;
+            }
+            finally
+            {
+                Lock.ExitReadLock();
+            }
+        }
+
         Lock.EnterReadLock();
         try
         {
-            var rets = Connection.Table<TData>();
-            if (rets is null) yield break;
-            if (limit is 0)
-            {
-                yield return await rets.ToListAsync();
-                yield break;
-            }
-
             do
             {
-                yield return await rets.Take(limit).ToListAsync();
-                rets = rets.Skip(limit);
-            } while (await rets.CountAsync() > 0);
+                yield return await table.Take(limit).ToListAsync();
+                table = table.Skip(limit);
+            } while (await table.CountAsync() > 0);
         }
         finally
         {

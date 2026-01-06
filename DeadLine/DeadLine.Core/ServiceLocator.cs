@@ -11,5 +11,7 @@ public class ServiceLocator : StaticSingleton<ServiceLocator>
     }
 
     public IDeadLineViewModel DeadLineViewModel => ServiceProvider.GetRequiredService<IDeadLineViewModel>();
-    public INewDeadLineItemView NewDeadLineItemView => ServiceProvider.GetRequiredService<INewDeadLineItemView>();
+
+    public INewDeadLineItemViewModel NewDeadLineItemViewModel =>
+        ServiceProvider.GetRequiredService<INewDeadLineItemViewModel>();
 }

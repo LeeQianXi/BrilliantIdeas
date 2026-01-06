@@ -4,10 +4,12 @@ namespace DeadLine.Core.Abstract.Controls;
 [TemplatePart("PART_Tag", typeof(Label))]
 [TemplatePart("PART_DoneWork", typeof(CheckBox))]
 [TemplatePart("PART_Remove", typeof(Button))]
+[TemplatePart("PART_Edit", typeof(Button))]
 public partial class DeadLineItem : TemplatedControl, ICoroutinator
 {
     private readonly Coroutine _coroutine;
     private CheckBox? _partDoneWork;
+    private Button? _partEdit;
     private ProgressBar? _partProgressBar;
     private Button? _partRemove;
     private Label? _partTag;
@@ -32,9 +34,11 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
         _partProgressBar = e.NameScope.Find<ProgressBar>("PART_Progress")!;
         _partTag = e.NameScope.Find<Label>("PART_Tag");
         _partDoneWork = e.NameScope.Find<CheckBox>("PART_DoneWork");
+        _partDoneWork!.IsCheckedChanged += OnDongWorkChanged;
         _partRemove = e.NameScope.Find<Button>("PART_Remove");
         _partRemove!.Click += OnRemoveClick;
-        _partDoneWork!.IsCheckedChanged += OnDongWorkChanged;
+        _partEdit = e.NameScope.Find<Button>("PART_Edit");
+        _partEdit!.Click += OnEditClick;
         OnStatusPropertyChanged(Status);
         OnProgressPropertyChanged(Progress);
     }
@@ -47,7 +51,13 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
     private void OnRemoveClick(object? sender, RoutedEventArgs e)
     {
         if (DataContext is not DeadLineItemInfo info) return;
-        info.RemoveClickEvent?.Invoke(info);
+        info.RemoveClickEventHandler?.Invoke(info);
+    }
+
+    private void OnEditClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not DeadLineItemInfo info) return;
+        info.EditClickEventHandler?.Invoke(info);
     }
 
     private void OnDongWorkChanged(object? sender, RoutedEventArgs e)

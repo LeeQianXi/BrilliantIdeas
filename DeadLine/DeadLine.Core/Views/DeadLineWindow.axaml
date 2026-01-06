@@ -4,14 +4,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ac="clr-namespace:DeadLine.Core.Abstract.Controls;assembly=DeadLine.Core.Abstract"
         xmlns:dm="clr-namespace:DeadLine.DataBase.Core.Model;assembly=DeadLine.DataBase.Core"
-        xmlns:views="clr-namespace:DeadLine.Core.Views"
         mc:Ignorable="d" WindowStartupLocation="CenterScreen"
         d:DesignWidth="430" d:DesignHeight="540"
         Width="430" Height="540"
         MinWidth="410" MinHeight="300"
         Icon="avares://DeadLine.Core/Assets/avalonia-logo.ico"
         x:Class="DeadLine.Core.Views.DeadLineWindow"
-        Unloaded="Window_OnUnloaded"
         DataContext="{Binding DeadLineViewModel,Source={StaticResource ServiceLocator}}"
         Title="DeadLine">
     <Window.Resources>
@@ -23,25 +21,24 @@
                              EndTime="{Binding EndTime}"
                              Status="{Binding Status,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" />
         </DataTemplate>
-        <DataTemplate x:Key="DateTemplateFilterComboBoxItem" DataType="views:FilterComboBoxItem">
-            <Label Content="{Binding Text}" />
-        </DataTemplate>
     </Window.Resources>
-    <Panel>
-        <DockPanel LastChildFill="True" Background="LightCyan">
+    <Panel Background="LightCyan">
+        <DockPanel LastChildFill="True" IsVisible="True">
             <Panel DockPanel.Dock="Top">
                 <TextBlock Theme="{DynamicResource TitleTextBlock}" Classes="H3" Text="DeadLine"
-                           Margin="6" TextAlignment="Center" />
+                           Margin="6" TextAlignment="Center"
+                           VerticalAlignment="Stretch" HorizontalAlignment="Center" />
             </Panel>
-            <Panel DockPanel.Dock="Bottom">
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="40">
                 <Button Theme="{DynamicResource SolidButton}" Classes="Secondary" Margin="6"
                         Content="新建任务" Command="{Binding NewDeadLineItemCommand}" />
-            </Panel>
+                <Button Theme="{DynamicResource SolidButton}" Classes="Secondary" Margin="6"
+                        Content="统计信息" />
+            </StackPanel>
             <Border Background="AliceBlue" Margin="5" CornerRadius="10" Padding="10">
                 <DockPanel LastChildFill="True" VerticalSpacing="10">
                     <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10" HorizontalSpacing="10">
-                        <ComboBox Name="FilterComboBox" DockPanel.Dock="Left" HorizontalAlignment="Left"
-                                  ItemTemplate="{StaticResource DateTemplateFilterComboBoxItem}" />
+                        <ComboBox Name="FilterComboBox" DockPanel.Dock="Left" HorizontalAlignment="Left" />
                         <AutoCompleteBox Name="FilterTextBox" DockPanel.Dock="Right" Watermark="输入过滤条件"
                                          FilterMode="ContainsOrdinal" />
                     </DockPanel>
@@ -53,5 +50,7 @@
                 </DockPanel>
             </Border>
         </DockPanel>
+        <TabControl TabStripPlacement="Left" IsVisible="False" />
+        <WindowNotificationManager Name="Manager" Position="TopRight" MaxItems="3" />
     </Panel>
 </Window>
