@@ -15,8 +15,8 @@
     <Window.Resources>
         <DataTemplate x:Key="DataTemplateDeadLineItemInfo" DataType="dm:DeadLineItemInfo">
             <ac:DeadLineItem Margin="-6,-3"
-                             Title="{Binding Title}"
-                             Description="{Binding Description}"
+                             Title="{Binding Title,UpdateSourceTrigger=PropertyChanged}"
+                             Description="{Binding Description,UpdateSourceTrigger=PropertyChanged}"
                              StartTime="{Binding StartTime}"
                              EndTime="{Binding EndTime}"
                              Status="{Binding Status,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" />

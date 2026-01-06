@@ -17,8 +17,18 @@ public class DeadLineItemInfo(string title, DateTime startTime, DateTime endTime
         set => SetField(ref field, value);
     } = DeadLineStatus.ToDo;
 
-    public string Title { get; init; } = title;
-    public string Description { get; set; } = string.Empty;
+    public string Title
+    {
+        get;
+        set => SetField(ref field, value);
+    } = title;
+
+    public string Description
+    {
+        get;
+        set => SetField(ref field, value);
+    } = string.Empty;
+
     public DateTime StartTime { get; init; } = startTime;
     public DateTime EndTime { get; init; } = endTime;
 

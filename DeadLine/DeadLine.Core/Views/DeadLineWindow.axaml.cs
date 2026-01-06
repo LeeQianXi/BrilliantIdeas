@@ -41,6 +41,7 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
             .Filter(filterTextObservable)
             .Bind(out var displayedDeadLineItems)
             .Subscribe();
+
         ViewModel!.DeadLineItemsConnect()
             .Select(set => set.Title)
             .Bind(out var filtercomboboxitems)

@@ -32,12 +32,10 @@ public partial class DeadLineViewModel : ViewModelBase, IDeadLineViewModel
         var uMerge = _updateOrAddDataBaseSubject
             .Where(i => i.PrimaryKey is not -1)
             .Select(item => (item, false));
-
         var merge = dMerge
             .Merge(uMerge)
             .Distinct(p => p.item.PrimaryKey)
             .Merge(newMerge);
-
         var countBound = _updateOrAddDataBaseSubject
             .Scan(0, (acc, a) => acc + 1)
             .Where(cnt => cnt % threshold is 0)
@@ -48,7 +46,6 @@ public partial class DeadLineViewModel : ViewModelBase, IDeadLineViewModel
         var bound = _manual
             .Merge(countBound)
             .Merge(timeBound);
-
         merge.Buffer(bound)
             .Where(b => b.Count > 0)
             .Select(l => Observable.FromAsync(() => OnUpdateToDatabaseAsync(l)))
@@ -141,19 +138,21 @@ public partial class DeadLineViewModel : ViewModelBase, IDeadLineViewModel
         {
             Logger.LogInformation("Try Edit DeadLineItem Info");
             var editor = ServiceProvider.GetRequiredService<IEditItemInfoWindow>();
-            editor.SourceItem = source;
-            EditItemInfoInteraction.Handle(editor).Subscribe(consume =>
-            {
-                if (consume is null)
+            editor.InitSource(source);
+            EditItemInfoInteraction.Handle(editor)
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Subscribe(consume =>
                 {
-                    Logger.LogInformation("No Edit Occured on DeadLineItem Info");
-                    return;
-                }
+                    if (consume is null)
+                    {
+                        Logger.LogInformation("No Edit Occured on DeadLineItem Info");
+                        return;
+                    }
 
-                consume.Invoke(source);
-                Logger.LogInformation("Success Edit DeadLineItem Info");
-                _updateOrAddDataBaseSubject.OnNext(source);
-            });
+                    consume.Invoke(source);
+                    Logger.LogInformation("Success Edit DeadLineItem Info");
+                    _updateOrAddDataBaseSubject.OnNext(source);
+                });
         }
     }
 

@@ -2,8 +2,42 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" WindowStartupLocation="CenterOwner"
+        d:DesignWidth="430" d:DesignHeight="320"
+        Width="430" Height="320"
+        CanResize="False"
         x:Class="DeadLine.Core.Views.EditItemInfoWindow"
         Title="Edit">
-    Welcome to Avalonia!
+    <Panel Background="LightCyan">
+        <DockPanel LastChildFill="True">
+            <Panel DockPanel.Dock="Top">
+                <TextBlock Name="PART_Title" Theme="{DynamicResource TitleTextBlock}" Classes="H2" Text="修改描述"
+                           TextAlignment="Center"
+                           VerticalAlignment="Stretch" HorizontalAlignment="Center" />
+            </Panel>
+            <Panel DockPanel.Dock="Bottom">
+                <UniformGrid Columns="2" VerticalAlignment="Center">
+                    <Button Theme="{DynamicResource SolidButton}" Classes="Large Tertiary" Margin="6"
+                            Padding="40,0" Content="取消" Click="BtnCancel_OnClick" TabIndex="2" />
+                    <Button Theme="{DynamicResource SolidButton}" Classes="Large Success" Margin="6"
+                            Padding="40,0" Content="确认" Click="BtnConfirm_OnClick" TabIndex="3" />
+                </UniformGrid>
+            </Panel>
+            <Border Margin="5" CornerRadius="10" Padding="10" Background="AliceBlue">
+                <ScrollViewer VerticalScrollBarVisibility="Visible" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Spacing="10">
+                        <StackPanel>
+                            <TextBlock Theme="{DynamicResource TitleTextBlock}" Text="任务标题" TextAlignment="Left" />
+                            <TextBox Name="TbTitle" Classes="ClearButton" Watermark="新建任务" TabIndex="0" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Theme="{DynamicResource TitleTextBlock}" Text="任务描述" TextAlignment="Left" />
+                            <TextBox Name="TbDescription" Classes="ClearButton" TextWrapping="Wrap" TabIndex="1" />
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </DockPanel>
+        <WindowNotificationManager Name="Manager" Position="TopRight" MaxItems="3" />
+    </Panel>
 </Window>
