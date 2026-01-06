@@ -4,6 +4,13 @@ namespace DeadLine.Core;
 
 public static class Extensions
 {
+    public static IObservable<TResult> LiveStat<T, TResult>(
+        this IObservable<IChangeSet<T>> changes,
+        Func<IReadOnlyCollection<T>, TResult> query) where T : notnull
+    {
+        return changes.QueryWhenChanged(query).DistinctUntilChanged();
+    }
+
     extension(IServiceCollection collection)
     {
         public IServiceCollection UseAvaloniaCore<TStartUp>()
@@ -18,7 +25,8 @@ public static class Extensions
         {
             return collection
                 .AddValidatorsFromAssemblyContaining<NewDeadLineItemValidator>(includeInternalTypes: true)
-                .AddSingleton<IDeadLineView, DeadLineWindow>()
+                .AddSingleton<IDeadLineWindow, DeadLineWindow>(p =>
+                    (DeadLineWindow)p.GetRequiredService<IStartupWindow>())
                 .AddSingleton<IDeadLineViewModel, DeadLineViewModel>()
                 .AddTransient<INewDeadLineItemView, NewDeadLineItemWindow>()
                 .AddTransient<INewDeadLineItemViewModel, NewDeadLineItemViewModel>()

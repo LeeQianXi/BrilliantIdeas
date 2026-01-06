@@ -7,6 +7,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <locator:ServiceLocator x:Key="ServiceLocator" />
+            <locator:AppCommand x:Key="AppCommand" />
         </ResourceDictionary>
     </Application.Resources>
     <Application.Styles>
@@ -16,4 +17,23 @@
         <StyleInclude Source="avares://AvaloniaUtility/Controls/CustomControls.axaml" />
         <StyleInclude Source="avares://DeadLine.Core.Abstract/Controls/CustomControls.axaml" />
     </Application.Styles>
+    <TrayIcon.Icons>
+        <TrayIcons>
+            <TrayIcon ToolTipText="DeadLine" Icon="avares://DeadLine.Core/Assets/avalonia.ico">
+                <TrayIcon.Menu>
+                    <NativeMenu>
+                        <NativeMenuItem Header="新建任务"
+                                        Command="{Binding NewTaskCommand,Source={StaticResource AppCommand}}" />
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="隐藏"
+                                        Command="{Binding HideWindowCommand,Source={StaticResource AppCommand}}" />
+                        <NativeMenuItem Header="显示"
+                                        Command="{Binding ShowWindowCommand,Source={StaticResource AppCommand}}" />
+                        <NativeMenuItem Header="退出"
+                                        Command="{Binding CloseAppCommand,Source={StaticResource AppCommand}}" />
+                    </NativeMenu>
+                </TrayIcon.Menu>
+            </TrayIcon>
+        </TrayIcons>
+    </TrayIcon.Icons>
 </Application>

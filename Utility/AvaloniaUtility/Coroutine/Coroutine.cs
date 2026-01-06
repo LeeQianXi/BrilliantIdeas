@@ -80,6 +80,11 @@ public sealed class Coroutine : IDisposable
             _ = _asyncIter.DisposeAsync().AsTask();
     }
 
+    ~Coroutine()
+    {
+        Dispose();
+    }
+
     /// <summary>
     ///     Coroutine完成回调
     /// </summary>
@@ -140,6 +145,10 @@ public sealed class Coroutine : IDisposable
         {
             return _isAsync ? await MoveToNextAsync() : MoveToNextSync();
         }
+        catch (OperationCanceledException)
+        {
+            return false;
+        }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             // 包装并重新抛出迭代器异常
@@ -183,6 +192,7 @@ public sealed class Coroutine : IDisposable
     private void HandleCoroutineException(Exception exception)
     {
         if (_disposed) return;
+        if (exception is OperationCanceledException) return;
         try
         {
             Faulted?.Invoke(exception);

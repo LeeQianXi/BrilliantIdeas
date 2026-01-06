@@ -1,6 +1,10 @@
+using Avalonia.Controls.Notifications;
+using AvaloniaUtility.Controls;
+using NetUtility.RefPool;
+
 namespace DeadLine.Core.Views;
 
-public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, IStartupWindow, IDeadLineView,
+public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, IStartupWindow, IDeadLineWindow,
     ICoroutinator
 {
     private static readonly FilterComboBoxItem[] FilterComboBoxItems =
@@ -12,18 +16,19 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
         new((int)DeadLineStatus.TimedOut, "已超时")
     ];
 
-    private readonly Coroutine? _loadingCoroutine;
-    private readonly Coroutine? _saveCoroutine;
-
     public DeadLineWindow()
     {
         InitializeComponent();
+
+        #region MainPage
+
         //初始化过滤选项
         FilterComboBox.ItemsSource = FilterComboBoxItems;
         FilterComboBox.SelectedIndex = 0;
         //注册交互
         ViewModel!.ShowDialogInteraction.RegisterHandler(ShowDialogInteraction);
         ViewModel!.EditItemInfoInteraction.RegisterHandler(EditItemInfoInteraction);
+        ViewModel!.NotifyScreenInteraction.RegisterHandler(NotifyScreenInteraction);
         //链接过滤项
         var filterObservable = this
             .WhenAnyValue(x => x.FilterComboBox.SelectedItem)
@@ -35,28 +40,39 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
             .Select(text => text ??= string.Empty)
             .Throttle(TimeSpan.FromMilliseconds(250))
             .Select(FilterTextInteraction);
-        ViewModel!.DeadLineItemsConnect()
+        var changes = ViewModel!.DeadLineItemsConnect();
+        changes
             .ObserveOn(RxApp.MainThreadScheduler)
             .Filter(filterObservable)
             .Filter(filterTextObservable)
             .Bind(out var displayedDeadLineItems)
             .Subscribe();
-
-        ViewModel!.DeadLineItemsConnect()
+        changes
             .Select(set => set.Title)
             .Bind(out var filtercomboboxitems)
             .Subscribe();
         DeadLineListBox.ItemsSource = displayedDeadLineItems;
         FilterTextBox.ItemsSource = filtercomboboxitems;
         //启动协程加载
-        _loadingCoroutine = this.StartCoroutine(LoadExistedDeadLineItems);
-        _saveCoroutine = this.StartCoroutine(TimeSpanSave);
+        this.StartCoroutine(LoadExistedDeadLineItems);
+        this.StartCoroutine(TimeSpanSave);
+
+        #endregion
+
+        #region Statistical
+
+        changes
+            .Select(set => set.Count);
+
+        #endregion
     }
+
 
     public CancellationTokenSource CoroutinatorCancelTokenSource { get; } = new();
 
     private async Task ShowDialogInteraction(IInteractionContext<INewDeadLineItemView, DeadLineItemInfo?> context)
     {
+        Show();
         var deadLineItemInfo = await context.Input.ShowDialog<DeadLineItemInfo>(this);
         context.SetOutput(deadLineItemInfo);
     }
@@ -66,6 +82,12 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
     {
         var consume = await context.Input.ShowDialog<ConsumeFactory<DeadLineItemInfo>>(this);
         context.SetOutput(consume);
+    }
+
+    private void NotifyScreenInteraction(IInteractionContext<INotification, Unit> context)
+    {
+        Manager.Show(context.Input);
+        context.SetOutput(Unit.Default);
     }
 
     private static Func<DeadLineItemInfo, bool> FilterFlagInteraction(int status)
@@ -86,27 +108,30 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
             ViewModel!.DisplayDeadLineItemCommand.Execute(item);
             yield return null;
         }
+
+        var notification = ReferencePool.Acquire<ReferenceNotification>();
+        notification.Init("系统消息", "成功加载任务信息", NotificationType.Success);
+        await ViewModel!.NotifyScreenInteraction.Handle(notification);
     }
 
-    private IEnumerator<YieldInstruction?> TimeSpanSave(CancellationToken token)
+    private async IAsyncEnumerator<YieldInstruction?> TimeSpanSave(CancellationToken token)
     {
         yield return new WaitForSeconds(TimeSpan.FromMinutes(5));
         while (!token.IsCancellationRequested)
         {
             ViewModel!.SaveToDatabaseCommand.Execute(null);
+            var notification = ReferencePool.Acquire<ReferenceNotification>();
+            notification.Init("系统消息", "自动保存已完成", NotificationType.Success);
+            await ViewModel!.NotifyScreenInteraction.Handle(notification);
+
             yield return new WaitForSeconds(TimeSpan.FromMinutes(5));
         }
     }
 
-    protected override void OnClosing(WindowClosingEventArgs e)
-    {
-        base.OnClosing(e);
-        CoroutinatorCancelTokenSource.Cancel();
-        ViewModel!.SaveToDatabaseCommand.Execute(null);
-    }
-
     protected override void OnClosed(EventArgs e)
     {
+        CoroutinatorCancelTokenSource.Cancel();
+        ViewModel!.SaveToDatabaseCommand.Execute(null);
         base.OnClosed(e);
     }
 }

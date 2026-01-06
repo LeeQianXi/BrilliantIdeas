@@ -10,6 +10,7 @@ public class ServiceLocator : StaticSingleton<ServiceLocator>
         set => _serviceProvider = value;
     }
 
+    public IDeadLineWindow DeadLineWindow => ServiceProvider.GetRequiredService<IDeadLineWindow>();
     public IDeadLineViewModel DeadLineViewModel => ServiceProvider.GetRequiredService<IDeadLineViewModel>();
 
     public INewDeadLineItemViewModel NewDeadLineItemViewModel =>

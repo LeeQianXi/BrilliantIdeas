@@ -61,10 +61,11 @@ public partial class NewDeadLineItemViewModel(IServiceProvider serviceProvider)
             Title = string.IsNullOrWhiteSpace(Title) ? "新建任务" : Title,
             Description = Description,
             StartTime = Start,
-            EndTime = End
+            EndTime = End,
+            Status = DateTime.Now < Start ? DeadLineStatus.ToDo :
+                DateTime.Now < End ? DeadLineStatus.Doing : DeadLineStatus.TimedOut
         };
         await CloseIteration.Handle(newItem);
-        this.RaisePropertyChanged();
     }
 }
 
@@ -74,8 +75,8 @@ internal class NewDeadLineItemValidator : AbstractValidator<NewDeadLineItemViewM
     {
         RuleFor(x => x.StartDate)
             .LessThanOrEqualTo(x => x.EndDate).WithMessage("开始日期必须早于结束日期");
-        RuleFor(x => x.StartTime)
-            .LessThan(x => x.EndTime).WithMessage("开始时间必须早于结束时间");
+        RuleFor(x => x.StartDate + x.StartTime)
+            .LessThan(x => x.EndDate + x.EndTime).WithMessage("开始时间必须早于结束时间");
         RuleFor(x => x.EndDate + x.EndTime)
             .GreaterThan(DateTime.Now).WithMessage("无法创建一个必定失败的计划");
     }

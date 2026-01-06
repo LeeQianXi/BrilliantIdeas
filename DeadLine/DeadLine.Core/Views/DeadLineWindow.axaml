@@ -4,11 +4,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ac="clr-namespace:DeadLine.Core.Abstract.Controls;assembly=DeadLine.Core.Abstract"
         xmlns:dm="clr-namespace:DeadLine.DataBase.Core.Model;assembly=DeadLine.DataBase.Core"
+        xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.Avalonia;assembly=LiveChartsCore.SkiaSharpView.Avalonia"
+        xmlns:cv="clr-namespace:DeadLine.Core;assembly=DeadLine.Core.Abstract"
         mc:Ignorable="d" WindowStartupLocation="CenterScreen"
         d:DesignWidth="430" d:DesignHeight="540"
         Width="430" Height="540"
         MinWidth="410" MinHeight="300"
-        Icon="avares://DeadLine.Core/Assets/avalonia-logo.ico"
+        Icon="avares://DeadLine.Core/Assets/avalonia.ico"
         x:Class="DeadLine.Core.Views.DeadLineWindow"
         DataContext="{Binding DeadLineViewModel,Source={StaticResource ServiceLocator}}"
         Title="DeadLine">
@@ -21,36 +23,147 @@
                              EndTime="{Binding EndTime}"
                              Status="{Binding Status,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" />
         </DataTemplate>
+        <cv:WrapToArrayConverter x:Key="WrapToArrayConverter" />
     </Window.Resources>
     <Panel Background="LightCyan">
-        <DockPanel LastChildFill="True" IsVisible="True">
+        <DockPanel LastChildFill="True">
             <Panel DockPanel.Dock="Top">
                 <TextBlock Theme="{DynamicResource TitleTextBlock}" Classes="H3" Text="DeadLine"
                            Margin="6" TextAlignment="Center"
                            VerticalAlignment="Stretch" HorizontalAlignment="Center" />
             </Panel>
-            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="40">
-                <Button Theme="{DynamicResource SolidButton}" Classes="Secondary" Margin="6"
-                        Content="新建任务" Command="{Binding NewDeadLineItemCommand}" />
-                <Button Theme="{DynamicResource SolidButton}" Classes="Secondary" Margin="6"
-                        Content="统计信息" />
-            </StackPanel>
-            <Border Background="AliceBlue" Margin="5" CornerRadius="10" Padding="10">
-                <DockPanel LastChildFill="True" VerticalSpacing="10">
-                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10" HorizontalSpacing="10">
-                        <ComboBox Name="FilterComboBox" DockPanel.Dock="Left" HorizontalAlignment="Left" />
-                        <AutoCompleteBox Name="FilterTextBox" DockPanel.Dock="Right" Watermark="输入过滤条件"
-                                         FilterMode="ContainsOrdinal" />
+            <TabControl Theme="{DynamicResource ScrollTabControl}">
+                <TabItem Header="主页">
+                    <DockPanel LastChildFill="True">
+                        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center">
+                            <Button Theme="{DynamicResource SolidButton}" Classes="Secondary" Margin="6"
+                                    Content="新建任务" Command="{Binding NewDeadLineItemCommand}" />
+                        </StackPanel>
+                        <Border Background="AliceBlue" Margin="5" CornerRadius="10" Padding="10">
+                            <DockPanel LastChildFill="True" VerticalSpacing="10">
+                                <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10" HorizontalSpacing="10">
+                                    <ComboBox Name="FilterComboBox" DockPanel.Dock="Left" HorizontalAlignment="Left" />
+                                    <AutoCompleteBox Name="FilterTextBox" DockPanel.Dock="Right" Watermark="输入过滤条件"
+                                                     FilterMode="ContainsOrdinal" />
+                                </DockPanel>
+                                <ListBox Name="DeadLineListBox"
+                                         Grid.IsSharedSizeScope="True"
+                                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                         ItemTemplate="{StaticResource DataTemplateDeadLineItemInfo}" />
+                            </DockPanel>
+                        </Border>
                     </DockPanel>
-                    <ListBox Name="DeadLineListBox"
-                             Grid.IsSharedSizeScope="True"
-                             ScrollViewer.VerticalScrollBarVisibility="Auto"
-                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                             ItemTemplate="{StaticResource DataTemplateDeadLineItemInfo}" />
-                </DockPanel>
-            </Border>
+                </TabItem>
+                <TabItem Header="统计信息">
+                    <ScrollViewer Background="AliceBlue" Margin="5" CornerRadius="10" Padding="5">
+                        <StackPanel Spacing="10">
+                            <StackPanel.Styles>
+                                <Style Selector="Border.Card">
+                                    <Setter Property="Background" Value="#f9f5f2" />
+                                    <Setter Property="Padding" Value="10" />
+                                    <Setter Property="CornerRadius" Value="10" />
+                                </Style>
+                            </StackPanel.Styles>
+                            <Border Classes="Card">
+                                <StackPanel>
+                                    <TextBlock Theme="{DynamicResource TitleTextBlock}" Classes="H4"
+                                               Text="任务状态统计" TextAlignment="Left" />
+                                    <lvc:PieChart HorizontalAlignment="Stretch" Height="200" Background="#f9f5f2">
+                                        <lvc:PieChart.Series>
+                                            <lvc:XamlPieSeries x:TypeArguments="x:Int32" SeriesName="ToDo"
+                                                               Values="{Binding ToDoCount,UpdateSourceTrigger=PropertyChanged,Converter={StaticResource WrapToArrayConverter}}" />
+                                            <lvc:XamlPieSeries x:TypeArguments="x:Int32" SeriesName="Doing"
+                                                               Values="{Binding DoingCount,UpdateSourceTrigger=PropertyChanged,Converter={StaticResource WrapToArrayConverter}}" />
+                                            <lvc:XamlPieSeries x:TypeArguments="x:Int32" SeriesName="Done"
+                                                               Values="{Binding DoneCount,UpdateSourceTrigger=PropertyChanged,Converter={StaticResource WrapToArrayConverter}}" />
+                                            <lvc:XamlPieSeries x:TypeArguments="x:Int32" SeriesName="TimeOut"
+                                                               Values="{Binding TimedOutCount,UpdateSourceTrigger=PropertyChanged,Converter={StaticResource WrapToArrayConverter}}" />
+                                        </lvc:PieChart.Series>
+                                    </lvc:PieChart>
+                                </StackPanel>
+                            </Border>
+                            <Border Classes="Card">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Theme="{DynamicResource TitleTextBlock}" Classes="H4"
+                                               Text="百分比统计" TextAlignment="Left" />
+                                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                                          RowSpacing="5" ColumnSpacing="5" Margin="0,5">
+                                        <TextBlock Grid.Row="0" Grid.Column="0"
+                                                   Theme="{DynamicResource TitleTextBlock}"
+                                                   Text="总体完成度" TextAlignment="Left" />
+                                        <ProgressBar Grid.Row="0" Grid.Column="1" Classes="Secondary"
+                                                     Value="{Binding DoneCount}" Maximum="{Binding TotalCount}"
+                                                     ShowProgressText="True" />
+                                        <TextBlock Grid.Row="1" Grid.Column="0"
+                                                   Theme="{DynamicResource TitleTextBlock}"
+                                                   Text="待完成率" TextAlignment="Left" />
+                                        <ProgressBar Grid.Row="1" Grid.Column="1" Classes="Secondary"
+                                                     Value="{Binding NotCompletedCount}" Maximum="{Binding TotalCount}"
+                                                     ShowProgressText="True" />
+                                        <TextBlock Grid.Row="2" Grid.Column="0"
+                                                   Theme="{DynamicResource TitleTextBlock}"
+                                                   Text="逾期率" TextAlignment="Left" />
+                                        <ProgressBar Grid.Row="2" Grid.Column="1" Classes="Secondary"
+                                                     Value="{Binding TimedOutCount}" Maximum="{Binding TotalCount}"
+                                                     ShowProgressText="True" />
+                                        <TextBlock Grid.Row="3" Grid.Column="0"
+                                                   Theme="{DynamicResource TitleTextBlock}"
+                                                   Text="今日到期占比" TextAlignment="Left" />
+                                        <ProgressBar Grid.Row="3" Grid.Column="1" Classes="Secondary"
+                                                     Value="{Binding DueTodayCount}" Maximum="{Binding TotalCount}"
+                                                     ShowProgressText="True" />
+                                        <TextBlock Grid.Row="4" Grid.Column="0"
+                                                   Theme="{DynamicResource TitleTextBlock}"
+                                                   Text="本周到期占比" TextAlignment="Left" />
+                                        <ProgressBar Grid.Row="4" Grid.Column="1" Classes="Secondary"
+                                                     Value="{Binding DueWeekCount}" Maximum="{Binding TotalCount}"
+                                                     ShowProgressText="True" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+                <TabItem Header="关于">
+                    <ScrollViewer Background="AliceBlue" Margin="5" Padding="5" CornerRadius="10">
+                        <StackPanel>
+                            <StackPanel.Styles>
+                                <Style Selector="TextBlock">
+                                    <Setter Property="TextAlignment" Value="Center" />
+                                    <Setter Property="Theme" Value="{DynamicResource TitleTextBlock}" />
+                                    <Setter Property="VerticalAlignment" Value="Center" />
+                                    <Setter Property="HorizontalAlignment" Value="Left" />
+                                </Style>
+                            </StackPanel.Styles>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="avares://DeadLine.Core/Assets/avalonia.ico" Stretch="UniformToFill"
+                                       Width="64" Height="64" />
+                                <TextBlock Classes="H1" Text="DeadLine" HorizontalAlignment="Stretch" />
+                            </StackPanel>
+                            <TextBlock Text="DeadLine Version: 2.1.0" />
+                            <TextBlock Text="Developed by: QianXi" />
+                            <TextBlock Text="BasedOn:" />
+                            <StackPanel Orientation="Horizontal">
+                                <StackPanel.Styles>
+                                    <Style Selector="Image">
+                                        <Setter Property="Stretch" Value="UniformToFill" />
+                                        <Setter Property="Width" Value="32" />
+                                        <Setter Property="Height" Value="32" />
+                                        <Setter Property="Margin" Value="4" />
+                                    </Style>
+                                </StackPanel.Styles>
+                                <Image Source="avares://DeadLine.Core/Assets/Net.ico" />
+                                <Image Source="avares://DeadLine.Core/Assets/avalonia.ico" />
+                                <Image Source="avares://DeadLine.Core/Assets/ReactiveUI.ico" />
+                                <Image Source="avares://DeadLine.Core/Assets/semi.ico" />
+                                <Image Source="avares://DeadLine.Core/Assets/LiveCharts2.ico" />
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+            </TabControl>
         </DockPanel>
-        <TabControl TabStripPlacement="Left" IsVisible="False" />
         <WindowNotificationManager Name="Manager" Position="TopRight" MaxItems="3" />
     </Panel>
 </Window>

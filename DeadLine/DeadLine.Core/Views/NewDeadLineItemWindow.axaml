@@ -6,7 +6,7 @@
         d:DesignWidth="420" d:DesignHeight="480"
         Width="420" Height="480"
         CanResize="False"
-        Icon="avares://DeadLine.Core/Assets/avalonia-logo.ico"
+        Icon="avares://DeadLine.Core/Assets/avalonia.ico"
         x:Class="DeadLine.Core.Views.NewDeadLineItemWindow"
         DataContext="{Binding NewDeadLineItemViewModel,Source={StaticResource ServiceLocator}}"
         Title="NewDeadLineItemWindow">
