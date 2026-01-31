@@ -1,3 +1,5 @@
+using DIAbstract;
+
 namespace ToDoList.Core.Abstract.ViewModels;
 
 public interface ISplashViewModel : IDependencyInjection, INotifyPropertyChanged

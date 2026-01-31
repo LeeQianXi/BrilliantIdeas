@@ -33,7 +33,7 @@ public partial class NewDeadLineItemViewModel(IServiceProvider serviceProvider)
 
     private static INotification GenerateNotification(string title, string message)
     {
-        var notification = ReferencePool.Acquire<ReferenceNotification>();
+        var notification = ReferenceNotification.AcquireReference();
         notification.Init(title, message, NotificationType.Warning);
         return notification;
     }

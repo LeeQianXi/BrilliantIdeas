@@ -1,3 +1,10 @@
+using System.Collections.Concurrent;
+using NetUtility.CommandParser;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
+
 namespace ImagePixelEditor;
 
 internal static class Program
@@ -17,7 +24,7 @@ internal static class Program
 
     private static readonly ConcurrentDictionary<Rgba32, Rgba32> ColorReplaceCache = new();
 
-    private static readonly IImageEncoder _encoder = new PngEncoder
+    private static readonly IImageEncoder Encoder = new PngEncoder
     {
         ColorType = PngColorType.RgbWithAlpha,
         BitDepth = PngBitDepth.Bit8,
@@ -123,7 +130,7 @@ internal static class Program
 
             image.ProcessPixelRows(PixelEditAction);
 
-            image.Save(_saveNewFile ? GetNewPath(imagePath) : imagePath, _encoder);
+            image.Save(_saveNewFile ? GetNewPath(imagePath) : imagePath, Encoder);
             Console.WriteLine("处理后的图片已保存.");
         }
         catch (Exception ex)

@@ -2,16 +2,16 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="clr-namespace:DLManager.Core.Abstract.ViewModels;assembly=DLManager.Core.Abstract"
+        xmlns:xplugin="clr-namespace:DLManager.Core.Abstract.Plugin;assembly=DLManager.Core.Abstract"
         mc:Ignorable="d" WindowStartupLocation="CenterScreen"
         d:DesignWidth="800" d:DesignHeight="450"
         Width="800" Height="450"
         MinWidth="400" MinHeight="200"
-        x:Class="DLManager.Core.Views.DlManagerView"
+        x:Class="DLManager.Core.Views.DlManagerWindow"
         DataContext="{Binding DlManagerViewModel,Source={StaticResource ServiceLocator}}"
         Title="DlManagerWindow">
     <Window.Resources>
-        <DataTemplate x:Key="PluginViewInfoDataTemplate" DataType="vm:PluginViewInfo">
+        <DataTemplate x:Key="PluginViewInfoDataTemplate" DataType="xplugin:PluginViewInfo">
             <Panel>
                 <TextBlock Text="{Binding DisplayName}" />
             </Panel>
@@ -25,7 +25,7 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <Border>
-                <ListBox ItemsSource="{Binding PluginViews}"
+                <ListBox ItemsSource="{Binding PluginViewInfos}"
                          ItemTemplate="{StaticResource PluginViewInfoDataTemplate}"
                          SelectionChanged="PluginTitle_OnSelectionChanged" />
             </Border>

@@ -4,7 +4,6 @@ global using DataBaseAbstract.Services;
 global using NetUtility.Cache;
 global using System.Drawing;
 global using DataBaseAbstract.Storage;
-global using DIAbstract.Services;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;
 global using NetUtility;

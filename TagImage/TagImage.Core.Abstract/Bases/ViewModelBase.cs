@@ -1,3 +1,5 @@
+using DIAbstract;
+
 namespace TagImage.Core.Abstract.Bases;
 
 public abstract class ViewModelBase : ObservableObject, IDependencyInjection

@@ -1,5 +1,3 @@
 namespace TagImage.Database.Instances;
 
-internal class ImageStorage() : StorageBasic<ImageEntry>(nameof(TagImage))
-{
-}
+internal class ImageStorage() : StorageBasic<ImageEntry>(nameof(TagImage)), IImageStorage;

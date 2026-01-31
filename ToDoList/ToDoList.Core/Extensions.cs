@@ -1,3 +1,5 @@
+using DIAbstract;
+
 namespace ToDoList.Core;
 
 [SuppressMessage("Performance", "CA1822:将成员标记为 static")]
@@ -5,20 +7,22 @@ public static class Extensions
 {
     extension(IServiceCollection collection)
     {
-        public IServiceCollection UseAvaloniaCore<TStartUp>()
+        public IServiceCollection UseAvaloniaCore<
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+            TStartUp>()
             where TStartUp : class, IStartupWindow
         {
             return collection
-                .AddSingleton<ToDoListApp>()
-                .AddSingleton<IStartupWindow, TStartUp>();
+                .AddMultiSingleton<Application, ToDoListApp>()
+                .AddMultiSingleton<IStartupWindow, TStartUp>();
         }
 
         public IServiceCollection UseToDoListCore()
         {
             return collection
-                .AddTransient<ISplashViewModel, SplashViewModel>()
-                .AddScoped<IMainMenuViewModel, MainMenuViewModel>()
-                .AddScoped<IMainMenuView, MainMenuView>();
+                .AddMultiSingleton<ISplashViewModel, SplashViewModel>()
+                .AddMultiSingleton<IMainMenuViewModel, MainMenuViewModel>()
+                .AddMultiSingleton<IMainMenuView, MainMenuView>();
         }
     }
 }

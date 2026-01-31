@@ -1,19 +1,48 @@
-﻿namespace ToDoList;
+﻿using System;
+using System.Threading.Tasks;
+using Avalonia;
+using DIAbstract;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using ToDoList.Core;
+using ToDoList.Core.Views;
+using ToDoList.DataBase;
+
+namespace ToDoList;
 
 public class Program
 {
-    [STAThread]
-    public static void Main(string[] args)
+    private static readonly IHost Host;
+
+    static Program()
     {
-        Console.OutputEncoding = Encoding.UTF8;
+        Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder()
+            .ConfigureServices(ConfigureServices)
+            .Build();
+    }
+
+    private static void ConfigureServices(HostBuilderContext context, IServiceCollection collection)
+    {
+        var config = context.Configuration;
+        collection
+            .UseAvaloniaCore<ToDoListWindow>()
+            .UseToDoListCore()
+            .UseToDoListDbCore()
+            .UseBrilliantInitializer();
+    }
+
+    [STAThread]
+    public static async Task Main(string[] args)
+    {
+        await Host.StartAsync();
         BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);
+        await Host.StopAsync();
     }
 
     public static AppBuilder BuildAvaloniaApp()
     {
-        ServiceLocator.Instance.ServiceProvider = StartUp.ServiceProvider;
-        return AppBuilder.Configure<ToDoListApp>()
+        return AppBuilder.Configure(() => Host.Services.GetRequiredService<ToDoListApp>())
             .UsePlatformDetect()
             .WithInterFont()
             .LogToTrace();

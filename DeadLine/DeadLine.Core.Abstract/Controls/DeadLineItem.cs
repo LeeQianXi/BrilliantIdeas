@@ -7,17 +7,11 @@ namespace DeadLine.Core.Abstract.Controls;
 [TemplatePart("PART_Edit", typeof(Button))]
 public partial class DeadLineItem : TemplatedControl, ICoroutinator
 {
-    private readonly Coroutine _coroutine;
     private CheckBox? _partDoneWork;
     private Button? _partEdit;
     private ProgressBar? _partProgressBar;
     private Button? _partRemove;
     private Label? _partTag;
-
-    public DeadLineItem()
-    {
-        _coroutine = this.StartCoroutine(ProgressUpdate, false);
-    }
 
     [GeneratedStyledProperty] public partial string Title { get; set; }
     [GeneratedStyledProperty] public partial string Description { get; set; }
@@ -27,7 +21,7 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
     [GeneratedDirectProperty] public partial double Progress { get; set; }
     [GeneratedDirectProperty] public partial bool WithDescription { get; set; }
     [GeneratedDirectProperty] public partial TimeSpan RemainingTime { get; set; }
-    public CancellationTokenSource CoroutinatorCancelTokenSource { get; } = new();
+    public CancellationTokenSource CoroutineCancelTokenSource { get; } = new();
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
@@ -132,13 +126,7 @@ public partial class DeadLineItem : TemplatedControl, ICoroutinator
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        _coroutine.Continue();
-    }
-
-    protected override void OnUnloaded(RoutedEventArgs e)
-    {
-        _coroutine.Stop();
-        base.OnUnloaded(e);
+        this.StartCoroutine(ProgressUpdate);
     }
 
     private IEnumerator<YieldInstruction?> ProgressUpdate()

@@ -1,4 +1,6 @@
-﻿namespace M3u8ToMp4;
+﻿using NetUtility.CommandParser;
+
+namespace M3u8ToMp4;
 
 internal static class Program
 {
@@ -8,7 +10,6 @@ internal static class Program
     private static bool _ignoreSingleton;
     private static int _recursiveDepth;
     private static bool _enableAsyncDealing;
-    private static readonly List<Task> AsyncDealingTasks = [];
 
     static Program()
     {
@@ -22,25 +23,33 @@ internal static class Program
             .Build();
     }
 
-    public static void Main(string[] args)
+    private static CancellationTokenSource CancellationTokenSource { get; } = new();
+    private static List<Task> Tasks { get; } = [];
+
+    public static int Main(string[] args)
     {
-        if (args.Length is 0) args = [Environment.CurrentDirectory];
+        if (args.Length is 0)
+        {
+            Parser.ShowHelp();
+            return 0;
+        }
 
         CommandParseResult result = null!;
         try
         {
             result = Parser.Parse(args);
         }
-        catch
+        catch (Exception ex)
         {
+            Console.Error.WriteLine(ex);
             Parser.ShowHelp();
-            Environment.Exit(1);
+            return 1;
         }
 
         if (result.HasSwitchArg("h"))
         {
             Parser.ShowHelp();
-            Environment.Exit(1);
+            return 1;
         }
 
         _enableRecursive = result.HasSwitchArg("r");
@@ -51,7 +60,8 @@ internal static class Program
         Console.WriteLine("==================");
         foreach (var paramArg in result.GetParamArgs())
             DealPath(paramArg);
-        Task.WaitAll(AsyncDealingTasks);
+        Task.WaitAll(Tasks.ToArray());
+        return 0;
     }
 
     private static void DealPath(string path)
@@ -86,16 +96,14 @@ internal static class Program
         if (!path.EndsWith(".m3u8")) return;
         try
         {
+            var builder = M3U8MergerBase.Builder(path);
             if (_enableAsyncDealing)
-                M3U8Merger.Builder(path)
-                    .Build()
-                    .Run();
+                Tasks.Add(builder.Async().Build().Merge(CancellationTokenSource.Token));
             else
-                AsyncDealingTasks.Add(
-                    M3U8Merger.Builder(path)
-                        .Async()
-                        .Build()
-                        .Run());
+                builder.Build().Merge();
+        }
+        catch (TaskCanceledException)
+        {
         }
         catch (Exception)
         {

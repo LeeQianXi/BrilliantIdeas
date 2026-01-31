@@ -2,7 +2,7 @@
 
 public class CoroutineTest : ICoroutinator
 {
-    public CancellationTokenSource CoroutinatorCancelTokenSource { get; } = new();
+    public CancellationTokenSource CoroutineCancelTokenSource { get; } = new();
 
     [Fact]
     public void TestSync()

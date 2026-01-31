@@ -1,3 +1,5 @@
+using DIAbstract;
+
 namespace DLManager.Core.Abstract.Bases;
 
 public abstract class ViewModelBase : ReactiveObject, IDependencyInjection

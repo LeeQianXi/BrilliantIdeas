@@ -15,4 +15,3 @@ global using System.Threading;
 global using NetUtility.Cache;
 global using NetUtility.Module;
 global using NetUtility.RefPool;
-global using SixLabors.ImageSharp.PixelFormats;

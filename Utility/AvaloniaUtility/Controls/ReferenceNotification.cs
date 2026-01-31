@@ -4,7 +4,7 @@ using Notification = Avalonia.Controls.Notifications.Notification;
 
 namespace AvaloniaUtility.Controls;
 
-public class ReferenceNotification : Notification, IReference
+public class ReferenceNotification : Notification, IReference<ReferenceNotification>
 {
     public void Reset()
     {

@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Avalonia.Controls.Notifications;
 using AvaloniaUtility.Controls;
 using LiveChartsCore.SkiaSharpView;
@@ -123,9 +124,10 @@ public partial class DeadLineViewModel : ViewModelBase, IDeadLineViewModel
     public Interaction<INotification, Unit> NotifyScreenInteraction { get; } = new();
 
 
-    public async IAsyncEnumerable<DeadLineItemInfo> LoadDatabase()
+    public async IAsyncEnumerable<DeadLineItemInfo> LoadDatabase(
+        [EnumeratorCancellation] CancellationToken token = default)
     {
-        if (!await _storageSemaphore.WaitAsync(0))
+        if (!await _storageSemaphore.WaitAsync(0, token))
         {
             Logger.LogInformation("Deadline items are already being loaded");
             yield break;
@@ -133,7 +135,7 @@ public partial class DeadLineViewModel : ViewModelBase, IDeadLineViewModel
 
         try
         {
-            await foreach (var items in _storage.SelectDatasAsync(50))
+            await foreach (var items in _storage.SelectDatasAsync(50, token))
             {
                 Logger.LogInformation("Load Next Range of DeadLineItems");
                 foreach (var item in items)
@@ -157,7 +159,7 @@ public partial class DeadLineViewModel : ViewModelBase, IDeadLineViewModel
     private async Task PostNotification(string title, string message,
         NotificationType type = NotificationType.Information)
     {
-        var notification = ReferencePool.Acquire<ReferenceNotification>();
+        var notification = ReferenceNotification.AcquireReference();
         notification.Init(title, message, type);
         await NotifyScreenInteraction.Handle(notification);
     }

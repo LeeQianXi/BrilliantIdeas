@@ -1,26 +1,41 @@
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+using System.Text.RegularExpressions;
+using NetUtility;
+
 namespace M3u8ToMp4;
 
-public partial class M3U8Merger
+public abstract partial class M3U8MergerBase
 {
-    private M3U8Merger(M3U8MergerBuilder builder)
-    {
-        M3U8FilePath = builder.M3U8FilePath;
-        MergeAsync = builder.MergeAsync;
-        OutputPath = builder.OutputPath;
-        WorkingDirectory = Path.GetDirectoryName(M3U8FilePath) ?? ".";
-    }
+    protected abstract string M3U8FilePath { get; }
+    public abstract string OutputPath { get; }
+    protected abstract string WorkingDirectory { get; }
 
-    private string M3U8FilePath { get; }
-    private bool MergeAsync { get; }
-    private string OutputPath { get; }
-    private string WorkingDirectory { get; }
+    [GeneratedRegex("([0-9.]+)")]
+    private static partial Regex DurationRegex();
+
+    /// <summary>
+    ///     解析段长
+    /// </summary>
+    /// <param name="extInfLine"></param>
+    /// <returns></returns>
+    private static double ParseDuration(string extInfLine)
+    {
+        var match = DurationRegex().Match(extInfLine);
+        if (match.Success && double.TryParse(match.Groups[1].Value, out var duration)) return duration;
+        return 0;
+    }
 
     [GeneratedRegex("""
                     URI="([^"]*)"
                     """)]
     private static partial Regex UriRegex();
 
-    private List<VideoSegmentInfo> ParseM3U8File()
+    /// <summary>
+    ///     解析m3u8文件
+    /// </summary>
+    /// <returns>片段文件信息</returns>
+    protected List<VideoSegmentInfo> ParseM3U8File()
     {
         var segments = new List<VideoSegmentInfo>();
         var lines = File.ReadAllLines(M3U8FilePath);
@@ -47,7 +62,7 @@ public partial class M3U8Merger
             {
                 currentSegment = new VideoSegmentInfo
                 {
-                    Duration = M3U8Utility.ParseDuration(line),
+                    Duration = ParseDuration(line),
                     KeyUri = keyUri
                 };
                 continue;
@@ -71,6 +86,11 @@ public partial class M3U8Merger
         return ResolveFilePath(uri);
     }
 
+    /// <summary>
+    ///     格式化片段路径
+    /// </summary>
+    /// <param name="filePath"></param>
+    /// <returns></returns>
     private string ResolveFilePath(string filePath)
     {
         // 如果是绝对路径，直接返回
@@ -88,16 +108,122 @@ public partial class M3U8Merger
     {
         return new M3U8MergerBuilder(filePath);
     }
+}
 
-    public Task Run()
+public interface ISyncM3U8Merger
+{
+    void Merge();
+}
+
+internal class M3U8Merger(M3U8MergerBuilder builder) : M3U8MergerBase, ISyncM3U8Merger
+{
+    protected override string M3U8FilePath => builder.M3U8FilePath;
+    public override string OutputPath => builder.OutputPath;
+    protected override string WorkingDirectory => Path.GetDirectoryName(M3U8FilePath) ?? ".";
+
+    public void Merge()
     {
-        if (MergeAsync)
-            return RunInternalAsync();
-        RunInternal();
-        return Task.CompletedTask;
+        Console.WriteLine($"开始处理 M3U8 文件: {M3U8FilePath}");
+
+        // 解析 M3U8 文件
+        var segments = ParseM3U8File();
+        if (segments.Count == 0)
+        {
+            Console.WriteLine("未找到有效的视频片段");
+            throw new MediaNotFoundException(this);
+        }
+
+        Console.WriteLine($"找到 {segments.Count} 个视频片段");
+        // 合并所有 TS 文件
+        using (new DisposableStopWatch(em => Console.WriteLine($"合并完成! 输出文件: {OutputPath} 耗时: {em}ms")))
+        {
+            var action = CreateMergeAction(segments.Count);
+            action.Invoke(OutputPath, segments);
+        }
+
+        return;
+
+        static Action<string, IEnumerable<VideoSegmentInfo>> CreateMergeAction(int totalSegments)
+        {
+            const int targetLogCount = 5;
+            // 预计算step，通过捕获值类型避免闭包堆分配
+            if (totalSegments <= targetLogCount)
+                // 无捕获，可缓存的静态委托（如果totalSegments相同）
+                return static (outputPath, segments) =>
+                {
+                    using var stream = File.Create(outputPath);
+                    var i = 0;
+                    foreach (var segment in ReserveSegments(segments))
+                    {
+                        Console.WriteLine($"处理片段 {++i}");
+                        stream.Write(segment);
+                    }
+
+                    stream.Flush();
+                };
+            var step = totalSegments / targetLogCount;
+            // 仅捕获step（值类型），最小化闭包开销
+            return (outputPath, segments) =>
+            {
+                using var stream = File.Create(outputPath);
+                var i = 0;
+                foreach (var segment in ReserveSegments(segments))
+                {
+                    if (i % step == 0) Console.WriteLine($"处理片段 {i + 1}/{totalSegments}");
+                    stream.Write(segment);
+                    i++;
+                }
+
+                stream.Flush();
+            };
+        }
     }
 
-    private void RunInternal()
+    private static byte[] DecryptSegment(byte[] encryptedData, string keyPath)
+    {
+        var key = File.ReadAllBytes(keyPath);
+
+        using var aes = Aes.Create();
+        aes.Key = key;
+        aes.Mode = CipherMode.CBC;
+        aes.IV = new byte[16]; // 通常 IV 是全零
+
+        using var decryptor = aes.CreateDecryptor();
+        using var ms = new MemoryStream(encryptedData);
+        using var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
+        using var result = new MemoryStream();
+
+        cs.CopyTo(result);
+        return result.ToArray();
+    }
+
+    private static IEnumerable<byte[]> ReserveSegments(IEnumerable<VideoSegmentInfo> segments)
+    {
+        foreach (var info in segments)
+        {
+            if (!File.Exists(info.FilePath)) throw new MediaNotFoundException($"文件不存在: {info.FilePath}");
+
+            var data = File.ReadAllBytes(info.FilePath);
+            if (!string.IsNullOrEmpty(info.KeyUri) && File.Exists(info.KeyUri))
+                data = DecryptSegment(data, info.KeyUri);
+
+            yield return data;
+        }
+    }
+}
+
+public interface IAsyncM3U8Merger
+{
+    Task Merge(CancellationToken token = default);
+}
+
+internal class M3U8MergerAsync(M3U8MergerAsyncBuilder builder) : M3U8MergerBase, IAsyncM3U8Merger
+{
+    protected override string M3U8FilePath => builder.M3U8FilePath;
+    public override string OutputPath => builder.OutputPath;
+    protected override string WorkingDirectory => Path.GetDirectoryName(M3U8FilePath) ?? ".";
+
+    public async Task Merge(CancellationToken token = default)
     {
         Console.WriteLine($"开始处理 M3U8 文件: {M3U8FilePath}");
 
@@ -112,82 +238,140 @@ public partial class M3U8Merger
         Console.WriteLine($"找到 {segments.Count} 个视频片段");
 
         // 合并所有 TS 文件
+        using (new DisposableStopWatch(em => Console.WriteLine($"合并完成! 输出文件: {OutputPath} 耗时: {em}ms")))
         {
-            using var outputStream = File.Create(OutputPath);
-            var totalSegments = segments.Count;
-            var step = totalSegments / 10;
-            var processedSegments = 0;
-            foreach (var reserveSegment in M3U8Utility.ReserveSegments(segments))
-            {
-                if (totalSegments < 20 || processedSegments % step is 0)
-                    Console.WriteLine($"处理片段 {++processedSegments}/{totalSegments}");
-                outputStream.Write(reserveSegment, 0, reserveSegment.Length);
-            }
-
-            outputStream.Flush();
-            outputStream.Close();
+            var action = CreateMergeAction(segments.Count);
+            await action.Invoke(OutputPath, segments, token);
+            token.ThrowIfCancellationRequested();
         }
-        Console.WriteLine($"合并完成! 输出文件: {OutputPath}");
+
+        return;
+
+        static Func<string, IEnumerable<VideoSegmentInfo>, CancellationToken, Task> CreateMergeAction(int totalSegments)
+        {
+            const int targetLogCount = 5;
+            // 预计算step，通过捕获值类型避免闭包堆分配
+            if (totalSegments <= targetLogCount)
+                // 无捕获，可缓存的静态委托（如果totalSegments相同）
+                return static async (outputPath, segments, token) =>
+                {
+                    await using var stream = File.Create(outputPath);
+                    var i = 0;
+                    await foreach (var segment in ReserveSegmentsAsync(segments, token))
+                    {
+                        Console.WriteLine($"处理片段 {++i}");
+                        await stream.WriteAsync(segment, token);
+                        token.ThrowIfCancellationRequested();
+                    }
+
+                    await stream.FlushAsync(token);
+                    token.ThrowIfCancellationRequested();
+                };
+
+            var step = totalSegments / targetLogCount;
+            // 仅捕获step（值类型），最小化闭包开销
+            return async (outputPath, segments, token) =>
+            {
+                await using var stream = File.Create(outputPath);
+                var i = 0;
+                await foreach (var segment in ReserveSegmentsAsync(segments, token))
+                {
+                    if (i % step == 0) Console.WriteLine($"处理片段 {i + 1}/{totalSegments}");
+                    await stream.WriteAsync(segment, token);
+                    token.ThrowIfCancellationRequested();
+                    i++;
+                }
+
+                await stream.FlushAsync(token);
+                token.ThrowIfCancellationRequested();
+            };
+        }
     }
 
-    private async Task RunInternalAsync()
+    private static async ValueTask<byte[]> DecryptSegmentAsync(byte[] encryptedData, string keyPath,
+        CancellationToken token = default)
     {
-        Console.WriteLine($"开始处理 M3U8 文件: {M3U8FilePath}");
+        var key = await File.ReadAllBytesAsync(keyPath, token);
+        token.ThrowIfCancellationRequested();
 
-        // 解析 M3U8 文件
-        var segments = ParseM3U8File();
-        if (segments.Count == 0)
-        {
-            Console.WriteLine("未找到有效的视频片段");
-            throw new MediaNotFoundException(this);
-        }
+        using var aes = Aes.Create();
+        aes.Key = key;
+        aes.Mode = CipherMode.CBC;
+        aes.IV = new byte[16]; // 通常 IV 是全零
 
-        Console.WriteLine($"找到 {segments.Count} 个视频片段");
+        using var decryptor = aes.CreateDecryptor();
+        using var ms = new MemoryStream(encryptedData);
+        await using var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
+        using var result = new MemoryStream();
 
-        // 合并所有 TS 文件
-        {
-            await using var outputStream = File.Create(OutputPath);
-            var totalSegments = segments.Count;
-            var step = totalSegments / 10;
-            var processedSegments = 0;
-            await foreach (var reserveSegment in M3U8Utility.ReserveSegmentsAsync(segments))
-            {
-                if (totalSegments < 20 || processedSegments % step is 0)
-                    Console.WriteLine($"处理片段 {++processedSegments}/{totalSegments}");
-                await outputStream.WriteAsync(reserveSegment);
-            }
-
-            outputStream.Flush();
-            outputStream.Close();
-        }
-        Console.WriteLine($"合并完成! 输出文件: {OutputPath}");
+        await cs.CopyToAsync(result, token);
+        token.ThrowIfCancellationRequested();
+        return result.ToArray();
     }
 
-    public class M3U8MergerBuilder(string filePath)
+    private static async IAsyncEnumerable<ReadOnlyMemory<byte>> ReserveSegmentsAsync(
+        IEnumerable<VideoSegmentInfo> segments,
+        [EnumeratorCancellation] CancellationToken token = default)
     {
-        internal readonly string M3U8FilePath = filePath;
-        internal bool MergeAsync;
-
-        internal string OutputPath = Path.Combine(Path.GetDirectoryName(filePath) ?? string.Empty,
-            Path.GetFileNameWithoutExtension(filePath) + ".mp4");
-
-        public M3U8MergerBuilder Async()
+        foreach (var info in segments)
         {
-            MergeAsync = true;
-            return this;
-        }
+            if (!File.Exists(info.FilePath))
+                throw new MediaNotFoundException($"文件不存在: {info.FilePath}");
 
-        public M3U8MergerBuilder SetOutputPath(string outputPath)
-        {
-            OutputPath = outputPath;
-            return this;
-        }
+            var data = await File.ReadAllBytesAsync(info.FilePath, token);
+            token.ThrowIfCancellationRequested();
+            if (!string.IsNullOrEmpty(info.KeyUri) && File.Exists(info.KeyUri))
+            {
+                data = await DecryptSegmentAsync(data, info.KeyUri, token);
+                token.ThrowIfCancellationRequested();
+            }
 
-        public M3U8Merger Build()
-        {
-            return File.Exists(M3U8FilePath)
-                ? new M3U8Merger(this)
-                : throw new FileNotFoundException($"Can't find {M3U8FilePath}");
+            yield return data;
         }
+    }
+}
+
+public class M3U8MergerBuilder(string filePath)
+{
+    internal readonly string M3U8FilePath = filePath;
+
+    internal string OutputPath = Path.Combine(Path.GetDirectoryName(filePath) ?? string.Empty,
+        Path.GetFileNameWithoutExtension(filePath) + ".mp4");
+
+    public M3U8MergerBuilder SetOutputPath(string outputPath)
+    {
+        OutputPath = outputPath;
+        return this;
+    }
+
+    public ISyncM3U8Merger Build()
+    {
+        return File.Exists(M3U8FilePath)
+            ? new M3U8Merger(this)
+            : throw new FileNotFoundException($"Can't find {M3U8FilePath}");
+    }
+
+    public M3U8MergerAsyncBuilder Async()
+    {
+        return new M3U8MergerAsyncBuilder(this);
+    }
+}
+
+public class M3U8MergerAsyncBuilder(M3U8MergerBuilder syncBuilder)
+{
+    internal readonly string M3U8FilePath = syncBuilder.M3U8FilePath;
+    internal string OutputPath = syncBuilder.OutputPath;
+
+    public M3U8MergerAsyncBuilder SetOutputPath(string outputPath)
+    {
+        OutputPath = outputPath;
+        return this;
+    }
+
+    public IAsyncM3U8Merger Build()
+    {
+        return File.Exists(M3U8FilePath)
+            ? new M3U8MergerAsync(this)
+            : throw new FileNotFoundException($"Can't find {M3U8FilePath}");
     }
 }

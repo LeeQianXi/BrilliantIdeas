@@ -1,3 +1,5 @@
+using DIAbstract;
+
 namespace ToDoList.DataBase;
 
 public static class Extensions
@@ -7,8 +9,12 @@ public static class Extensions
         public IServiceCollection UseToDoListDbCore()
         {
             return collection
-                .AddSingleton<IBackLogStorage, BackLogStorage>()
-                .AddSingleton<IBackGroupStorage, BackGroupStorage>();
+                .AddSingleton<BackLogStorage>()
+                .AddSingleton<IAsyncLifecycle, BackLogStorage>(s => s.GetRequiredService<BackLogStorage>())
+                .AddSingleton<IBackLogStorage, BackLogStorage>(s => s.GetRequiredService<BackLogStorage>())
+                .AddSingleton<BackGroupStorage>()
+                .AddSingleton<IAsyncLifecycle, BackGroupStorage>(s => s.GetRequiredService<BackGroupStorage>())
+                .AddSingleton<IBackGroupStorage, BackGroupStorage>(s => s.GetRequiredService<BackGroupStorage>());
         }
     }
 }

@@ -1,3 +1,5 @@
+using DIAbstract;
+
 namespace TagImage.Core;
 
 [SuppressMessage("Performance", "CA1822:将成员标记为 static")]
@@ -9,15 +11,15 @@ public static class Extensions
             where TStartUp : class, IStartupWindow
         {
             return collection
-                .AddSingleton<TagImageApp>()
-                .AddSingleton<IStartupWindow, TStartUp>();
+                .AddMultiSingleton<Application, TagImageApp>()
+                .AddMultiSingleton<IStartupWindow, TStartUp>();
         }
 
         public IServiceCollection UseTagImageCore()
         {
             return collection
-                .AddSingleton<ISplashView, SplashView>()
-                .AddSingleton<ISplashViewModel, SplashViewModel>();
+                .AddMultiSingleton<ISplashView, SplashView>()
+                .AddMultiSingleton<ISplashViewModel, SplashViewModel>();
         }
     }
 }

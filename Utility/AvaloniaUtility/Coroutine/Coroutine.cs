@@ -1,34 +1,61 @@
 // ReSharper disable CheckNamespace
 
+using System.Collections.Concurrent;
+
 namespace AvaloniaUtility;
 
-public sealed class Coroutine : IDisposable
+public interface ICoroutine : IDisposable, IAsyncDisposable
+{
+    public Status CoroutineStatus { get; }
+    void Continue();
+    void Stop();
+
+    /// <summary>
+    ///     Coroutine完成回调
+    /// </summary>
+    event Action? Completed;
+
+    /// <summary>
+    ///     Coroutine失败回调
+    /// </summary>
+    event Action<Exception?>? Failed;
+}
+
+public enum Status
+{
+    /// 刚创建
+    New,
+
+    /// 空闲
+    Free,
+
+    /// 正在运行
+    Running,
+
+    /// 被暂停运行
+    Stopping,
+
+    /// 等待耗时任务
+    Waiting,
+
+    /// 已完成
+    Completed,
+
+    /// 失败
+    Failed,
+
+    /// 销毁
+    Disposed
+}
+
+public sealed class Coroutine : ICoroutine
 {
     private readonly IAsyncEnumerator<YieldInstruction?>? _asyncIter;
-    private readonly CancellationTokenRegistration _ctr;
     private readonly bool _isAsync;
-    private readonly object _stateLock = new();
+    private readonly SemaphoreSlim _sync = new(1, 1);
     private readonly IEnumerator<YieldInstruction?>? _syncIter;
     private readonly CancellationToken _token;
-
-    public readonly int CoroutineId = -1;
-
-    /// <summary>
-    ///     当前YieldInstruction
-    /// </summary>
-    private YieldInstruction? _currentInstruction;
-
-    private bool _disposed;
-
-    /// <summary>
-    ///     当前Corotine是否激活
-    /// </summary>
-    private bool _isActive;
-
-    /// <summary>
-    ///     是否正等待YieldInstruction指令
-    /// </summary>
-    private volatile bool _waiting;
+    private volatile Status _status = Status.New;
 
     internal Coroutine(IEnumerator<YieldInstruction?> iter, bool createRunning, CancellationToken token)
     {
@@ -36,12 +63,8 @@ public sealed class Coroutine : IDisposable
         _isAsync = false;
         _syncIter = iter;
         _token = token;
-        if (createRunning)
-            Continue();
-        else
-            Stop();
-        _ctr = _token.Register(Dispose);
         Internal.RegisterInstance(this);
+        if (createRunning) _status = Status.Free;
     }
 
     internal Coroutine(IAsyncEnumerator<YieldInstruction?> iter, bool createRunning, CancellationToken token)
@@ -50,34 +73,45 @@ public sealed class Coroutine : IDisposable
         _isAsync = true;
         _asyncIter = iter;
         _token = token;
-        if (createRunning)
-            Continue();
-        else
-            Stop();
-
-        _ctr = _token.Register(Dispose);
         Internal.RegisterInstance(this);
+        if (createRunning) _status = Status.Free;
     }
+
+    public void Continue()
+    {
+        _sync.Wait(_token);
+        if (_status is Status.New or Status.Stopping) _status = Status.Free;
+        _sync.Release();
+    }
+
+    public void Stop()
+    {
+        _sync.Wait(_token);
+        if (_status is Status.Free) _status = Status.Stopping;
+        _sync.Release();
+    }
+
+    public event Action? Completed;
+    public event Action<Exception?>? Failed;
+
+    public Status CoroutineStatus => _status;
 
     public void Dispose()
     {
-        var shouldDispose = false;
-        lock (_stateLock) //保护_disposed检查
-        {
-            if (!_disposed)
-            {
-                shouldDispose = true;
-                _disposed = true;
-                _isActive = false;
-            }
-        }
+        _status = Status.Disposed;
+        if (_isAsync)
+            _ = _asyncIter?.DisposeAsync();
+        else
+            _syncIter?.Dispose();
+    }
 
-        if (!shouldDispose) return;
-
-        _ctr.Dispose();
-        _syncIter?.Dispose();
-        if (_asyncIter != null)
-            _ = _asyncIter.DisposeAsync().AsTask();
+    public async ValueTask DisposeAsync()
+    {
+        _status = Status.Disposed;
+        if (_isAsync)
+            await (_asyncIter?.DisposeAsync() ?? ValueTask.CompletedTask);
+        else
+            _syncIter?.Dispose();
     }
 
     ~Coroutine()
@@ -85,204 +119,107 @@ public sealed class Coroutine : IDisposable
         Dispose();
     }
 
-    /// <summary>
-    ///     Coroutine完成回调
-    /// </summary>
-    public event Action? Completed;
-
-    /// <summary>
-    ///     Coroutine失败回调
-    /// </summary>
-    public event Action<Exception?>? Faulted;
-
     private async Task OnTick()
     {
-        // 在锁内检查状态，避免竞态
-        lock (_stateLock)
-        {
-            if (_disposed || _token.IsCancellationRequested || _waiting || !_isActive)
-                return;
-        }
-
+        //阻止重入
+        if (!await _sync.WaitAsync(TimeSpan.FromMilliseconds(Internal.FrameTimeMs * 2), _token))
+            return;
         var start = Internal.Sw.Elapsed.TotalMilliseconds;
         try
         {
-            // 每个await后重新检查状态
-            lock (_stateLock)
-            {
-                if (_disposed) return;
-            }
-
-            var hasNext = await MoveToNextInstruction().ConfigureAwait(false);
-
+            if (_status is Status.Stopping) return;
+            //到此处Status必定为Running
+            var (hasNext, nextInstruction) = await MoveToNextInstructionAsync().ConfigureAwait(false);
             if (!hasNext)
             {
                 CompleteCoroutine();
                 return;
             }
 
-            if (_currentInstruction is not null)
-                ExecuteYieldInstruction();
-        }
-        catch (OperationCanceledException)
-        {
-            Dispose();
+            if (nextInstruction is not null)
+                await ExecuteYieldInstructionAsync(nextInstruction).ConfigureAwait(false);
+            _status = Status.Free;
         }
         catch (Exception ex)
         {
-            HandleCoroutineException(ex);
         }
         finally
         {
             Internal.Accumulator -= Internal.Sw.Elapsed.TotalMilliseconds - start;
+            _sync.Release();
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private async Task<bool> MoveToNextInstruction()
+    private async ValueTask<(bool, YieldInstruction?)> MoveToNextInstructionAsync()
     {
         try
         {
-            return _isAsync ? await MoveToNextAsync() : MoveToNextSync();
+            if (_isAsync)
+            {
+                if (!await _asyncIter!.MoveNextAsync().ConfigureAwait(false)) return (false, null);
+                return (true, _asyncIter.Current);
+            }
+
+            if (!_syncIter!.MoveNext()) return (false, null);
+            return (true, _syncIter.Current);
         }
-        catch (OperationCanceledException)
+        catch (Exception ex)
         {
-            return false;
+            HandleCoroutineException(ex);
+            throw;
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            // 包装并重新抛出迭代器异常
-            throw new Exception(
-                "Failed to move to next instruction in coroutine.",
-                ex
-            );
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private async Task<bool> MoveToNextAsync()
-    {
-        _token.ThrowIfCancellationRequested();
-        var tmp = _waiting;
-        _waiting = true;
-        if (!await _asyncIter!.MoveNextAsync().ConfigureAwait(false)) return false;
-        _waiting = tmp;
-        // 检查 disposed
-        lock (_stateLock)
-        {
-            if (_disposed) return false;
-        }
-
-        _currentInstruction = _asyncIter.Current;
-        return true;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private bool MoveToNextSync()
-    {
-        // 检查取消令牌
-        _token.ThrowIfCancellationRequested();
-        // 同步移动
-        if (!_syncIter!.MoveNext()) return false;
-        _currentInstruction = _syncIter.Current;
-        return true;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void HandleCoroutineException(Exception exception)
-    {
-        if (_disposed) return;
-        if (exception is OperationCanceledException) return;
-        try
-        {
-            Faulted?.Invoke(exception);
-        }
-        finally
-        {
-            Dispose();
-        }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ExecuteYieldInstruction()
-    {
-        if (_currentInstruction is null) return;
-        _waiting = true;
-        _currentInstruction.Execute(_token)
-            .ContinueWith(OnInstructionCompleted, TaskScheduler.Current);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void OnInstructionCompleted(Task task)
-    {
-        _waiting = false;
-        if (_disposed) return;
-        if (!task.IsFaulted) return;
-        var ex = task.Exception?.GetBaseException() ?? new Exception("Unknown coroutine error");
-        HandleCoroutineException(ex);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void CompleteCoroutine()
     {
-        if (_disposed) return;
-        try
+        if (_status is Status.Running or Status.Waiting or Status.Free)
         {
+            _status = Status.Completed;
             Completed?.Invoke();
         }
-        finally
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private async ValueTask ExecuteYieldInstructionAsync(YieldInstruction instruction)
+    {
+        ArgumentNullException.ThrowIfNull(instruction);
+        _status = Status.Waiting;
+        try
         {
-            Dispose();
+            await instruction.Execute(_token).ConfigureAwait(false);
+            _status = Status.Running;
+        }
+        catch (Exception ex)
+        {
+            HandleCoroutineException(ex);
         }
     }
 
-    public void Stop()
+    private void HandleCoroutineException(Exception ex)
     {
-        lock (_stateLock)
-        {
-            if (!_isActive) return;
-            _isActive = false;
-        }
+        if (ex is OperationCanceledException)
+            CompleteCoroutine();
+        _status = Status.Failed;
+        Failed?.Invoke(ex);
     }
 
-    public void Continue()
-    {
-        lock (_stateLock)
-        {
-            if (_isActive) return;
-            _isActive = true;
-        }
-    }
-
-    public void Close()
-    {
-        Dispose();
-    }
-
-
-    public override int GetHashCode()
-    {
-        return CoroutineId;
-    }
 
     private static class Internal
     {
-        public const double FrameTime = 1_000d / 90d;
-        public const double MaxFrameTime = 1_000d / 10d;
+        public const double FrameTimeMs = 1_000d / 90d;
+        public const double MaxFrameTimeMs = 1_000d / 10d;
 
         private static readonly DispatcherTimer GlobalTimer;
         internal static readonly Stopwatch Sw;
         internal static double Accumulator;
 
-        private static int _nextId;
         private static readonly HashSet<Coroutine> Instances = [];
-        private static readonly List<Coroutine> ToAdd = [];
-        private static readonly FieldInfo CoroutineIdField;
+        private static readonly ConcurrentQueue<Coroutine> ToAdd = [];
 
         static Internal()
         {
-            CoroutineIdField = typeof(Coroutine).GetRuntimeField(nameof(CoroutineId))!;
-
             Sw = Stopwatch.StartNew();
             GlobalTimer = new DispatcherTimer
             {
@@ -297,43 +234,31 @@ public sealed class Coroutine : IDisposable
             var delta = Sw.Elapsed.TotalMilliseconds;
             Sw.Restart();
             Accumulator += delta;
-            if (Accumulator > FrameTime)
+            if (Accumulator > FrameTimeMs)
                 OnGlobalFrame();
-            Accumulator %= FrameTime;
+            Accumulator %= FrameTimeMs;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void OnGlobalFrame()
         {
-            lock (ToAdd)
-            {
-                if (ToAdd.Count != 0)
-                {
-                    Instances.UnionWith(ToAdd);
-                    ToAdd.Clear();
-                }
-            }
-
+            Instances.UnionWith(ToAdd);
+            ToAdd.Clear();
             List<Coroutine>? toRemove = null;
             foreach (var cor in Instances)
-            {
-                bool isDisposed, isActive, isWaiting;
-                lock (cor._stateLock) // 读取状态时加锁
+                switch (Interlocked.CompareExchange(ref cor._status, Status.Running, Status.Free))
                 {
-                    isDisposed = cor._disposed;
-                    isActive = cor._isActive;
-                    isWaiting = cor._waiting;
+                    case Status.Free:
+                        Dispatcher.UIThread.Invoke(cor.OnTick);
+                        break;
+                    case Status.Completed:
+                    case Status.Failed:
+                        cor.Dispose();
+                        break;
+                    case Status.Disposed:
+                        (toRemove ??= []).Add(cor);
+                        break;
                 }
-
-                if (isDisposed)
-                {
-                    (toRemove ??= []).Add(cor);
-                    continue;
-                }
-
-                if (!isActive || isWaiting) continue;
-                Dispatcher.UIThread.Invoke(cor.OnTick);
-            }
 
             if (toRemove is null) return;
             Instances.ExceptWith(toRemove);
@@ -342,12 +267,7 @@ public sealed class Coroutine : IDisposable
         public static void RegisterInstance(Coroutine coroutine)
         {
             ArgumentNullException.ThrowIfNull(coroutine);
-
-            lock (ToAdd) // 在锁内分配ID
-            {
-                CoroutineIdField.SetValue(coroutine, Interlocked.Increment(ref _nextId));
-                ToAdd.Add(coroutine);
-            }
+            ToAdd.Enqueue(coroutine);
         }
     }
 }

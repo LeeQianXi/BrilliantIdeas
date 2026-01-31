@@ -1,26 +1,24 @@
 namespace ToDoList.Core;
 
-public class ToDoListApp : Application
+public class ToDoListApp(ILogger<ToDoListApp> logger, IServiceProvider serviceProvider) : Application
 {
-    private ILogger<ToDoListApp> Logger { get; } =
-        ServiceLocator.Instance.ServiceProvider.GetRequiredService<ILogger<ToDoListApp>>();
-
     public override void Initialize()
     {
-        Logger.LogInformation("Initializing ToDoListApp");
+        ServiceLocator.ServiceProvider = serviceProvider;
+        logger.LogInformation("Initializing ToDoListApp");
         AvaloniaXamlLoader.Load(this);
     }
 
     public override void OnFrameworkInitializationCompleted()
     {
-        Logger.LogInformation("OnFrameworkInitializationCompleted");
+        logger.LogInformation("OnFrameworkInitializationCompleted");
 
-        // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
+        // Avoid duplicate validations from both Avalonia and the CommunityToolkit.
         // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
         DisableAvaloniaDataAnnotationValidation();
 
         base.OnFrameworkInitializationCompleted();
-        var startup = ServiceLocator.Instance.ServiceProvider.GetRequiredService<IStartupWindow>();
+        var startup = serviceProvider.GetRequiredService<IStartupWindow>();
         startup.Show();
     }
 

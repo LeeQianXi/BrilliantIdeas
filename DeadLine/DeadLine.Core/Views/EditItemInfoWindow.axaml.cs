@@ -29,7 +29,7 @@ public partial class EditItemInfoWindow : Window, IEditItemInfoWindow
     {
         if (string.IsNullOrWhiteSpace(TbTitle.Text))
         {
-            var notification = ReferencePool.Acquire<ReferenceNotification>();
+            var notification = ReferenceNotification.AcquireReference();
             notification.Init("表单填写有误", "标题不能为空", NotificationType.Warning);
             Manager.Show(notification);
             return;

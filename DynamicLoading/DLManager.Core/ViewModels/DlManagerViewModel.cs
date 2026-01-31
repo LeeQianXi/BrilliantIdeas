@@ -1,12 +1,19 @@
+using System.Collections.ObjectModel;
+using DLManager.Core.Abstract.Plugin;
+
 namespace DLManager.Core.ViewModels;
 
-public class DlManagerViewModel(IServiceProvider serviceProvider) : ViewModelBase, IDlManagerViewModel
+public class DlManagerViewModel : ViewModelBase, IDlManagerViewModel
 {
-    public override IServiceProvider ServiceProvider { get; } = serviceProvider;
-    public override ILogger Logger { get; } = serviceProvider.GetRequiredService<ILogger<DlManagerViewModel>>();
+    public DlManagerViewModel(IServiceProvider serviceProvider)
+    {
+        ServiceProvider = serviceProvider;
+        Logger = serviceProvider.GetRequiredService<ILogger<DlManagerViewModel>>();
+        var pluginContainer = serviceProvider.GetRequiredService<IPluginContainer>();
+        PluginViewInfos = pluginContainer.PluginViewInfos;
+    }
 
-    public AvaloniaList<PluginViewInfo> PluginViews { get; } =
-        new(from pair in ServiceLocator.Plugins
-            from knt in pair.Value
-            select new PluginViewInfo(pair.Key, knt.Key, knt.Value.Item1));
+    public override IServiceProvider ServiceProvider { get; }
+    public override ILogger Logger { get; }
+    public ReadOnlyObservableCollection<PluginViewInfo> PluginViewInfos { get; }
 }

@@ -2,14 +2,14 @@ namespace ToDoList.Core.Views;
 
 public partial class SplashView : ViewModelUserControlBase<ISplashViewModel>, ICoroutinator
 {
-    private Coroutine? _coroutine;
+    private ICoroutine? _coroutine;
 
     public SplashView()
     {
         InitializeComponent();
     }
 
-    public CancellationTokenSource CoroutinatorCancelTokenSource { get; } = new();
+    public CancellationTokenSource CoroutineCancelTokenSource { get; } = new();
 
     private void Splash_Loaded(object? sender, RoutedEventArgs e)
     {

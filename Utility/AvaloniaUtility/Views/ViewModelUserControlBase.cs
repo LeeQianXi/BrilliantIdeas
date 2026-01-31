@@ -1,6 +1,8 @@
+using DIAbstract;
+
 namespace AvaloniaUtility.Views;
 
-public class ViewModelUserControlBase<T> : UserControl, IDiLogger<T> where T : class, IDependencyInjection
+public class ViewModelUserControlBase<T> : UserControl where T : class, IDependencyInjection
 {
     public T? ViewModel
     {

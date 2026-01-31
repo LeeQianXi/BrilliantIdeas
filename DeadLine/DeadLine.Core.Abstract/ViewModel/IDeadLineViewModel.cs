@@ -1,4 +1,5 @@
 using Avalonia.Controls.Notifications;
+using DIAbstract;
 using LiveChartsCore.SkiaSharpView;
 using NetUtility;
 
@@ -15,7 +16,7 @@ public interface IDeadLineViewModel : IDependencyInjection
     IRelayCommand<DeadLineItemInfo> DisplayDeadLineItemCommand { get; }
     IRelayCommand SaveToDatabaseCommand { get; }
     IObservable<IChangeSet<DeadLineItemInfo>> DeadLineItemsConnect();
-    IAsyncEnumerable<DeadLineItemInfo> LoadDatabase();
+    IAsyncEnumerable<DeadLineItemInfo> LoadDatabase(CancellationToken token = default);
     void RefreshData();
 
     #endregion

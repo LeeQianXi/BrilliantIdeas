@@ -1,3 +1,5 @@
+using DIAbstract;
+
 namespace ToDoList.Core.Abstract.Bases;
 
 public abstract class ViewModelBase : ObservableObject, IDependencyInjection

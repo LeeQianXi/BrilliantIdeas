@@ -1,3 +1,4 @@
+using DIAbstract;
 using FluentValidation;
 
 namespace DeadLine.Core;
@@ -17,8 +18,8 @@ public static class Extensions
             where TStartUp : class, IStartupWindow
         {
             return collection
-                .AddSingleton<DeadLineApp>()
-                .AddSingleton<IStartupWindow, TStartUp>();
+                .AddMultiSingleton<Application, DeadLineApp>()
+                .AddMultiSingleton<IStartupWindow, TStartUp>();
         }
 
         public IServiceCollection UseDeadLineCore()
@@ -27,7 +28,7 @@ public static class Extensions
                 .AddValidatorsFromAssemblyContaining<NewDeadLineItemValidator>(includeInternalTypes: true)
                 .AddSingleton<IDeadLineWindow, DeadLineWindow>(p =>
                     (DeadLineWindow)p.GetRequiredService<IStartupWindow>())
-                .AddSingleton<IDeadLineViewModel, DeadLineViewModel>()
+                .AddMultiSingleton<IDeadLineViewModel, DeadLineViewModel>()
                 .AddTransient<INewDeadLineItemView, NewDeadLineItemWindow>()
                 .AddTransient<INewDeadLineItemViewModel, NewDeadLineItemViewModel>()
                 .AddTransient<IEditItemInfoWindow, EditItemInfoWindow>();

@@ -1,3 +1,5 @@
+using DIAbstract;
+
 namespace DeadLine.Core.Abstract.Bases;
 
 public abstract class ViewModelBase : ReactiveObject, IDependencyInjection

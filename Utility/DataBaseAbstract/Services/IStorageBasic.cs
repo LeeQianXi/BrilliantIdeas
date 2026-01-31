@@ -4,39 +4,40 @@ public interface IStorageBasic<TData> where TData : IModelBasic, new()
 {
     #region Transaction
 
-    public Task BeginTransactionAsync(Action<SQLiteConnection> action);
+    public Task BeginTransactionAsync(Action<SQLiteConnection> action, CancellationToken token = default);
 
     #endregion
 
     #region Create
 
     //插入一条新数据
-    Task<int> InsertDataAsync(TData value);
-    Task InsertDataAsync(params IEnumerable<TData> values);
+    Task<int> InsertDataAsync(TData value, CancellationToken token = default);
+    Task InsertDataAsync(CancellationToken token = default, params IEnumerable<TData> values);
 
     #endregion
 
     #region Read
 
     //通过主键获取
-    Task<TData> GetDataAsync(int key);
-    Task<TV> GetDataAsync<TV>(int key, Transform<TData, TV> select);
+    Task<TData> GetDataAsync(int key, CancellationToken token = default);
+    Task<TV> GetDataAsync<TV>(int key, Expression<Func<TData, TV>> select, CancellationToken token = default);
 
     //通过主键查询
-    Task<TData?> FindDataAsync(int key);
-    Task<TV?> FindDataAsync<TV>(int key, Transform<TData, TV> select);
+    Task<TData?> FindDataAsync(int key, CancellationToken token = default);
+    Task<TV?> FindDataAsync<TV>(int key, Expression<Func<TData, TV>> select, CancellationToken token = default);
 
     //根据条件查询
-    IAsyncEnumerable<IEnumerable<TData>> SelectDatasAsync(int limit = 0);
+    IAsyncEnumerable<IEnumerable<TData>> SelectDatasAsync(int limit = 0, CancellationToken token = default);
 
-    IAsyncEnumerable<IEnumerable<TV>> SelectDatasAsync<TV>(Transform<TData, TV> select,
-        int limit = 0);
+    IAsyncEnumerable<IEnumerable<TV>> SelectDatasAsync<TV>(Expression<Func<TData, TV>> select,
+        int limit = 0, CancellationToken token = default);
 
-    IAsyncEnumerable<IEnumerable<TData>> SelectDatasAsync(Expression<Func<TData, bool>> predicate, int limit = 0);
+    IAsyncEnumerable<IEnumerable<TData>> SelectDatasAsync(Expression<Func<TData, bool>> predicate, int limit = 0,
+        CancellationToken token = default);
 
     IAsyncEnumerable<IEnumerable<TV>> SelectDatasAsync<TV>(Expression<Func<TData, bool>> predicate,
-        Transform<TData, TV> select,
-        int limit = 0);
+        Expression<Func<TData, TV>> select,
+        int limit = 0, CancellationToken token = default);
 
     #region UDAF
 
@@ -49,7 +50,6 @@ public interface IStorageBasic<TData> where TData : IModelBasic, new()
     Task<TData> Last(string column = "*", Predicate<TData>? filter = null);
     Task<int> Count(string column = "*", Predicate<TData>? filter = null);
 */
-    public delegate TO Transform<in TI, out TO>(TI value);
 
     #endregion
 
@@ -58,17 +58,17 @@ public interface IStorageBasic<TData> where TData : IModelBasic, new()
     #region Update
 
     //更新一条数据
-    Task UpdateDataAsync(TData value);
-    Task UpdateDataAsync(params IEnumerable<TData> values);
+    Task UpdateDataAsync(TData value, CancellationToken token = default);
+    Task UpdateDataAsync(CancellationToken token = default, params IEnumerable<TData> values);
 
     #endregion
 
     #region Delete
 
-    Task<TData> DeleteDataAsync(int key);
-    Task DeleteDataAsync(params IEnumerable<int> keys);
-    Task DeleteDataAsync(Expression<Func<TData, bool>> predicate);
-    Task ClearTableAsync();
+    Task<TData> DeleteDataAsync(int key, CancellationToken token = default);
+    Task DeleteDataAsync(CancellationToken token = default, params IEnumerable<int> keys);
+    Task DeleteDataAsync(Expression<Func<TData, bool>> predicate, CancellationToken token = default);
+    Task ClearTableAsync(CancellationToken token = default);
 
     #endregion
 }

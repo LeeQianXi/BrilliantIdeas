@@ -1,9 +1,9 @@
 namespace DLManager.Plugin.GadgetPlugin.Views;
 
 [DeclareView(nameof(CountdownTimerView))]
-public partial class CountdownTimerView : PluginView, ICoroutinator
+public partial class CountdownTimerView : UserControl, IPluginView<CountdownTimerView>, ICoroutinator
 {
-    private Coroutine? _coroutine;
+    private ICoroutine? _coroutine;
 
     public CountdownTimerView()
     {
@@ -13,7 +13,7 @@ public partial class CountdownTimerView : PluginView, ICoroutinator
     }
 
     [GeneratedStyledProperty] public partial CountdownTimerState TimerState { get; set; }
-    public CancellationTokenSource CoroutinatorCancelTokenSource { get; } = new();
+    public CancellationTokenSource CoroutineCancelTokenSource { get; } = new();
 
     partial void OnTimerStatePropertyChanged(CountdownTimerState newValue)
     {

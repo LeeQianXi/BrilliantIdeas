@@ -55,7 +55,7 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
         FilterTextBox.ItemsSource = filtercomboboxitems;
         //启动协程加载
         this.StartCoroutine(LoadExistedDeadLineItems);
-        this.StartCoroutine(TimeSpanSave);
+        //this.StartCoroutine(TimeSpanSave);
 
         #endregion
 
@@ -68,7 +68,7 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
     }
 
 
-    public CancellationTokenSource CoroutinatorCancelTokenSource { get; } = new();
+    public CancellationTokenSource CoroutineCancelTokenSource { get; } = new();
 
     private async Task ShowDialogInteraction(IInteractionContext<INewDeadLineItemView, DeadLineItemInfo?> context)
     {
@@ -101,15 +101,15 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
                        text.Title.Contains(filter, StringComparison.OrdinalIgnoreCase);
     }
 
-    private async IAsyncEnumerator<YieldInstruction?> LoadExistedDeadLineItems()
+    private async IAsyncEnumerator<YieldInstruction?> LoadExistedDeadLineItems(CancellationToken token)
     {
-        await foreach (var item in ViewModel!.LoadDatabase())
+        await foreach (var item in ViewModel!.LoadDatabase(token))
         {
             ViewModel!.DisplayDeadLineItemCommand.Execute(item);
             yield return null;
         }
 
-        var notification = ReferencePool.Acquire<ReferenceNotification>();
+        var notification = ReferenceNotification.AcquireReference();
         notification.Init("系统消息", "成功加载任务信息", NotificationType.Success);
         await ViewModel!.NotifyScreenInteraction.Handle(notification);
     }
@@ -120,7 +120,7 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
         while (!token.IsCancellationRequested)
         {
             ViewModel!.SaveToDatabaseCommand.Execute(null);
-            var notification = ReferencePool.Acquire<ReferenceNotification>();
+            var notification = ReferenceNotification.AcquireReference();
             notification.Init("系统消息", "自动保存已完成", NotificationType.Success);
             await ViewModel!.NotifyScreenInteraction.Handle(notification);
 
@@ -130,7 +130,7 @@ public partial class DeadLineWindow : ViewModelWindowBase<IDeadLineViewModel>, I
 
     protected override void OnClosed(EventArgs e)
     {
-        CoroutinatorCancelTokenSource.Cancel();
+        CoroutineCancelTokenSource.Cancel();
         ViewModel!.SaveToDatabaseCommand.Execute(null);
         base.OnClosed(e);
     }

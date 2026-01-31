@@ -15,7 +15,6 @@ global using AvaloniaUtility.Services;
 global using CommunityToolkit.Mvvm.Input;
 global using DeadLine.Core.Abstract.View;
 global using DeadLine.DataBase.Core.Model;
-global using DIAbstract.Services;
 global using DynamicData;
 global using DynamicData.Binding;
 global using Microsoft.Extensions.Logging;

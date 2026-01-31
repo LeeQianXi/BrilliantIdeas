@@ -1,8 +1,10 @@
+using System.Collections.ObjectModel;
+using DIAbstract;
+using DLManager.Core.Abstract.Plugin;
+
 namespace DLManager.Core.Abstract.ViewModels;
 
 public interface IDlManagerViewModel : IDependencyInjection
 {
-    AvaloniaList<PluginViewInfo> PluginViews { get; }
+    ReadOnlyObservableCollection<PluginViewInfo> PluginViewInfos { get; }
 }
-
-public record PluginViewInfo(string PluginId, string ViewId, string DisplayName);

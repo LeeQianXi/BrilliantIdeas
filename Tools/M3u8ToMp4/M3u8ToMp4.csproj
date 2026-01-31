@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\Utility\CommandParser\CommandParser.csproj"/>
         <ProjectReference Include="..\..\Utility\NetUtility\NetUtility.csproj"/>
     </ItemGroup>
 

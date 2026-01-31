@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+
 namespace DLManager.Plugin.Abstract;
 
 [AttributeUsage(AttributeTargets.Class)]
@@ -7,8 +9,16 @@ public class DynamicLoadingAttribute(string pluginId) : Attribute
 }
 
 [AttributeUsage(AttributeTargets.Class)]
-public class DeclareViewAttribute(string viewName, PluginLifeCycle lifeCycle = PluginLifeCycle.Transient) : Attribute
+public class DeclareViewAttribute : Attribute
 {
-    public string ViewName { get; } = viewName;
-    public PluginLifeCycle LifeCycle { get; } = lifeCycle;
+    public DeclareViewAttribute(string viewName, ServiceLifetime lifeCycle = ServiceLifetime.Transient)
+    {
+        ViewName = viewName;
+        LifeCycle = lifeCycle;
+        if (lifeCycle is ServiceLifetime.Scoped)
+            throw new Exception("LifeCycle can't be Scoped");
+    }
+
+    public string ViewName { get; }
+    public ServiceLifetime LifeCycle { get; }
 }

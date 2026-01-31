@@ -5,8 +5,11 @@ internal class SplashViewModel(IServiceProvider serviceProvider) : ViewModelBase
     private readonly IBackGroupStorage _backGroupStorage = serviceProvider.GetRequiredService<IBackGroupStorage>();
     private readonly IBackLogStorage _backLogStorage = serviceProvider.GetRequiredService<IBackLogStorage>();
     private readonly IMainMenuViewModel _mainMenuViewModel = serviceProvider.GetRequiredService<IMainMenuViewModel>();
+
+    public override ILogger<SplashViewModel> Logger { get; } =
+        serviceProvider.GetRequiredService<ILogger<SplashViewModel>>();
+
     public override IServiceProvider ServiceProvider { get; } = serviceProvider;
-    public override ILogger Logger { get; } = serviceProvider.GetRequiredService<ILogger<SplashViewModel>>();
 
     public void SplashCompleted()
     {

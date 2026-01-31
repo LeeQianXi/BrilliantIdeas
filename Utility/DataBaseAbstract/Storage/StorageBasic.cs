@@ -1,11 +1,14 @@
+using System.Runtime.CompilerServices;
+
 namespace DataBaseAbstract.Storage;
 
+[Obsolete("Will be change to EFCore")]
 public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(dbName), IStorageBasic<TData>
     where TData : IModelBasic, new()
 {
     protected readonly ReaderWriterLockSlim Lock = new();
 
-    public virtual async Task<int> InsertDataAsync(TData value)
+    public virtual async Task<int> InsertDataAsync(TData value, CancellationToken token = default)
     {
         Lock.EnterWriteLock();
         try
@@ -18,7 +21,7 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
         }
     }
 
-    public virtual async Task InsertDataAsync(params IEnumerable<TData> values)
+    public virtual async Task InsertDataAsync(CancellationToken token = default, params IEnumerable<TData> values)
     {
         Lock.EnterWriteLock();
         try
@@ -31,7 +34,7 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
         }
     }
 
-    public virtual async Task<TData> GetDataAsync(int key)
+    public virtual async Task<TData> GetDataAsync(int key, CancellationToken token = default)
     {
         Lock.EnterReadLock();
         try
@@ -45,12 +48,22 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
         }
     }
 
-    public virtual async Task<TV> GetDataAsync<TV>(int key, IStorageBasic<TData>.Transform<TData, TV> select)
+    public virtual async Task<TV> GetDataAsync<TV>(int key, Expression<Func<TData, TV>> select,
+        CancellationToken token = default)
     {
-        return select.Invoke(await GetDataAsync(key));
+        Lock.EnterReadLock();
+        try
+        {
+            var ret = await Connection.Table<TData>().FirstOrDefaultAsync(d => d.PrimaryKey == key);
+            return ret is null ? throw new KeyNotFoundException() : select.Compile().Invoke(ret);
+        }
+        finally
+        {
+            Lock.ExitReadLock();
+        }
     }
 
-    public virtual async Task<TData?> FindDataAsync(int key)
+    public virtual async Task<TData?> FindDataAsync(int key, CancellationToken token = default)
     {
         Lock.EnterReadLock();
         try
@@ -63,13 +76,23 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
         }
     }
 
-    public virtual async Task<TV?> FindDataAsync<TV>(int key, IStorageBasic<TData>.Transform<TData, TV> select)
+    public virtual async Task<TV?> FindDataAsync<TV>(int key, Expression<Func<TData, TV>> select,
+        CancellationToken token = default)
     {
-        var ret = await FindDataAsync(key);
-        return ret is null ? default : select.Invoke(ret);
+        Lock.EnterReadLock();
+        try
+        {
+            var ret = await Connection.Table<TData>().FirstOrDefaultAsync(d => d.PrimaryKey == key);
+            return ret is null ? default : select.Compile().Invoke(ret);
+        }
+        finally
+        {
+            Lock.ExitReadLock();
+        }
     }
 
-    public async IAsyncEnumerable<IEnumerable<TData>> SelectDatasAsync(int limit = 0)
+    public async IAsyncEnumerable<IEnumerable<TData>> SelectDatasAsync(int limit = 0,
+        [EnumeratorCancellation] CancellationToken token = default)
     {
         if (limit < 0) throw new ArgumentException("limit cannot be less than zero", nameof(limit));
         var table = Connection.Table<TData>();
@@ -104,7 +127,7 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
     }
 
     public async IAsyncEnumerable<IEnumerable<TV>> SelectDatasAsync<TV>(
-        IStorageBasic<TData>.Transform<TData, TV> select, int limit = 0)
+        Expression<Func<TData, TV>> select, int limit = 0, [EnumeratorCancellation] CancellationToken token = default)
     {
         ArgumentNullException.ThrowIfNull(select);
         if (limit < 0) throw new ArgumentException("limit cannot be less than zero", nameof(limit));
@@ -115,13 +138,13 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
             if (rets is null) yield break;
             if (limit is 0)
             {
-                yield return (await rets.ToListAsync()).Select(select.Invoke);
+                yield return (await rets.ToArrayAsync()).AsQueryable().Select(select);
                 yield break;
             }
 
             do
             {
-                yield return (await rets.Take(limit).ToListAsync()).Select(select.Invoke);
+                yield return (await rets.Take(limit).ToArrayAsync()).AsQueryable().Select(select);
                 rets = rets.Skip(limit);
             } while (await rets.CountAsync() > 0);
         }
@@ -132,7 +155,7 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
     }
 
     public virtual async IAsyncEnumerable<IEnumerable<TData>> SelectDatasAsync(Expression<Func<TData, bool>> predicate,
-        int limit = 0)
+        int limit = 0, [EnumeratorCancellation] CancellationToken token = default)
     {
         ArgumentNullException.ThrowIfNull(predicate);
         if (limit < 0) throw new ArgumentException("limit cannot be less than zero", nameof(limit));
@@ -160,7 +183,7 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
     }
 
     public virtual async IAsyncEnumerable<IEnumerable<TV>> SelectDatasAsync<TV>(Expression<Func<TData, bool>> predicate,
-        IStorageBasic<TData>.Transform<TData, TV> select, int limit = 0)
+        Expression<Func<TData, TV>> select, int limit = 0, [EnumeratorCancellation] CancellationToken token = default)
     {
         ArgumentNullException.ThrowIfNull(predicate);
         ArgumentNullException.ThrowIfNull(select);
@@ -172,13 +195,13 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
             if (rets is null) yield break;
             if (limit is 0)
             {
-                yield return (await rets.ToListAsync()).Select(select.Invoke);
+                yield return (await rets.ToListAsync()).AsQueryable().Select(select);
                 yield break;
             }
 
             do
             {
-                yield return (await rets.Take(limit).ToListAsync()).Select(select.Invoke);
+                yield return (await rets.Take(limit).ToListAsync()).AsQueryable().Select(select);
                 rets = rets.Skip(limit);
             } while (await rets.CountAsync() > 0);
         }
@@ -188,7 +211,7 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
         }
     }
 
-    public virtual async Task UpdateDataAsync(TData value)
+    public virtual async Task UpdateDataAsync(TData value, CancellationToken token = default)
     {
         Lock.EnterUpgradeableReadLock();
         try
@@ -210,7 +233,7 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
         }
     }
 
-    public virtual async Task UpdateDataAsync(params IEnumerable<TData> values)
+    public virtual async Task UpdateDataAsync(CancellationToken token = default, params IEnumerable<TData> values)
     {
         Lock.EnterWriteLock();
         try
@@ -223,7 +246,7 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
         }
     }
 
-    public virtual async Task<TData> DeleteDataAsync(int key)
+    public virtual async Task<TData> DeleteDataAsync(int key, CancellationToken token = default)
     {
         Lock.EnterUpgradeableReadLock();
         try
@@ -247,7 +270,7 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
         }
     }
 
-    public virtual async Task DeleteDataAsync(params IEnumerable<int> keys)
+    public virtual async Task DeleteDataAsync(CancellationToken token = default, params IEnumerable<int> keys)
     {
         Lock.EnterWriteLock();
         try
@@ -260,7 +283,8 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
         }
     }
 
-    public virtual async Task DeleteDataAsync(Expression<Func<TData, bool>> predicate)
+    public virtual async Task DeleteDataAsync(Expression<Func<TData, bool>> predicate,
+        CancellationToken token = default)
     {
         Lock.EnterWriteLock();
         try
@@ -278,7 +302,7 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
         }
     }
 
-    public virtual async Task ClearTableAsync()
+    public virtual async Task ClearTableAsync(CancellationToken token = default)
     {
         Lock.EnterWriteLock();
         try
@@ -291,7 +315,7 @@ public abstract class StorageBasic<TData>(string dbName) : BaseStorage<TData>(db
         }
     }
 
-    public virtual async Task BeginTransactionAsync(Action<SQLiteConnection> action)
+    public virtual async Task BeginTransactionAsync(Action<SQLiteConnection> action, CancellationToken token = default)
     {
         Lock.EnterWriteLock();
         try
