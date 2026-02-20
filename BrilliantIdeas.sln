@@ -73,6 +73,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommandParser", "Utility\Co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DLManager.Plugin.Preview", "DynamicLoading\DLManager.Plugin.Preview\DLManager.Plugin.Preview.csproj", "{E106C920-0924-4339-9E3A-F5979A066C2C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GeneralEditor", "GeneralEditor", "{93DCE327-2731-4DFD-81F5-6E78D367CA29}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeneralEditor", "GeneralEditor\GeneralEditor\GeneralEditor.csproj", "{3484B224-6562-41B2-AE4F-06645E2EA25C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeneralEditor.Abstract", "GeneralEditor\GeneralEditor.Abstract\GeneralEditor.Abstract.csproj", "{0CA6C24D-14DA-43D0-8229-4817DB4A4ACD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeneralEditor.Database", "GeneralEditor\GeneralEditor.Database\GeneralEditor.Database.csproj", "{A39BFDD0-95E0-4CAA-8715-05B9DA778A44}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeneralEditor.Database.Abstract", "GeneralEditor\GeneralEditor.Database.Abstract\GeneralEditor.Database.Abstract.csproj", "{3883A9DF-264E-41C6-ADC8-5984C9BAE291}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -187,6 +197,22 @@ Global
 		{E106C920-0924-4339-9E3A-F5979A066C2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E106C920-0924-4339-9E3A-F5979A066C2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E106C920-0924-4339-9E3A-F5979A066C2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3484B224-6562-41B2-AE4F-06645E2EA25C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3484B224-6562-41B2-AE4F-06645E2EA25C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3484B224-6562-41B2-AE4F-06645E2EA25C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3484B224-6562-41B2-AE4F-06645E2EA25C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CA6C24D-14DA-43D0-8229-4817DB4A4ACD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CA6C24D-14DA-43D0-8229-4817DB4A4ACD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CA6C24D-14DA-43D0-8229-4817DB4A4ACD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CA6C24D-14DA-43D0-8229-4817DB4A4ACD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A39BFDD0-95E0-4CAA-8715-05B9DA778A44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A39BFDD0-95E0-4CAA-8715-05B9DA778A44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A39BFDD0-95E0-4CAA-8715-05B9DA778A44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A39BFDD0-95E0-4CAA-8715-05B9DA778A44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3883A9DF-264E-41C6-ADC8-5984C9BAE291}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3883A9DF-264E-41C6-ADC8-5984C9BAE291}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3883A9DF-264E-41C6-ADC8-5984C9BAE291}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3883A9DF-264E-41C6-ADC8-5984C9BAE291}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C5FA2B9F-28D3-466C-9D36-71972E249943} = {6DC306D5-5976-424C-8331-8BFE202FE642}
@@ -214,6 +240,10 @@ Global
 		{934AD914-D761-48DC-B759-1D304F170A4A} = {51F0602F-5C3E-4BED-86FE-E01DCF7C5040}
 		{D339C67E-3EE5-4C05-8E9C-B2E4C85230A7} = {183DD576-EC12-42D5-B786-5E127C8299A7}
 		{E106C920-0924-4339-9E3A-F5979A066C2C} = {38B2A97C-24B7-4597-BCF4-300EF59DB4D0}
+		{3484B224-6562-41B2-AE4F-06645E2EA25C} = {93DCE327-2731-4DFD-81F5-6E78D367CA29}
+		{0CA6C24D-14DA-43D0-8229-4817DB4A4ACD} = {93DCE327-2731-4DFD-81F5-6E78D367CA29}
+		{A39BFDD0-95E0-4CAA-8715-05B9DA778A44} = {93DCE327-2731-4DFD-81F5-6E78D367CA29}
+		{3883A9DF-264E-41C6-ADC8-5984C9BAE291} = {93DCE327-2731-4DFD-81F5-6E78D367CA29}
 	EndGlobalSection
 	GlobalSection(RiderSharedRunConfigurations) = postSolution
 		File = MultiPanel\MultiPanel.Silo\.run\MultiPanel_Silo_MultiPanel.Silo.run.xml

@@ -1,0 +1,28 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:semi="https://irihi.tech/semi"
+             xmlns:locator="clr-namespace:GeneralEditor"
+             x:Class="GeneralEditor.GeneralEditorApp"
+             RequestedThemeVariant="Default">
+    <Application.Resources>
+        <ResourceDictionary>
+            <locator:ServiceLocator x:Key="ServiceLocator" />
+            <locator:AppCommand x:Key="AppCommand" />
+        </ResourceDictionary>
+    </Application.Resources>
+    <Application.Styles>
+        <semi:SemiTheme Locale="zh-CN" />
+        <semi:SemiPopupAnimations />
+        <StyleInclude Source="avares://AvaloniaUtility/Controls/CustomControls.axaml" />
+        <StyleInclude Source="avares://GeneralEditor.Abstract/Controls/CustomControls.axaml" />
+    </Application.Styles>
+    <TrayIcon.Icons>
+        <TrayIcons>
+            <TrayIcon ToolTipText="GeneralEditor" Icon="avares://GeneralEditor/Assets/avalonia.ico">
+                <TrayIcon.Menu>
+                    <NativeMenu />
+                </TrayIcon.Menu>
+            </TrayIcon>
+        </TrayIcons>
+    </TrayIcon.Icons>
+</Application>

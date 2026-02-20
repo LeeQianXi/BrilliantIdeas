@@ -1,20 +1,27 @@
+using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Data.Core.Plugins;
+using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using AvaloniaUtility.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
-namespace DeadLine.Core;
+namespace GeneralEditor;
 
-public class DeadLineApp(ILogger<DeadLineApp> logger, IServiceProvider serviceProvider) : Application
+public class GeneralEditorApp(ILogger<GeneralEditorApp> logger, IServiceProvider serviceProvider) : Application
 {
     public override void Initialize()
     {
         ServiceLocator.ServiceProvider = serviceProvider;
-        logger.LogInformation("Initializing ToDoListApp");
+        logger.LogInformation($"Initializing {nameof(GeneralEditorApp)}");
         AvaloniaXamlLoader.Load(this);
     }
 
     public override void OnFrameworkInitializationCompleted()
     {
-        logger.LogInformation("OnFrameworkInitializationCompleted");
+        logger.LogInformation(nameof(OnFrameworkInitializationCompleted));
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             desktop.ShutdownRequested += (sender, args) =>

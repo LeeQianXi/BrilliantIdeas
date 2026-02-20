@@ -1,87 +1,60 @@
-namespace TestMap;
+using System.Security.Cryptography;
+using NetUtility;
+using TestMap;
 
-internal static class Program
+var f = Utility.Utf8Hash;
+Console.WriteLine("Hello, World!" >> f);
+Console.WriteLine("Hello, World!" >> Encoding.UTF8.GetBytes >> SHA256.HashData >> Convert.ToHexStringLower);
+
+static IEnumerable<int> GetAllFactors(int number)
 {
-    [STAThread]
-    private static void Main()
+    if (number == 0)
+        return [];
+
+    // 处理负数，取其绝对值
+    var absNumber = Math.Abs(number);
+
+    // 特殊处理1
+    if (absNumber is 1)
+        return [1];
+
+    var factors = new SortedSet<int>();
+
+    // 遍历到平方根即可
+    var sqrt = (int)Math.Sqrt(absNumber);
+
+    for (var i = 1; i <= sqrt; i++)
     {
-        var map = new TechMap();
-        Dictionary<int, Guid> paral = [];
-        foreach (var i in Enumerable.Range(0, 100))
-        {
-            var cu = paral[i] = map.AddNode(new TechMap.TechNodeData(i.ToString()));
-            foreach (var j in GetProperFactors(i))
-            {
-                if (j is 1) continue;
-                map.AddChild(paral[j], cu);
-            }
-        }
-
-        map = new TechMap(map.Nodes);
-
-        map.Print();
+        if (absNumber % i != 0) continue;
+        factors.Add(i);
+        factors.Add(absNumber / i);
     }
 
-    /// <summary>
-    ///     获取一个数的所有正因数（包括1和自身）
-    /// </summary>
-    /// <param name="number">要获取因数的数字</param>
-    /// <returns>所有正因数的有序集合</returns>
-    public static IEnumerable<int> GetAllFactors(int number)
-    {
-        if (number == 0)
-            return [];
+    return factors;
+}
 
-        // 处理负数，取其绝对值
-        var absNumber = Math.Abs(number);
 
-        // 特殊处理1
-        if (absNumber is 1)
-            return [1];
+static IEnumerable<int> GetAllFactorsIncludingNegatives(int number)
+{
+    var positiveFactors = GetAllFactors(number).ToArray();
+    // 如果是0，返回空集合
+    if (positiveFactors.Length == 0)
+        return [];
+    // 对于每个正因数，添加对应的负因数
+    return positiveFactors
+        .SelectMany(f => number < 0 ? new[] { -f, f } : new[] { f, -f })
+        .OrderBy(f => f);
+}
 
-        var factors = new SortedSet<int>();
 
-        // 遍历到平方根即可
-        var sqrt = (int)Math.Sqrt(absNumber);
+static IEnumerable<int> GetProperFactors(int number)
+{
+    var allFactors = GetAllFactors(number);
+    return allFactors.Where(f => f != Math.Abs(number));
+}
 
-        for (var i = 1; i <= sqrt; i++)
-        {
-            if (absNumber % i != 0) continue;
-            factors.Add(i);
-            factors.Add(absNumber / i);
-        }
-
-        return factors;
-    }
-
-    /// <summary>
-    ///     获取一个数的所有因数（包括负因数）
-    /// </summary>
-    /// <param name="number">要获取因数的数字</param>
-    /// <returns>所有因数的有序集合</returns>
-    public static IEnumerable<int> GetAllFactorsIncludingNegatives(int number)
-    {
-        var positiveFactors = GetAllFactors(number).ToArray();
-        // 如果是0，返回空集合
-        if (positiveFactors.Length == 0)
-            return [];
-        // 对于每个正因数，添加对应的负因数
-        return positiveFactors
-            .SelectMany(f => number < 0 ? new[] { -f, f } : new[] { f, -f })
-            .OrderBy(f => f);
-    }
-
-    /// <summary>
-    ///     获取一个数的所有真因数（不包括自身）
-    /// </summary>
-    /// <param name="number">要获取因数的数字</param>
-    /// <returns>所有真因数的有序集合</returns>
-    public static IEnumerable<int> GetProperFactors(int number)
-    {
-        var allFactors = GetAllFactors(number);
-        return allFactors.Where(f => f != Math.Abs(number));
-    }
-
+internal static class Ext
+{
     extension(TechMap map)
     {
         public void Print()
