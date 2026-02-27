@@ -20,7 +20,6 @@ public sealed class TechTreeNodeEntityConfigure : IEntityTypeConfiguration<TechT
             .HasName("PK_TechTreeNode_NodeId");
 
         builder.Property(e => e.Name)
-            .HasColumnType("varchar(100)")
             .IsRequired()
             .HasColumnName("NodeName")
             .ValueGeneratedNever();

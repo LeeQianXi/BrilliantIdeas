@@ -8,6 +8,9 @@
         <ResourceDictionary>
             <locator:ServiceLocator x:Key="ServiceLocator" />
             <locator:AppCommand x:Key="AppCommand" />
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://GeneralEditor.Abstract/Controls/GeneralEditorResources.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
     <Application.Styles>

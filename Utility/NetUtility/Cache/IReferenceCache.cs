@@ -46,4 +46,6 @@ public interface IReferenceCache<TKey, TValue> where TKey : notnull where TValue
     ///     清空缓存。
     /// </summary>
     void Clear();
+
+    event Action<KeyValuePair<TKey, TValue>> Expired;
 }

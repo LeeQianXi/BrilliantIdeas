@@ -7,6 +7,22 @@
         Width="800" Height="450"
         WindowStartupLocation="CenterScreen"
         x:Class="GeneralEditor.Views.GeneralEditorMenuWindow"
+        DataContext="{Binding GeneralEditorMenuViewModel,Source={StaticResource ServiceLocator}}"
         Title="GeneralEditorMenuWindow">
-
+    <Panel Background="{DynamicResource Ge.Background}">
+        <Grid RowDefinitions="40,*">
+            <DockPanel LastChildFill="False" Margin="5,0">
+                <ComboBox Name="ControlSelector" DockPanel.Dock="Left" MinWidth="100" VerticalAlignment="Center"
+                          SelectionChanged="CurrentControl_OnSelectionChanged"
+                          ItemsSource="{Binding ControlTitles}" />
+            </DockPanel>
+            <Panel Grid.Row="1">
+                <Border VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock Text="选择编辑器类型,开始使用" FontSize="28"/>
+                </Border>
+                <ContentControl Content="{Binding CurrentControl}" />
+            </Panel>
+        </Grid>
+        <WindowNotificationManager Name="NotificationManager" Position="TopCenter" />
+    </Panel>
 </Window>

@@ -24,8 +24,4 @@
         <AvaloniaResource Include="Assets\**"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <Folder Include="ViewModel\"/>
-    </ItemGroup>
-
 </Project>

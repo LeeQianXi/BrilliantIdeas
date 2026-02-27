@@ -210,6 +210,8 @@ public class LruCache<TKey, TValue> : IReferenceCache<TKey, TValue> where TKey :
         }
     }
 
+    public event Action<KeyValuePair<TKey, TValue>>? Expired;
+
     public void Dispose()
     {
         _lock?.Dispose();

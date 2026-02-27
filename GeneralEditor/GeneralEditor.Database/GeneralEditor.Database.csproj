@@ -18,6 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\Utility\DIAbstract\DIAbstract.csproj"/>
         <ProjectReference Include="..\GeneralEditor.Database.Abstract\GeneralEditor.Database.Abstract.csproj"/>
     </ItemGroup>
 

@@ -1,7 +1,24 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:xge="clr-namespace:GeneralEditor.Core.Abstract.Controls">
     <Design.PreviewWith>
     </Design.PreviewWith>
     <Styles.Resources>
+        <ControlTemplate x:Key="ControlTemplateTechNodeEditor" TargetType="xge:TechNodeEditor">
+            <Border Background="{DynamicResource Ge.Background}">
+                <Grid RowDefinitions="0,*">
+                    <DockPanel LastChildFill="False">
+                        <StackPanel/>
+                    </DockPanel>
+                    <Border Grid.Row="1" Margin="5,0,5,5" CornerRadius="5"
+                            Background="{DynamicResource Ge.Editor.Background}">
+                        <Canvas Name="PART_CoreCanvas"/>
+                    </Border>
+                </Grid>
+            </Border>
+        </ControlTemplate>
     </Styles.Resources>
+    <Style Selector="xge|TechNodeEditor">
+        <Setter Property="Template" Value="{StaticResource ControlTemplateTechNodeEditor}"/>
+    </Style>
 </Styles>

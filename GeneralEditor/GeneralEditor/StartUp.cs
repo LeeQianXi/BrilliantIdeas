@@ -2,7 +2,11 @@ using Avalonia;
 using AvaloniaUtility.Services;
 using DIAbstract;
 using FluentValidation;
+using GeneralEditor.Core.Abstract;
+using GeneralEditor.Core.Abstract.ViewModel;
 using GeneralEditor.Database;
+using GeneralEditor.Database.Abstract;
+using GeneralEditor.ViewModel;
 using GeneralEditor.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -20,6 +24,7 @@ public static class StartUp
                 service.UseAvaloniaCore<GeneralEditorMenuWindow>()
                     .UseGeneralEditorCore()
                     .UseGeneralEditorDb();
+                service.UseBrilliantInitializer();
             });
         }
     }
@@ -31,13 +36,19 @@ public static class StartUp
         {
             return collection
                 .AddMultiSingleton<Application, GeneralEditorApp>()
-                .AddSingleton<IStartupWindow, TStartUp>();
+                .AddMultiSingleton<IStartupWindow, TStartUp>();
         }
 
         public IServiceCollection UseGeneralEditorCore()
         {
-            return collection
-                .AddValidatorsFromAssembly(typeof(StartUp).Assembly, includeInternalTypes: true);
+            collection
+                .AddValidatorsFromAssembly(typeof(StartUp).Assembly, includeInternalTypes: true)
+                .AddGeneralEditorDtoValidators();
+            collection
+                .AddGeneralEditorControllers();
+            collection
+                .AddSingleton<IGeneralEditorMenuViewModel, GeneralEditorMenuMenuViewModel>();
+            return collection;
         }
     }
 }

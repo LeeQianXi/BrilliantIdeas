@@ -1,3 +1,4 @@
+using DIAbstract;
 using GeneralEditor.Database.Abstract.Services;
 using GeneralEditor.Database.Services;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +19,7 @@ public static class Extensions
         public IServiceCollection UseGeneralEditorDb()
         {
             services.AddPooledDbContextFactory<GenDbContext>(ApplySqlLite);
-            services.AddScoped<IGeneralRepository, GeneralRepository>();
+            services.AddMultiSingleton<IGeneralRepository, IAsyncLifecycle, GeneralRepository>();
             return services;
         }
     }
